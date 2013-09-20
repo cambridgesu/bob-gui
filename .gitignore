@@ -3,3 +3,6 @@ listing/bobguiListingWrapper.php
 
 # Ignore the password file
 listing/dbpass-listing
+
+# Ignore favicon if it exists
+favicon.ico
