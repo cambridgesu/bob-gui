@@ -1,0 +1,35 @@
+### Settings for BOB GUI ###
+
+
+# Front controller
+RewriteEngine on
+RewriteBase /
+
+
+
+# Main pages
+RewriteRule ^(open|forthcoming|closed|archive|controlpanel).html$ /index.php?action=$1 [L,QSA]
+# Public organisation pages
+RewriteRule ^([-a-z]+)/(|index.html)$ /index.php?action=organisation&item=$1 [L]
+RewriteRule ^([-a-z]+)$ /$1/ [R]
+# Public organisation-by-year pages
+RewriteRule ^([-a-z]+)/([0-9]{2}-[0-9]{2})/(|index.html)$ /index.php?action=organisationyear&item=$1&year=$2 [L]
+RewriteRule ^([-a-z]+)/([0-9]{2}-[0-9]{2})$ /$1/$2/ [R]
+
+
+# 404 handler
+ErrorDocument 404 /index.php?action=page404
+
+
+
+
+
+### Settings for BOB native ###
+
+
+# Launch the BOB instance
+RewriteRule ^([-a-z]+)/([0-9]{2}-[0-9]{2})/([a-z]+)/(|index.html|index.php)$ /bobstub.php?id=$1-$2-$3 [L,QSA]
+RewriteRule ^([-a-z]+)/([0-9]{2}-[0-9]{2})/([a-z]+)$ /$1/$2/$3/ [R]
+#!# Need to work out why this is needed
+RewriteRule ^([-a-z]+)/([0-9]{2}-[0-9]{2})/([a-z]+)/logout\.html$ /logout.html [L]
+

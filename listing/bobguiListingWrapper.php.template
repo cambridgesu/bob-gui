@@ -1,0 +1,13 @@
+<?php
+
+# Stub launching file for the listing side of the BOB GUI
+
+# Load and run the BOB GUI with the specified settings
+require_once ('./listing/bobguiListing.php');
+new bobguiListing (array (
+	'username' => 'bobguiListing',
+	#!# This should be made into a password file option so that the error can be caught
+	'password' => trim (file_get_contents ('./listing/dbpass-listing')),
+));
+
+?>

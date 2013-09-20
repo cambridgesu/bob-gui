@@ -1,0 +1,5 @@
+# Ignore the instantiated copy of the bootstrap file
+listing/bobguiListingWrapper.php
+
+# Ignore the password file
+listing/dbpass-listing
