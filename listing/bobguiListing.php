@@ -590,7 +590,6 @@ class frontControllerApplication
 		# Database credentials
 		'hostname' => 'localhost',
 		'username' => NULL,
-#!# Move to file
 		'password' => NULL,
 		'database' => NULL,
 		'vendor'						=> 'mysql',	// Database vendor
