@@ -20,9 +20,8 @@ if (isSet ($_GET['id'])) {
 }
 
 # Database connection details
-#!# Hard-coded
 $config['dbHostname'] = 'localhost';
-$config['dbPasswordFile'] = '../../bob/dbpass';
+$config['dbPassword'] = 'your_password_goes_here';
 $config['dbDatabase'] = 'votes';
 $config['dbDatabaseStaging'] = 'staging';
 $config['dbUsername'] = 'testvote';
@@ -35,7 +34,7 @@ $config['dbConfigTable'] = 'instances';
 ## End of config; now run the system ##
 
 # Load and run the BOB class
-#!# Hard-coded
+#!# Hard-coded path
 require_once ('../../bob/BOB.php');
 new BOB ($config);
 
