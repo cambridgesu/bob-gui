@@ -25,13 +25,13 @@ class bobguiListing extends frontControllerApplication
 		'controlPanelUrl' => 'https://www.cusu.cam.ac.uk/elections/system/',
 		
 		# Month of the year when an academic year is split from
-		'startMonth' => 9,	// Actually October is more 'correct', but 9 is safer and will catch elections just before term-start; see also http://www.cam.ac.uk/univ/termdates.html
+		'startMonth' => 9,	// Actually October is more 'correct', but 9 is safer and will catch elections just before term-start; see also http://www.cam.ac.uk/about-the-university/term-dates-and-calendars
 		
 		# Number of days considered 'recent' when viewing listings
 		'recentDays' => 14,
 		
-		# Mail domain of users, beginning with @, and username regexp
-		'mailDomain' => 'cam.ac.uk',
+		# Mail domain of users, e.g. example.com
+		'mailDomain' => NULL,
 		
 		# Style for this GUI
 		'headerLocation'		=> '/style/header.html',
