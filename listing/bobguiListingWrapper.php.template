@@ -5,6 +5,7 @@
 # Settings
 $config['username'] = 'bobguiListing';
 $config['password'] = 'your_password_goes_here';
+$config['administratorEmail'] = 'webmaster@example.com';
 
 # Load and run the BOB GUI with the specified settings
 require_once ('./listing/bobguiListing.php');
