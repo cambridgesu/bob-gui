@@ -30,6 +30,9 @@ $config['dbSetupUsername'] = 'testvotesetup';
 # Database table containing the config which the dbSetupUsername has SELECT rights on
 $config['dbConfigTable'] = 'instances';
 
+# Counting installation config; must end /openstv/ (slash-terminated)
+$config['countingInstallation'] = '%documentroot/../openstv/';
+
 
 ## End of config; now run the system ##
 
