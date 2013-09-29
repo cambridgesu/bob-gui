@@ -3,3 +3,9 @@ listing/bobguiListingWrapper.php
 
 # Ignore favicon if it exists
 favicon.ico
+
+# Ignore any contents of the style folder, except its .gitignore file
+style/*
+!style/header.html.template
+!style/footer.html.template
+

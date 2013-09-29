@@ -34,8 +34,8 @@ class bobguiListing extends frontControllerApplication
 		'mailDomain' => 'cam.ac.uk',
 		
 		# Style for this GUI
-		'headerLocation'		=> '/style/prepended.html',
-		'footerLocation'		=> '/style/appended.html',
+		'headerLocation'		=> '/style/header.html',
+		'footerLocation'		=> '/style/footer.html',
 		
 		# Ballots to hide from all listings
 		'hideBallots' => false,	// array (),
