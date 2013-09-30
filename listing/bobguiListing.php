@@ -78,6 +78,84 @@ class bobguiListing extends frontControllerApplication
 	
 	
 	
+	# Additional default processing
+	public function main ()
+	{
+		# Add styles
+		echo "\n" . '<style type="text/css">';
+		echo $this->defaultStyles ();
+		echo "\n" . '</style>';
+	}
+	
+	
+	# Define default styles
+	private function defaultStyles ()
+	{
+		# Return the styles
+		return '
+		/* Internal styles */
+		p.ballottitle {margin-bottom: 2px; color: #777;}
+		p.ballotinfo {margin-top: 0;}
+		ul.actions {margin-bottom: 1.2em;}
+		ul.actions.left {float: none;}
+		ul.actions li {margin-bottom: 7px;}
+		p.electoralroll, ul.actions li a, p.winner {background-repeat: no-repeat; background-position: 6px 5px; padding-left: 28px;}
+		ul.actions li a {font-weight: bold;}
+		p.electoralroll {background-image: url(/images/icons/script.png);}
+		ul.actions li a {width: 15em;}
+		ul.actions li.vote a {background-image: url(/images/icons/pencil.png);}
+		ul.actions li.showvotes a {background-image: url(/images/icons/application_view_list.png);}
+		ul.actions li a:hover {background-color: #e8c8c8;}
+		ul.actions li a img {margin-right: 2px;}
+		ul.actions li a.incomplete {border-style: dashed;}
+		ul.actions li a.caution {margin-top: 1.8em;}
+		ul.actions li a.caution:hover {background-color: red; color: white;}
+		table.selectlist td {padding-top: 0.6em; padding-bottom: 1em;}
+		table.selectlist td.key {padding-right: 25px; text-align: right; width: 200px;}
+		table.selectlist td.key a {border-bottom: 0;}
+		table.selectlist td.key a:hover {background-color: transparent;}
+		table.selectlist td.key img {border: 0; max-width: 300px;}
+		table.selectlist td.value h2 {margin-top: 0; padding-top: 0; margin-bottom: 0; padding-bottom: 0; border-bottom: 0;}
+		table.selectlist td.value ul {list-style: none; margin-left: 0; padding-left: 1.5em; margin-top: 5px; padding-top: 0;}
+		table.ballotsummary td.value {font-weight: bold;}
+		.ultimateform table.nolines {width: 98%;}
+		.ultimateform table.nolines td.key {width: 200px;}
+		.ultimateform table.nolines table td {border: 0; padding: 0 5px; font-family: monospace; line-height: 1.2em;}
+		img.right {margin-bottom: 10px;}
+		hr.clear {clear: both; margin-top: 1em; border: 0; height: 1px;}
+		#footerleft {width: 350px;}
+		#footerright {color: #aaa;}
+		#footerarea span {padding: 10px 40px;}
+		form div p.description, form div p.widget, form div p.hint {padding: 0; margin: 0; line-height: 1.2em;}
+		form div p.description {margin-top: 1em;}
+		form div p.widget {margin-top: 0.3em; color: #603;}
+		form div#form_urlSlug p.widget span.noneditable {font-weight: bold;}
+		form div#form_urlSlug p.widget input {margin-left: 4px; margin-right: 4px;}
+		form div div p {line-height: 1.45em;}
+		form div p.hint {margin-top: 0.3em; margin-bottom: 2em; font-size: 0.9em; font-style: italic; color: #666;}
+		form ul.errors li {color: red; font-style: italic;}
+		form p.submit input {font-size: 1.2em; min-width: 8em;}
+		span.formprepend, span.formappend {color: #603;}
+		p.ballotStart_time, p.ballotEnd_time, p.ballotView_time {margin-bottom: 0;}
+		p.ballotStart_date, p.ballotEnd_date, p.ballotView_date {margin-top: 0; position: relative; top: -0.5em;}
+		#pagemenu ul li.page_item a {padding-left: 15px; padding-right: 15px;}
+		* html #pagemenu ul li.page_item a, #pagemenu ul li.cat-item a {padding: 5px 15px;} /* IE6 layout hack */
+		p.winner {color: #603; font-weight: bold; background-image: url(/images/icons/bullet_go.png); background-position: 5px 1px;}
+		table.lines td.transferexplanation {padding-bottom: 1.25em;}
+		table.regulated td.key p {width: 150px;}
+		form h3 {padding-top: 1em;}
+		
+		/* CUSU house style overrides */
+		h1 {padding-right: 11em; margin-top: 5px; margin-bottom: 1em;}
+		ul#page-list li {border: 0; padding: 0; margin: 0 1px 0 0;}
+		ul#page-list li a {background-color: #eee; padding: 5px 10px; border-right: 1px solid #bbb;}
+		ul#page-list li a:hover {background-color: #e7e7e7;}
+		ul.actions li a {padding-top: 6px; padding-bottom: 6px;}
+		table.selectlist td.value h2 a {color: #272425; border-bottom: 0;} 
+		';
+	}
+	
+	
 	# Home page
 	public function home ()
 	{
