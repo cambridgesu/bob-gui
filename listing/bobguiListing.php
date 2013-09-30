@@ -94,6 +94,7 @@ class bobguiListing extends frontControllerApplication
 		# Return the styles
 		return '
 		/* Internal styles */
+		p.loggedinas {text-align: right;}
 		p.ballottitle {margin-bottom: 2px; color: #777;}
 		p.ballotinfo {margin-top: 0;}
 		ul.actions {margin-bottom: 1.2em;}
