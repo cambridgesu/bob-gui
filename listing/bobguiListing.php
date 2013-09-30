@@ -77,8 +77,9 @@ class bobguiListing extends frontControllerApplication
 	);
 	
 	
+	
 	# Home page
-	function home ()
+	public function home ()
 	{
 		# Opening text
 		$html  = "\n" . '<h1>Welcome</h1>';
@@ -684,6 +685,11 @@ class frontControllerApplication
 		$this->actions = array_merge ($this->globalActions, $this->actions);
 		if (!$this->action || !array_key_exists ($this->action, $this->actions)) {
 			$this->action = 'home';
+		}
+		
+		# Additional processing if required
+		if (method_exists ($this, 'main')) {
+			$this->main ();
 		}
 		
 		# Show the username
