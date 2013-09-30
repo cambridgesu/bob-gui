@@ -97,13 +97,14 @@ class bobguiListing extends frontControllerApplication
 		p.loggedinas {text-align: right;}
 		p.ballottitle {margin-bottom: 2px; color: #777;}
 		p.ballotinfo {margin-top: 0;}
-		ul.actions {margin-bottom: 1.2em;}
+		ul.actions {margin-bottom: 1.2em; margin-left: 0;}
+		ul.actions li {list-style: none;}
+		ul.actions li a {display: block; border-bottom: 0; border: 1px solid #ddd; padding: 4px 8px 2px; border-radius: 4px; width: 18em;}
 		ul.actions.left {float: none;}
 		ul.actions li {margin-bottom: 7px;}
-		p.electoralroll, ul.actions li a, p.winner {background-repeat: no-repeat; background-position: 6px 5px; padding-left: 28px;}
+		p.electoralroll, ul.actions li a, p.winner {background-repeat: no-repeat; background-position: 6px 5px; padding-left: 18px;}
 		ul.actions li a {font-weight: bold;}
 		p.electoralroll {background-image: url(/images/icons/script.png);}
-		ul.actions li a {width: 15em;}
 		ul.actions li.vote a {background-image: url(/images/icons/pencil.png);}
 		ul.actions li.showvotes a {background-image: url(/images/icons/application_view_list.png);}
 		ul.actions li a:hover {background-color: #e8c8c8;}
