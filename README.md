@@ -1,4 +1,4 @@
-# BOB deployment script
+# BOB GUI
 
 This repository provides a GUI for listing and/or managing BOB ballot instances.
 
@@ -8,7 +8,8 @@ https://github.com/cusu/bob
 
 ## Credits
 
-* Martin Lucas-Smith, Department of Geography, University of Cambridge
+* Martin Lucas-Smith, Cambridge University Students' Union (initial code)
+* Martin Lucas-Smith, Department of Geography, University of Cambridge (improvements, as open-sourced)
 
 
 ## License
