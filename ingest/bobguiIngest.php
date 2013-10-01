@@ -1,6 +1,11 @@
 <?php
 
 
+# This is a script to pull data from a BOB GUI control panel instance and push it into a BOB GUI live instance (via a staging database).
+# It runs in a shell context, not a web context.
+
+
+
 /*
 
 ingest script
