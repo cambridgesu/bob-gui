@@ -80,9 +80,6 @@ class bobguiIngest
 		'smsApiKey' => false,
 		'smsRecipient' => false,
 		
-		# Mail domain of users, beginning with @, and username regexp
-		'mailDomain' => 'cam.ac.uk',
-		
 		# Files; these are relative to this file, as ingesting is not run in the Apache context but in a PHP shell context
 		'logFile' => './bobguiIngestLog.txt',
 		'lockFile' => './lock/lockfile.txt',
