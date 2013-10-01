@@ -1,0 +1,2 @@
+# Run ingest process each hour, on the half-hour
+30 * * * * cd /path/to/bob-gui/ingest/ && php ./bobguiIngestWrapper.php
