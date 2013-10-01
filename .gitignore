@@ -1,5 +1,6 @@
-# Ignore the instantiated copy of the bootstrap file
+# Ignore the instantiated copy of the bootstrap files
 listing/bobguiListingWrapper.php
+ingest/bobguiIngestWrapper.php
 
 # Ignore favicon if it exists
 favicon.ico
