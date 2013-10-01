@@ -567,7 +567,7 @@ class bobguiIngest
 		
 		# Send an SMS if required
 		if ($this->settings['smsRecipient']) {
-			$smsMessage = 'Voting import problem - importing stopped';
+			$smsMessage = 'Voting import problem (on machine ' . php_uname ('n') . ') - importing stopped';
 			file_get_contents ("https://api.clockworksms.com/http/send.aspx?key=" . $this->settings['smsApiKey'] . "&to=" . $this->settings['smsRecipient'] . "&content=" . urlencode ($smsMessage));
 		}
 		
