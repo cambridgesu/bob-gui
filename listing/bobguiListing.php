@@ -90,7 +90,6 @@ class bobguiListing extends frontControllerApplication
 	}
 	
 	
-	
 	# Additional default processing
 	public function main ()
 	{
@@ -796,8 +795,19 @@ class frontControllerApplication
 		$this->action = (isSet ($_GET['action']) ? $_GET['action'] : 'home');
 		$this->item = (isSet ($_GET['item']) ? strtolower ($_GET['item']) : false);
 		
-		# Get the registered actions and default to home if no valid action selected
+		# Get the registered actions
 		$this->actions = array_merge ($this->globalActions, $this->actions ());
+		
+		# Disable (remove) an action if required; this is basically a convenience flag to avoid having to do unset() after an array definition
+		foreach ($this->actions as $action => $attributes) {
+			if (isSet ($attributes['enableIf'])) {
+				if (!$attributes['enableIf']) {
+					unset ($this->actions[$action]);
+				}
+			}
+		}
+
+		# Default to home if no valid action selected
 		if (!$this->action || !array_key_exists ($this->action, $this->actions)) {
 			$this->action = 'home';
 		}
