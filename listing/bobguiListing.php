@@ -27,6 +27,7 @@ class bobguiListing extends frontControllerApplication
 			'administratorEmail' => NULL,
 			
 			# Control panel URL (on 'write' server)
+			'controlPanelLinkEnabled' => true,	// Show the control panel link for all users (true), never (false), or for specific users only (comma-separated list of usernames, e.g. 'user1,user2,user3' )
 			'controlPanelUrl' => 'https://www.cusu.cam.ac.uk/elections/system/',
 			
 			# Month of the year when an academic year is split from
@@ -77,6 +78,7 @@ class bobguiListing extends frontControllerApplication
 			),
 			'controlpanel' => array (
 				'description' => 'Control panel',
+				'enableIf' => $this->settings['controlPanelLinkEnabled'],
 			),
 			'organisation' => array (
 				'description' => false,
@@ -90,6 +92,25 @@ class bobguiListing extends frontControllerApplication
 	}
 	
 	
+	# Additional default processing, before actions processing
+	public function mainPreActions ()
+	{
+		# For the control panel visibility setting, normalise to boolean; if the user is one of the usernames, convert to true
+		if (!is_bool ($this->settings['controlPanelLinkEnabled'])) {
+			if (is_string ($this->settings['controlPanelLinkEnabled']) && strlen ($this->settings['controlPanelLinkEnabled'])) {
+				$usernames = explode (',', trim ($this->settings['controlPanelLinkEnabled']));
+				foreach ($usernames as $index => $username) {
+					$usernames[$index] = trim ($username);
+				}
+				$this->settings['controlPanelLinkEnabled'] = (in_array ($this->user, $usernames, true));	// True or false, depending on whether the user is in the list
+			} else {
+				$this->settings['controlPanelLinkEnabled'] = false;	// Anything else, e.g. array, object, etc. becomes false, for safety
+			}
+		}
+		
+	}
+	
+	
 	# Additional default processing
 	public function main ()
 	{
@@ -97,6 +118,7 @@ class bobguiListing extends frontControllerApplication
 		echo "\n" . '<style type="text/css">';
 		echo $this->defaultStyles ();
 		echo "\n" . '</style>';
+		
 	}
 	
 	
@@ -185,10 +207,12 @@ class bobguiListing extends frontControllerApplication
 		$html .= "\n\t<li><a href=\"{$this->baseUrl}/closed.html\"><img src=\"/images/icons/book.png\" alt=\"\" class=\"icon\" /> Recent ballots</a></li>";
 		$html .= "\n\t<li><a href=\"{$this->baseUrl}/archive.html\"><img src=\"/images/icons/book_addresses.png\" alt=\"\" class=\"icon\" /> Archive of all ballots</a></li>";
 		$html .= "\n</ul>";
-		$html .= "\n<h2>Create/administer ballots</h2>";
-		$html .= "\n<ul class=\"actions left\">";
-		$html .= "\n\t<li><a href=\"{$this->baseUrl}/controlpanel.html\"><img src=\"/images/icons/cog.png\" alt=\"\" class=\"icon\" /> Create/administer ballots</a></li>";
-		$html .= "\n</ul>";
+		if ($this->settings['controlPanelLinkEnabled']) {
+			$html .= "\n<h2>Create/administer ballots</h2>";
+			$html .= "\n<ul class=\"actions left\">";
+			$html .= "\n\t<li><a href=\"{$this->baseUrl}/controlpanel.html\"><img src=\"/images/icons/cog.png\" alt=\"\" class=\"icon\" /> Create/administer ballots</a></li>";
+			$html .= "\n</ul>";
+		}
 		$html .= "\n" . '<p>Access to this system is only available via Raven, and all access is logged for security.</p>';
 		
 		# Show the HTML
