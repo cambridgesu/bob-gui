@@ -760,6 +760,11 @@ class frontControllerApplication
 		# Assign a shortcut for the database table in use
 		$this->dataSource = $this->settings['database'] . '.' . $this->settings['table'];
 		
+		# Additional processing, before actions processing phase, if required
+		if (method_exists ($this, 'mainPreActions')) {
+			$this->mainPreActions ();
+		}
+		
 		# Get the action
 		$this->action = (isSet ($_GET['action']) ? $_GET['action'] : 'home');
 		$this->item = (isSet ($_GET['item']) ? strtolower ($_GET['item']) : false);
