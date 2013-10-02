@@ -695,6 +695,23 @@ class frontControllerApplication
 	);
 	
 	
+	# Skeleton function to define locally-defined defaults; normally overridden
+	protected $defaults = array ();
+	protected function defaults ()
+	{
+		return $this->defaults;
+	}
+	
+	
+	# Skeleton function to define locally-defined actions; normally overridden
+	protected $actions = array ();
+	protected function actions ()
+	{
+		return $this->actions;
+	}
+	
+	
+	
 	# Class variables
 	var $errors = array ();
 	var $databaseConnection = NULL;
@@ -713,7 +730,7 @@ class frontControllerApplication
 		$this->baseUrl = application::getBaseUrl ();
 		
 		# Function to merge the arguments; note that $errors returns the errors by reference and not as a result from the method
-		$this->defaults = array_merge ($this->globalDefaults, $this->defaults);
+		$this->defaults = array_merge ($this->globalDefaults, $this->defaults ());
 		if (!$this->settings = $this->mergeConfiguration ($this->defaults, $settings)) {
 			$this->reportErrors ();
 			return false;
@@ -770,7 +787,7 @@ class frontControllerApplication
 		$this->item = (isSet ($_GET['item']) ? strtolower ($_GET['item']) : false);
 		
 		# Get the registered actions and default to home if no valid action selected
-		$this->actions = array_merge ($this->globalActions, $this->actions);
+		$this->actions = array_merge ($this->globalActions, $this->actions ());
 		if (!$this->action || !array_key_exists ($this->action, $this->actions)) {
 			$this->action = 'home';
 		}
