@@ -10,3 +10,7 @@ style/*
 !style/header.html.template
 !style/footer.html.template
 
+# Ignore any ingest log file and lock file
+ingest/bobguiIngestLog.txt
+ingest/lock/*
+!ingest/lock/.gitignore
