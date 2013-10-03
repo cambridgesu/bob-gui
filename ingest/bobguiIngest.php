@@ -411,7 +411,7 @@ class bobguiIngest
 			foreach ($tableTypes as $table) {
 				
 				# Create the table
-				if (!$this->databaseConnection->createTable ($this->settings['databaseStaging'], $instanceId . "_{$table}", $instance["{$table}table"], 'InnoDB')) {
+				if (!$this->databaseConnection->createTable ($this->settings['databaseStaging'], $instanceId . "_{$table}", $instance["{$table}table"])) {
 					$this->errors[] = "There was a problem creating the {$table} table for the {$instanceId} instance. The database server said:\n" . print_r ($this->databaseConnection->error (), true) . "\nThe data was:\n" . print_r ($instance["{$table}table"], true);
 					$this->reportErrors ();
 					return false;
