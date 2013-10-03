@@ -10,6 +10,7 @@ $config['smsRecipient'] = '441234567890';
 $config['smsApiKey'] = false;
 $config['instanceDataUrl'] = 'https://username:password:www.controlpanel.vote.example.com/bestow.html';
 $config['liveServerUrl'] = 'https://www.vote.example.com';	// Not slash-terminated
+$config['organisationName'] = false;
 
 # Load and run the BOB GUI with the specified settings
 require_once ('./bobguiIngest.php');
