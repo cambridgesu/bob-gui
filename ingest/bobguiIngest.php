@@ -4,6 +4,7 @@
 # This is a script to pull data from a BOB GUI control panel instance and push it into a BOB GUI live instance (via a staging database).
 # It runs in a shell context, not a web context.
 
+# Requires database privileges: SELECT,INSERT,DELETE,CREATE,ALTER,DROP on staging database and SELECT,INSERT,CREATE on votes (live) database
 
 
 /*
