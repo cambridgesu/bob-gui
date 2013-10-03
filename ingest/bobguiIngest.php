@@ -514,8 +514,8 @@ class bobguiIngest
 			$this->logMessage ("Checkpoint 15[{$instanceId}]: Voter and votes table moved from staging to live side; instanceID = {$instanceId}");
 			
 			# Copy the instance table entry across
-			$query = "INSERT INTO `{$this->settings['databaseLive']}`.instances (SELECT * FROM `{$this->settings['databaseStaging']}`.instances AS stagingInstances WHERE stagingInstances.id = '" . addslashes ($instanceId) . "' LIMIT 1);";
-			if (!$result = $this->databaseConnection->query ($query)) {
+			$query = "INSERT INTO `{$this->settings['databaseLive']}`.instances (SELECT * FROM `{$this->settings['databaseStaging']}`.instances AS stagingInstances WHERE stagingInstances.id = :instanceId LIMIT 1);";
+			if (!$result = $this->databaseConnection->query ($query, array ('instanceId' => $instanceId))) {
 				$this->errors[] = "The copying of the {$instanceId} instance configuration from the staging to live side failed. The database server said:\n" . print_r ($this->databaseConnection->error (), true);
 				$this->reportErrors ();
 				return false;
@@ -523,8 +523,8 @@ class bobguiIngest
 			$this->logMessage ("Checkpoint 16[{$instanceId}]: Copied instance configuration from staging to live side; instanceID = {$instanceId}");
 			
 			# Delete the staging.instance table entry
-			$query = "DELETE FROM `{$this->settings['databaseStaging']}`.instances WHERE id = '" . addslashes ($instanceId) . "' LIMIT 1;";
-			if (!$result = $this->databaseConnection->query ($query)) {
+			$query = "DELETE FROM `{$this->settings['databaseStaging']}`.instances WHERE id = :instanceId LIMIT 1;";
+			if (!$result = $this->databaseConnection->query ($query, array ('instanceId' => $instanceId))) {
 				$this->errors[] = "The deleting of the {$instanceId} staging.instance configuration failed. The database server said:\n" . print_r ($this->databaseConnection->error (), true);
 				$this->reportErrors ();
 				return false;
