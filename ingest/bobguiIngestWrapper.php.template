@@ -6,11 +6,11 @@
 $config['username'] = 'bobguiIngest';
 $config['password'] = 'your_password_goes_here';
 $config['administratorEmail'] = 'webmaster@example.com';
-$config['smsRecipient'] = '441234567890';
-$config['smsApiKey'] = false;
+$config['organisationName'] = false;
 $config['instanceDataUrl'] = 'https://username:password:www.controlpanel.vote.example.com/bestow.html';
 $config['liveServerUrl'] = 'https://www.vote.example.com';	// Not slash-terminated
-$config['organisationName'] = false;
+$config['smsRecipient'] = '441234567890';
+$config['smsApiKey'] = false;
 
 # Load and run the BOB GUI with the specified settings
 require_once ('./bobguiIngest.php');
