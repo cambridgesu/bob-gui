@@ -187,7 +187,7 @@ class bobguiIngest
 		}
 		
 		# Enable strict WHERE handling
-		$this->setStrictWhere ();
+		$this->databaseConnection->setStrictWhere ();
 		
 		# Assign a shortcut for the instances tables in use
 		$this->dataSourceStaging = $this->settings['databaseStaging'] . '.' . $this->settings['instancesTableName'];
