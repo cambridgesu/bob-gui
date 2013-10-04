@@ -754,7 +754,8 @@ class frontControllerApplication
 	function __construct ($settings = array ())	// $config is an array coming from a launching file such as index.php or index.html which instantiates the class
 	{
 		# Load external libraries
-		require_once ('./listing/database.php');
+		#!# Upgrade path loading to __DIR__ when PHP 5.3 on server
+		require_once (dirname (__FILE__) . '/database.php');
 		
 		# Clean server globals
 		pureContent::cleanServerGlobals ();

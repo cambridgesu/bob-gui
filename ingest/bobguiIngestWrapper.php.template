@@ -15,7 +15,7 @@ $config['smsRecipient'] = '441234567890';
 $config['smsApiKey'] = false;
 
 # Load and run the BOB GUI with the specified settings
-require_once ('./bobguiIngest.php');
+require_once (dirname (__FILE__) . '/bobguiIngest.php');
 new bobguiIngest ($config);
 
 ?>

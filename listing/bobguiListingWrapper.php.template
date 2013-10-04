@@ -11,7 +11,7 @@ $config['mailDomain'] = 'example.com';
 $config['controlPanelLinkEnabled'] = true;	// or false or comma-separated string of usernames
 
 # Load and run the BOB GUI with the specified settings
-require_once ('./listing/bobguiListing.php');
+require_once (dirname (__FILE__) . '/bobguiListing.php');
 new bobguiListing ($config);
 
 ?>
