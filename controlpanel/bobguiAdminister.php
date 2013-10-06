@@ -28,9 +28,12 @@ class bobguiAdminister extends frontControllerApplication
 {
 	# Config defaults (setting both structure and default values; NULL means that the instantiator must supply a value); see the above under 'INSTALLATION' for what these each mean
 	var $defaults = array (
+
+		# Application name
+		'applicationName' => 'Online voting system: control panel',
 		
-		# Title
-		'applicationName' => 'CUSU online voting system: control panel',
+		# Organisation name
+		'organisationName' => false,
 		
 		# Require authentication on all pages
 		// 'authentication' => true,
@@ -297,7 +300,7 @@ class bobguiAdminister extends frontControllerApplication
 	{
 		# Opening text
 		// $html  = "\n" . '<h2>Welcome</h2>';
-		$html  = "\n" . '<p>Welcome to the control panel side of the CUSU voting portal.</p>';
+		$html  = "\n" . '<p>Welcome to the control panel side of the ' . ($this->settings['organisationName'] ? htmlspecialchars ($this->settings['organisationName']) . ' ' : '') . 'voting portal.</p>';
 		$html .= "\n" . '<div class="graybox checklist">';
 		$html .= "\n" . '<h2><p><img src="/images/icons/exclamation.png" alt="*" class="icon" /> Checklist for creating a new ballot</h2>';
 		$html .= $this->checklist ();
@@ -394,7 +397,7 @@ class bobguiAdminister extends frontControllerApplication
 		<hr />
 		
 		<h3 id=\"overview\">Overview</h3>
-		<p>The CUSU Managed Online Voting System is a system which lets organisations around the University set up online votes in a secure manner.</p>
+		<p>The " . ($this->settings['organisationName'] ? htmlspecialchars ($this->settings['organisationName']) . ' ' : '') . "Managed Online Voting System is a system which lets organisations around the University set up online votes in a secure manner.</p>
 		<p>We encourage groups to use this managed system rather than set up their own votes using content management systems etc. Online voting is a non-trivial matter to set up and run securely, and there are many pitfalls. A large amount of work has been undertaken to bring you the current system, and the voting system has been subject to code audits as well as advice from experts. The voting system also enforces best democratic practices.</p>
 		<p>This system is run across two separate webservers:</p>
 		<ul>
@@ -419,7 +422,7 @@ class bobguiAdminister extends frontControllerApplication
 		<h3 id=\"split\">Paper voting ('split' voting)</h3>
 		<p>Sometimes, an organisation may wish to have an online vote followed by paper voting of those who have not voted.</p>
 		<p>The downside of having paper voting additional to online voting is that the system will not provide any automatic counting. It is the Returning Officer's responsibility to arrange this, possibly using a counting program such as <a target=\"_blank\" href=\"http://www.openstv.org/\">OpenSTV</a>. If this is a problem, one possibility is to have a laptop to be placed in college, replacing paper sheets entirely. Under such a setup, voting in college is effectively the same as voting from any other computer, just made conveniently available at lunchtime, etc.</p>
-		<p>If paper voting really is required, this can still be achieved via the online system. The person setting up the vote can specify a third date/time (in addition to the opening and closing of electronic voting). Once the online voting has closed, the Returning Officer can log into the administrative menu to print off the electoral roll but with the names of those who have voted crossed out. Once paper voting is completed, the Returning Officer can perform the manual count, using both the list of vote&lt;>tokens and the manual ballots. However, please note that CUSU is unable to assist with such counts.</p>
+		<p>If paper voting really is required, this can still be achieved via the online system. The person setting up the vote can specify a third date/time (in addition to the opening and closing of electronic voting). Once the online voting has closed, the Returning Officer can log into the administrative menu to print off the electoral roll but with the names of those who have voted crossed out. Once paper voting is completed, the Returning Officer can perform the manual count, using both the list of vote&lt;>tokens and the manual ballots. However, please note that we are unable to assist with such counts.</p>
 		<h3 id=\"architecture\">Security architecture</h3>
 		<p>This is described on the <a href=\"{$this->baseUrl}/security.html\">Security</a> page.</p>
 		
