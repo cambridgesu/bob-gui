@@ -79,8 +79,8 @@ class bobguiAdminister extends frontControllerApplication
 		'maximumVoters'	=> 25000,
 		
 		# Style for this GUI
-		'headerLocation'		=> '/style/prepended.html',
-		'footerLocation'		=> '/style/appended.html',
+		'headerLocation'		=> '/style/header.html',
+		'footerLocation'		=> '/style/footer.html',
 		
 		# Runtime credentials used by BOB and put in each stub filename
 		'bobDirectory' => 'BOB/',	// as an include_path
