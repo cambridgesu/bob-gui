@@ -71,7 +71,7 @@ class bobguiAdminister extends frontControllerApplication
 			'maximumOpeningExtendedGroups' => array ('cusu', 'elections', ),	// Use of this should be actively resisted, and reset each year
 			
 			# Month of the year when an academic year is split from
-			'startMonth' => 9,	// Actually October is more 'correct', but 9 is safer and will catch elections just before term-start; see also http://www.cam.ac.uk/univ/termdates.html
+			'startMonth' => 9,	// Actually October is more 'correct', but 9 is safer and will catch elections just before term-start; see also http://www.cam.ac.uk/about-the-university/term-dates-and-calendars
 			
 			# Number of days considered 'recent' when viewing listings
 			'recentDays' => 14,
@@ -475,13 +475,13 @@ class bobguiAdminister extends frontControllerApplication
 		$html  = "<h2>Security</h2>
 		<p>The system is written with security in mind, with multiple layers of security.</p>
 		<h3>Overview</h3>
-		<p>Each ballot is actually an 'instance' of <a target=\"_blank\" href=\"http://www.cl.cam.ac.uk/~dme26/proj/BOB/\">BOB</a>, which is an online voting system created by a member of the Computer Laboratory, and which has subsequently had various improvements made by CUSU's web developer over the years, working in conjunction with the original author. (Most recently, this has included integration of a counting facility.) The code for BOB is public and can be scrutinised by voters, or by anyone who downloads the public distribution of the code.</p>
+		<p>Each ballot is actually an 'instance' of <a target=\"_blank\" href=\"https://github.com/cusu/bob\">BOB</a>, which is an online voting system created by a member of the Computer Laboratory, and which has subsequently had various improvements made by CUSU's web developer over the years, working in conjunction with the original author. (Most recently, this has included integration of a counting facility.) The code for BOB is public and can be scrutinised by voters, or by anyone who downloads the public distribution of the code.</p>
 		<p>Each BOB instance is separate to each other.</p>
 		<p>The user interface which lists the instances, on the high-security voting server, is separate code to the BOB instances and has no ability to write files or make database changes.</p>
 		<p>The high-security voting server pulls across ballot instance data on a regular basis, over an encrypted connection. It can 'ingest' only ballots in the future and not any that are in play or about to open. Indeed, it is the voting side which has the responsibility for obtaining new ballot data, rather than the setup side 'pushing' it across. Partly because the logic code of the setup and voting sides are on different machines, any potential vulnerability in the setup side exploited by a user attempting to amend an existing ballot cannot affect running or closed ballots.</p>
 		<p>Ballots cannot be edited/deleted from two-hours before opening. It is because of this pulling across of data (by the voting machine from the setup side) that this two-hour lock-out time exists.</p>
 		<h3>Warnings about unavoidable BOB voting process risks</h3>
-		<p>The main <a href=\"http://www.cl.cam.ac.uk/~dme26/proj/BOB/\" target=\"_blank\">BOB software release page</a> discusses unavoidable BOB voting process risks.</p>
+		<p>The main <a href=\"https://github.com/cusu/bob\" target=\"_blank\">BOB software release page</a> discusses unavoidable BOB voting process risks.</p>
 		<p>It is for the organisation running the vote to weigh up these issues, i.e. whether these aspects of online voting outweigh different issues relating to paper voting.</p>
 		<h3>Full documentation</h3>
 		<ul>
