@@ -5,6 +5,8 @@ RewriteEngine on
 RewriteBase /
 # Main pages
 RewriteRule ^(open|forthcoming|closed|archive|controlpanel).html$ /index.php?action=$1 [L,QSA]
+# If the control panel directory is installed, exclude this from current rewriting
+RewriteRule ^controlpanel - [L,NC]
 # Public organisation pages
 RewriteRule ^([-a-z]+)/(|index.html)$ /index.php?action=organisation&item=$1 [L]
 RewriteRule ^([-a-z]+)$ /$1/ [R]
