@@ -54,8 +54,8 @@ class bobguiAdminister extends frontControllerApplication
 		# E-mail address of the technical administrator
 		'emailTech' => NULL,
 		
-		# Additional Returning Officer e-mail address which will be added to all ballots
-		'masterReturningOfficerEmail' => NULL,
+		# Returning Officer e-mail address to which voter receipts for all ballots will go
+		'emailReturningOfficerReceipts' => NULL,
 		
 		# Hours from now from which, and days ahead for which, a ballot can be created, and the minimum time it must be open
 		'ballotFixedHoursFromOpening' => 2,
@@ -864,7 +864,7 @@ class bobguiAdminister extends frontControllerApplication
 		$result['officialsUsernames'] = implode (' ', preg_split ("/[\s,]+/", $result['officialsUsernames']));
 		
 		# Add in the master Returning Officer e-mail
-		$result['emailReturningOfficer'] = $this->settings['masterReturningOfficerEmail'];
+		$result['emailReturningOfficer'] = $this->settings['emailReturningOfficerReceipts'];
 		
 		# Create a copy of the ballot data, randomising if necessary, which will be stored as the actual version used
 		$result['electionInfo'] = $this->processElectionInfoTextBlock ($result);
