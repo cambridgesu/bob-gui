@@ -5,7 +5,7 @@
 
 
 # Front Controller pattern application
-# Version 1.6.10
+# Version 1.6.11
 class frontControllerApplication
 {
  	# Define available actions; these should be extended by adding definitions in an overriden assignActions ()
@@ -182,6 +182,21 @@ class frontControllerApplication
 			require_once ($this->settings['form'] === 'dev' ? 'ultimateForm-dev.php' : 'ultimateForm.php');
 		}
 		
+		# Obtain the house style files (header and footer)
+		$houseStyleParts = array ('header', 'footer');
+		foreach ($houseStyleParts as $houseStylePart) {
+			${$houseStylePart} = false;     // i.e. create $header and $footer
+			if ($this->settings[$houseStylePart . 'Location']) {
+				$file = $_SERVER['DOCUMENT_ROOT'] . $this->settings[$houseStylePart . 'Location'];
+				if (is_readable ($file)) {
+					${$houseStylePart} = file_get_contents ($file);
+				}
+			}
+		}
+		
+		# Show header if required
+		echo $header;
+		
 		# Load jQuery if required
 		if ($this->settings['jQuery']) {
 			echo "\n\n\n<!-- jQuery -->\n" . '<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>' . "\n\n";
@@ -198,7 +213,9 @@ class frontControllerApplication
 		
 		# Ensure the version of PHP is supported
 		if (version_compare (PHP_VERSION, $this->settings['minimumPhpVersion'], '<')) {
-			return $this->application->throwError (3, "PHP version needs to be at least: {$this->settings['minimumPhpVersion']}");
+			$this->application->throwError (3, "PHP version needs to be at least: {$this->settings['minimumPhpVersion']}");
+			echo $footer;
+			return false;
 		}
 		
 		# Get the username if set - the security model hands trust up to Apache/Raven
@@ -212,6 +229,7 @@ class frontControllerApplication
 			$this->databaseConnection = new database ($this->settings['hostname'], $this->settings['username'], $this->settings['password'], $this->settings['database'], $this->settings['vendor'], $this->settings['logfile'], $this->user);
 			if (!$this->databaseConnection->connection) {
 				echo $this->databaseConnection->reportError ($this->settings['administratorEmail'], $this->settings['applicationName']);
+				echo $footer;
 				return false;
 			}
 			
@@ -256,6 +274,7 @@ class frontControllerApplication
 			if (method_exists ($this, 'databaseStructure')) {
 				if (!$this->databaseSetup ($html)) {
 					echo $html;
+					echo $footer;
 					return true;
 				}
 			}
@@ -278,10 +297,15 @@ class frontControllerApplication
 			$this->restrictedAdministrator = ((isSet ($this->administrators[$this->user]['privilege']) && ($this->administrators[$this->user]['privilege'] == 'Restricted administrator')) ? true : NULL);
 		}
 		
+		# Start a div if required to hold the application and define the ending div
+		if ($this->settings['div']) {echo "\n<div id=\"{$this->settings['div']}\">\n";}
+		$endDiv = ($this->settings['div'] ? "\n</div>" : '');
+		
 		# Additional processing, before actions processing phase, if required
 		if (method_exists ($this, 'mainPreActions')) {
 			if ($this->mainPreActions () === false) {
 				echo $endDiv;
+				echo $footer;
 				return false;
 			}
 		}
@@ -312,10 +336,6 @@ class frontControllerApplication
 		# Determine whether the action is an export type, i.e. has no house style or loaded outside the system
 		$this->exportType = ($disableAutoGui || (isSet ($this->actions[$this->action]['export']) && ($this->actions[$this->action]['export'])));
 		if ($this->exportType) {$this->settings['div'] = false;}
-		
-		# Start a div if required to hold the application and define the ending div
-		if ($this->settings['div']) {echo "\n<div id=\"{$this->settings['div']}\">\n";}
-		$endDiv = ($this->settings['div'] ? "\n</div>" : '');
 		
 		# Determine if this action has parent action, and if so, what it is
 		$this->parentAction = (isSet ($this->actions[$this->action]['parent']) ? $this->actions[$this->action]['parent'] : false);
@@ -373,6 +393,7 @@ class frontControllerApplication
 		# Redirect to the page requested if necessary
 		if (!$this->login ()) {
 			echo $endDiv;
+			echo $footer;
 			return false;
 		}
 		
@@ -410,6 +431,7 @@ class frontControllerApplication
 					echo "\n<p>(<a href=\"{$this->baseUrl}/help.html\">Information on Raven accounts</a> is available.)</p>";
 				}
 				echo $endDiv;
+				echo $footer;
 				return false;
 			}
 		}
@@ -419,11 +441,13 @@ class frontControllerApplication
 			if ($this->restrictedAdministrator) {
 				echo "\n<p><strong>You need to be logged on as a full, unrestricted administrator to access this section.</p>";
 				echo $endDiv;
+				echo $footer;
 				return false;
 			} else {
 				if (!$this->userIsAdministrator) {
 					echo "\n<p><strong>You need to be logged on as an administrator to access this section.</strong></p>";
 					echo $endDiv;
+					echo $footer;
 					return false;
 				}
 			}
@@ -434,6 +458,7 @@ class frontControllerApplication
 			if (!$this->userIsAdministrator && !$this->restrictedAdministrator) {
 				echo "\n<p><strong>You need to be logged on as an restricted administrator to access this section.</strong></p>";
 				echo $endDiv;
+				echo $footer;
 				return false;
 			}
 		}
@@ -448,6 +473,7 @@ class frontControllerApplication
 					echo "\n<p><strong>You need to log in before you can access this facility.</strong></p>";
 				}
 				echo $endDiv;
+				echo $footer;
 				return false;
 			}
 		}
@@ -473,6 +499,7 @@ class frontControllerApplication
 		if (method_exists ($this, 'main')) {
 			if ($this->main () === false) {
 				echo $endDiv;
+				echo $footer;
 				return false;
 			}
 		}
@@ -499,6 +526,7 @@ class frontControllerApplication
 		# End with a div if not an export type
 		if (!$this->exportType) {
 			echo $endDiv;
+			echo $footer;
 		}
 		
 		# Run the shutdown (actually post-action) function if one has been defined
@@ -530,6 +558,8 @@ class frontControllerApplication
 			'internalAuthPasswordRequiresLettersAndNumbers'	=> true,	// Whether the internal auth password requires both letters and numbers
 			'minimumPasswordLength'							=> 4,			// Minimum password length when using externalAuth
 			'h1'											=> false,		// NB an empty string will remove <h1>..</h1> altogether
+			'headerLocation'								=> false,		// GUI header, if local loading needed
+			'footerLocation'								=> false,		// GUI footer, if local loading needed
 			'headerLogo'									=> false,		// Image for a header instead of the application name
 			'useDatabase'									=> true,
 			'credentials'									=> false,	// Filename of credentials file, which results in hostname/username/password/database being ignored
