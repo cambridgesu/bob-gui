@@ -1,0 +1,66 @@
+body.elections ul.tabs {padding-bottom: 0;}
+body.elections ul.tabs li a {-moz-border-radius: 3px 3px 0 0; -webkit-border-radius: 3px 3px 0 0;}
+body.elections ul.tabs li a img {position: relative; top: -1px;}
+
+
+body.elections ul.tabs li {padding-bottom: 0;}
+body.elections .wrapper {width: 984px;}	/* Use wider fixed width for this section */
+body.elections #content {width: 792px;}	/* Use wider fixed width for this section */
+body.elections p.ballottitle {margin-bottom: 2px; font-weight: bold; color: #777;}
+body.elections p.ballotinfo {margin-top: 0;}
+body.elections ul.actions {margin-bottom: 1.2em;}
+body.elections ul.actions li {margin-bottom: 7px;}
+body.elections p.electoralroll, ul.actions li a, p.winner {background-repeat: no-repeat; background-position: 6px 5px; padding-left: 28px;}
+body.elections ul.actions li a {font-weight: bold;}
+body.elections p.electoralroll {background-image: url(/images/icons/script.png);}
+body.elections ul.actions li a {width: 22em;}
+body.elections ul.actions li.vote a {background-image: url(/images/icons/pencil.png);}
+body.elections ul.actions li.showvotes a {background-image: url(/images/icons/application_view_list.png);}
+body.elections ul.actions li a:hover {background-color: #e8c8c8;}
+body.elections ul.actions li a img {margin-right: 2px;}
+body.elections ul.actions li a.incomplete {border-style: dashed;}
+body.elections ul.actions li a.caution {margin-top: 1.8em;}
+body.elections ul.actions li a.caution:hover {background-color: red; color: white;}
+body.elections ul.actions.left {float: none;}
+body.elections table.selectlist {width: 95%;}
+body.elections table.selectlist img {border: 0;}
+body.elections table.selectlist td {padding-top: 1em; padding-bottom: 2em;}
+body.elections table.selectlist td.key {width: 200px; padding-right: 25px; text-align: right;}
+body.elections table.selectlist td.key a {border-bottom: 0;}
+body.elections table.selectlist td.key a:hover {background-color: transparent;}
+body.elections table.selectlist td.value h3 {margin-top: 0; padding-top: 0; margin-bottom: 0; padding-bottom: 0;}
+body.elections table.selectlist td h4 a {font-size: 1.3em; font-weight: bold;}
+body.elections table.selectlist td.value ul {list-style: none; margin-left: 0; padding-left: 1.5em; margin-top: 5px; padding-top: 0;}
+body.elections table.ballotsummary td.value {font-weight: bold;}
+body.elections .ultimateform table.nolines {width: 98%;}
+body.elections .ultimateform table.nolines td.key {width: 200px;}
+body.elections .ultimateform table.nolines table td {border: 0; padding: 0 5px; font-family: monospace; line-height: 1.2em;}
+body.elections img.right {margin-bottom: 10px;}
+body.elections hr.clear {clear: both; margin-top: 1em; border: 0; height: 1px;}
+body.elections #footerleft {width: 350px;}
+body.elections #footerright {color: #aaa;}
+body.elections #footerarea span {padding: 10px 40px;}
+body.elections form p.row {margin-top: 1.8em;}
+body.elections form div p.description, form div p.widget, form div p.hint {padding: 0; margin: 0; line-height: 1.2em;}
+body.elections form div p.description {margin-top: 1em;}
+body.elections form div p.widget {margin-top: 0.3em; color: #603;}
+body.elections form div#form_urlSlug p.widget span.noneditable {font-weight: bold;}
+body.elections form div#form_urlSlug p.widget input {margin-left: 4px; margin-right: 4px;}
+body.elections form div div p {line-height: 1.45em;}
+body.elections form div p.hint {margin-top: 0.3em; margin-bottom: 2em; font-size: 0.9em; font-style: italic; color: #666;}
+body.elections form ul.errors li {color: red; font-style: italic;}
+body.elections form p.submit input {font-size: 1.2em; font-weight: bold; min-width: 15em;}
+body.elections form h3 {margin-top: 2em; border-bottom: 1px solid #ccc;}
+body.elections span.formprepend, span.formappend {color: #603;}
+body.elections p.ballotStart_time, p.ballotEnd_time, p.ballotViewable_time {margin-bottom: 0;}
+body.elections form p.row.ballotStart_date, body.elections form p.row.ballotEnd_date, body.elections form p.row.ballotViewable_date {margin-top: 0; position: relative; top: -0.8em;}
+body.elections * html #pagemenu ul li.page_item a, #pagemenu ul li.cat-item a {padding: 5px 20px;} /* IE6 layout hack */
+body.elections p.winner {color: #603; font-weight: bold; background-image: url(/images/icons/bullet_go.png); background-position: 5px 1px;}
+body.elections table.lines td.transferexplanation {padding-bottom: 1.25em;}
+body.elections table.regulated td.key p {width: 150px;}
+body.elections a.button {padding: 5px; color: black;}
+body.elections a.button:hover {background-color: #f7f7f7;}
+body.elections table.vote {border: 1px; border-collapse: collapse; border-spacing: 0px;}
+body.elections table.vote td, table.vote th {border: 2px #ddd solid; padding: 3px;}
+body.elections div.checklist {float: right; width: 40%; margin-left: 15px;}
+body.elections div.checklist ol li {margin-bottom: 6px;}

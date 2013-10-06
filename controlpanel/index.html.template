@@ -1,0 +1,17 @@
+<?php
+
+# Stub launching file for the control panel side of the BOB GUI
+
+# Settings
+$config['username'] = 'bobgui';
+$config['password'] = 'your_password_goes_here';
+$config['administratorEmail'] = 'webmaster@example.com';
+$config['emailTech'] = 'evote@example.com';
+$config['masterReturningOfficerEmail'] = 'votereceipts@example.com';
+$config['liveServerUrl'] = 'https://www.vote.example.com';
+
+# Load and run the BOB GUI with the specified settings
+require_once ('./bobguiAdminister.php');
+new bobguiAdminister ($config);
+
+?>

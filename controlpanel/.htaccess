@@ -1,0 +1,75 @@
+#!# Currently this is an httpd.conf extract so will not work in an .htaccess context
+
+
+# Macro to create the directives for login/logout on a frontControllerApplication
+<Macro MacroFrontControllerApplication $baselocation $description>
+	RewriteEngine on
+	RewriteRule ^$baselocation(help|feedback|admin|administrators|history|settings|login|logininternal|logoutinternal|register|resetpassword|loginexternal|logoutexternal|loggedout|data).html$ $baselocationindex.html?action=$1 [L,QSA]
+	RewriteRule ^$baselocation(profile)/$ $baselocationindex.html?action=$1 [L]
+	RewriteRule ^$baselocation(profile)$ $baselocation$1/ [R]
+	<Location $baselocation>
+		AAAlwaysDecode On
+		php_value output_buffering 8192
+	</Location>
+	<Location $baselocationdata.html>
+		php_value auto_prepend_file none
+		php_value auto_append_file none
+	</Location>
+	<Location $baselocationlogin.html>
+		Deny from all
+		AuthType Ucam-WebAuth
+		AADescription "$description"
+		AAForceInteract On
+		Require valid-user
+		Satisfy any
+	</Location>
+	<Location $baselocationlogout.html>
+		SetHandler AALogout
+		AALogoutMsg $baselocationloggedout.html
+	</Location>
+	<Location $baselocationlogfile.txt>
+		Order deny,allow
+		Deny from all
+		Satisfy all
+	</Location>
+</Macro>
+
+
+Use MacroFrontControllerApplication "/elections/system/" "Managed voting system - control panel"
+<Location /elections/system/>
+	php_value memory_limit 600M
+</Location>
+# Ensure bestow endpoint is always accessed through the public URL
+RewriteEngine on
+RewriteCond %{QUERY_STRING} bestow
+RewriteRule ^/elections/system/index.html /elections/system/bestow.html? [L,R]
+# Begin friendly URLs
+RewriteRule ^/elections/system/(add|administer|about|understand|security|submit|feedback|bestow).html$ /elections/system/index.html?action=$1 [L,QSA]
+RewriteRule ^/elections/system/organisation.html$ /elections/system/index.html?action=selectorganisation [L]
+RewriteRule ^/elections/system/([-a-z]+)/add.html$ /elections/system/index.html?action=selectorganisation&item=$1 [L]
+RewriteRule ^/elections/system/([-a-z]+)/([0-9]{2}-[0-9]{2})/([a-z]+)/(|index.html)$ /elections/system/index.html?action=ballotmenu&item=$1&year=$2&ballotname=$3 [L]
+RewriteRule ^/elections/system/([-a-z]+)/([0-9]{2}-[0-9]{2})/([a-z]+)$ /elections/system/$1/$2/$3/ [R]
+RewriteRule ^/elections/system/([-a-z]+)/([0-9]{2}-[0-9]{2})/([a-z]+)/(edit|voters|view|delete|understand|mailfilter).html$ /elections/system/index.html?action=ballot$4&item=$1&year=$2&ballotname=$3 [L]
+# Top-level pages
+RewriteRule ^/elections/system/(about|security|submit|feedback|bestow).html$ /elections/system/index.html?action=$1 [L,QSA]
+<Location /elections/system/bestow.html>
+	php_value auto_prepend_file none
+	php_value auto_append_file none
+</Location>
+# Public organisation pages
+RewriteRule ^/elections/system/([-a-z]+)/(|index.html)$ /elections/system/index.html?action=organisation&item=$1 [L]
+RewriteRule ^/elections/system/([-a-z]+)$ /elections/system/$1/ [R]
+# Public organisation-by-year pages
+RewriteRule ^/elections/system/([-a-z]+)/([0-9]{2}-[0-9]{2})/(|index.html)$ /elections/system/index.html?action=organisationyear&item=$1&year=$2 [L]
+RewriteRule ^/elections/system/([-a-z]+)/([0-9]{2}-[0-9]{2})$ /elections/system/$1/$2/ [R]
+# 404 handler
+# ErrorDocument 404 /elections/system/index.html?action=page404
+# Protect bestow endpoint
+<Location /elections/system/bestow.html>
+	AuthUserFile /files/websites/common/passwd
+	AuthType basic
+	AuthName "CUSU protected content"
+	Require user bestow
+</Location>
+
+
