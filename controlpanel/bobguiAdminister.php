@@ -82,6 +82,9 @@ class bobguiAdminister extends frontControllerApplication
 		'headerLocation'		=> '/style/header.html',
 		'footerLocation'		=> '/style/footer.html',
 		
+		# CSS style div
+		'div' => 'controlpanel',
+		
 		# Runtime credentials used by BOB and put in each stub filename
 		'bobDirectory' => 'BOB/',	// as an include_path
 		
@@ -205,6 +208,90 @@ class bobguiAdminister extends frontControllerApplication
 	
 	
 	
+	# Additional default processing
+	public function main ()
+	{
+		# Add styles
+		echo "\n" . '<style type="text/css">';
+		echo $this->defaultStyles ();
+		echo "\n" . '</style>';
+		
+	}
+	
+	
+	# Define default styles
+	private function defaultStyles ()
+	{
+		# Return the styles
+		return '
+			#controlpanel ul.tabs {padding-bottom: 0;}
+			#controlpanel ul.tabs li a {-moz-border-radius: 3px 3px 0 0; -webkit-border-radius: 3px 3px 0 0;}
+			#controlpanel ul.tabs li a img {position: relative; top: -1px;}
+			#controlpanel ul.tabs li {padding-bottom: 0;}
+			#controlpanel .wrapper {width: 984px;}	/* Use wider fixed width for this section */
+			#controlpanel #content {width: 792px;} /* Use wider fixed width for this section */
+			#controlpanel p.ballottitle {margin-bottom: 2px; font-weight: bold; color: #777;}
+			#controlpanel p.ballotinfo {margin-top: 0;}
+			#controlpanel ul.actions {margin-bottom: 1.2em;}
+			#controlpanel ul.actions li {margin-bottom: 7px;}
+			#controlpanel p.electoralroll, ul.actions li a, p.winner {background-repeat: no-repeat; background-position: 6px 5px; padding-left: 28px;}
+			#controlpanel ul.actions li a {font-weight: bold;}
+			#controlpanel p.electoralroll {background-image: url(/images/icons/script.png);}
+			#controlpanel ul.actions li a {width: 22em;}
+			#controlpanel ul.actions li.vote a {background-image: url(/images/icons/pencil.png);}
+			#controlpanel ul.actions li.showvotes a {background-image: url(/images/icons/application_view_list.png);}
+			#controlpanel ul.actions li a:hover {background-color: #e8c8c8;}
+			#controlpanel ul.actions li a img {margin-right: 2px;}
+			#controlpanel ul.actions li a.incomplete {border-style: dashed;}
+			#controlpanel ul.actions li a.caution {margin-top: 1.8em;}
+			#controlpanel ul.actions li a.caution:hover {background-color: red; color: white;}
+			#controlpanel ul.actions.left {float: none;}
+			#controlpanel table.selectlist {width: 95%;}
+			#controlpanel table.selectlist img {border: 0;}
+			#controlpanel table.selectlist td {padding-top: 1em; padding-bottom: 2em;}
+			#controlpanel table.selectlist td.key {width: 200px; padding-right: 25px; text-align: right;}
+			#controlpanel table.selectlist td.key a {border-bottom: 0;}
+			#controlpanel table.selectlist td.key a:hover {background-color: transparent;}
+			#controlpanel table.selectlist td.value h3 {margin-top: 0; padding-top: 0; margin-bottom: 0; padding-bottom: 0;}
+			#controlpanel table.selectlist td h4 a {font-size: 1.3em; font-weight: bold;}
+			#controlpanel table.selectlist td.value ul {list-style: none; margin-left: 0; padding-left: 1.5em; margin-top: 5px; padding-top: 0;}
+			#controlpanel table.ballotsummary td.value {font-weight: bold;}
+			#controlpanel .ultimateform table.nolines {width: 98%;}
+			#controlpanel .ultimateform table.nolines td.key {width: 200px;}
+			#controlpanel .ultimateform table.nolines table td {border: 0; padding: 0 5px; font-family: monospace; line-height: 1.2em;}
+			#controlpanel img.right {margin-bottom: 10px;}
+			#controlpanel hr.clear {clear: both; margin-top: 1em; border: 0; height: 1px;}
+			#controlpanel #footerleft {width: 350px;}
+			#controlpanel #footerright {color: #aaa;}
+			#controlpanel #footerarea span {padding: 10px 40px;}
+			#controlpanel form p.row {margin-top: 1.8em;}
+			#controlpanel form div p.description, form div p.widget, form div p.hint {padding: 0; margin: 0; line-height: 1.2em;}
+			#controlpanel form div p.description {margin-top: 1em;}
+			#controlpanel form div p.widget {margin-top: 0.3em; color: #603;}
+			#controlpanel form div#form_urlSlug p.widget span.noneditable {font-weight: bold;}
+			#controlpanel form div#form_urlSlug p.widget input {margin-left: 4px; margin-right: 4px;}
+			#controlpanel form div div p {line-height: 1.45em;}
+			#controlpanel form div p.hint {margin-top: 0.3em; margin-bottom: 2em; font-size: 0.9em; font-style: italic; color: #666;}
+			#controlpanel form ul.errors li {color: red; font-style: italic;}
+			#controlpanel form p.submit input {font-size: 1.2em; font-weight: bold; min-width: 15em;}
+			#controlpanel form h3 {margin-top: 2em; border-bottom: 1px solid #ccc;}
+			#controlpanel span.formprepend, span.formappend {color: #603;}
+			#controlpanel p.ballotStart_time, p.ballotEnd_time, p.ballotViewable_time {margin-bottom: 0;}
+			#controlpanel form p.row.ballotStart_date, #controlpanel form p.row.ballotEnd_date, #controlpanel form p.row.ballotViewable_date {margin-top: 0; position: relative; top: -0.8em;}
+			#controlpanel * html #pagemenu ul li.page_item a, #pagemenu ul li.cat-item a {padding: 5px 20px;} /* IE6 layout hack */
+			#controlpanel p.winner {color: #603; font-weight: bold; background-image: url(/images/icons/bullet_go.png); background-position: 5px 1px;}
+			#controlpanel table.lines td.transferexplanation {padding-bottom: 1.25em;}
+			#controlpanel table.regulated td.key p {width: 150px;}
+			#controlpanel a.button {padding: 5px; color: black;}
+			#controlpanel a.button:hover {background-color: #f7f7f7;}
+			#controlpanel table.vote {border: 1px; border-collapse: collapse; border-spacing: 0px;}
+			#controlpanel table.vote td, table.vote th {border: 2px #ddd solid; padding: 3px;}
+			#controlpanel div.checklist {float: right; width: 40%; margin-left: 15px;}
+			#controlpanel div.checklist ol li {margin-bottom: 6px;}
+		';
+	}
+	
+
 	# Home page
 	function home ()
 	{
