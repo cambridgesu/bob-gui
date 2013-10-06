@@ -226,9 +226,11 @@ class bobguiAdminister extends frontControllerApplication
 	public function main ()
 	{
 		# Add styles
-		echo "\n" . '<style type="text/css">';
-		echo $this->defaultStyles ();
-		echo "\n" . '</style>';
+		if (!$this->exportType) {
+			echo "\n" . '<style type="text/css">';
+			echo $this->defaultStyles ();
+			echo "\n" . '</style>';
+		}
 		
 	}
 	
