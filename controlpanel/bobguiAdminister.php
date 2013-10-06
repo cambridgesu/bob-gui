@@ -18,7 +18,7 @@
 
 /*
  *	Database needs:
- *	GRANT SELECT , INSERT , UPDATE , DELETE , CREATE , DROP ON  `votes\_staging` . * TO  'bobgui'@'localhost';
+ *	GRANT SELECT , INSERT , UPDATE , DELETE , CREATE , DROP ON  `votescontrolpanel` . * TO  'bobgui'@'localhost';
  */
 
 
@@ -39,7 +39,7 @@ class bobguiAdminister extends frontControllerApplication
 		'liveServerUrl' => NULL,
 		
 		# Database credentials
-		'database' => 'votes_staging',
+		'database' => 'votescontrolpanel',
 		'table' => 'instances',
 		
 		# Log file (from baseUrl) for auditing (if any)
