@@ -35,37 +35,37 @@
 </Macro>
 
 
-Use MacroFrontControllerApplication "/elections/system/" "Managed voting system - control panel"
-<Location /elections/system/>
+Use MacroFrontControllerApplication "/controlpanel/" "Managed voting system - control panel"
+<Location /controlpanel/>
 	php_value memory_limit 600M
 </Location>
 # Ensure bestow endpoint is always accessed through the public URL
 RewriteEngine on
 RewriteCond %{QUERY_STRING} bestow
-RewriteRule ^/elections/system/index.html /elections/system/bestow.html? [L,R]
+RewriteRule ^/controlpanel/index.html /controlpanel/bestow.html? [L,R]
 # Begin friendly URLs
-RewriteRule ^/elections/system/(add|administer|about|understand|security|submit|feedback|bestow).html$ /elections/system/index.html?action=$1 [L,QSA]
-RewriteRule ^/elections/system/organisation.html$ /elections/system/index.html?action=selectorganisation [L]
-RewriteRule ^/elections/system/([-a-z]+)/add.html$ /elections/system/index.html?action=selectorganisation&item=$1 [L]
-RewriteRule ^/elections/system/([-a-z]+)/([0-9]{2}-[0-9]{2})/([a-z]+)/(|index.html)$ /elections/system/index.html?action=ballotmenu&item=$1&year=$2&ballotname=$3 [L]
-RewriteRule ^/elections/system/([-a-z]+)/([0-9]{2}-[0-9]{2})/([a-z]+)$ /elections/system/$1/$2/$3/ [R]
-RewriteRule ^/elections/system/([-a-z]+)/([0-9]{2}-[0-9]{2})/([a-z]+)/(edit|voters|view|delete|understand|mailfilter).html$ /elections/system/index.html?action=ballot$4&item=$1&year=$2&ballotname=$3 [L]
+RewriteRule ^/controlpanel/(add|administer|about|understand|security|submit|feedback|bestow).html$ /controlpanel/index.html?action=$1 [L,QSA]
+RewriteRule ^/controlpanel/organisation.html$ /controlpanel/index.html?action=selectorganisation [L]
+RewriteRule ^/controlpanel/([-a-z]+)/add.html$ /controlpanel/index.html?action=selectorganisation&item=$1 [L]
+RewriteRule ^/controlpanel/([-a-z]+)/([0-9]{2}-[0-9]{2})/([a-z]+)/(|index.html)$ /controlpanel/index.html?action=ballotmenu&item=$1&year=$2&ballotname=$3 [L]
+RewriteRule ^/controlpanel/([-a-z]+)/([0-9]{2}-[0-9]{2})/([a-z]+)$ /controlpanel/$1/$2/$3/ [R]
+RewriteRule ^/controlpanel/([-a-z]+)/([0-9]{2}-[0-9]{2})/([a-z]+)/(edit|voters|view|delete|understand|mailfilter).html$ /controlpanel/index.html?action=ballot$4&item=$1&year=$2&ballotname=$3 [L]
 # Top-level pages
-RewriteRule ^/elections/system/(about|security|submit|feedback|bestow).html$ /elections/system/index.html?action=$1 [L,QSA]
-<Location /elections/system/bestow.html>
+RewriteRule ^/controlpanel/(about|security|submit|feedback|bestow).html$ /controlpanel/index.html?action=$1 [L,QSA]
+<Location /controlpanel/bestow.html>
 	php_value auto_prepend_file none
 	php_value auto_append_file none
 </Location>
 # Public organisation pages
-RewriteRule ^/elections/system/([-a-z]+)/(|index.html)$ /elections/system/index.html?action=organisation&item=$1 [L]
-RewriteRule ^/elections/system/([-a-z]+)$ /elections/system/$1/ [R]
+RewriteRule ^/controlpanel/([-a-z]+)/(|index.html)$ /controlpanel/index.html?action=organisation&item=$1 [L]
+RewriteRule ^/controlpanel/([-a-z]+)$ /controlpanel/$1/ [R]
 # Public organisation-by-year pages
-RewriteRule ^/elections/system/([-a-z]+)/([0-9]{2}-[0-9]{2})/(|index.html)$ /elections/system/index.html?action=organisationyear&item=$1&year=$2 [L]
-RewriteRule ^/elections/system/([-a-z]+)/([0-9]{2}-[0-9]{2})$ /elections/system/$1/$2/ [R]
+RewriteRule ^/controlpanel/([-a-z]+)/([0-9]{2}-[0-9]{2})/(|index.html)$ /controlpanel/index.html?action=organisationyear&item=$1&year=$2 [L]
+RewriteRule ^/controlpanel/([-a-z]+)/([0-9]{2}-[0-9]{2})$ /controlpanel/$1/$2/ [R]
 # 404 handler
-# ErrorDocument 404 /elections/system/index.html?action=page404
+# ErrorDocument 404 /controlpanel/index.html?action=page404
 # Protect bestow endpoint
-<Location /elections/system/bestow.html>
+<Location /controlpanel/bestow.html>
 	AuthUserFile /files/websites/common/passwd
 	AuthType basic
 	AuthName "CUSU protected content"
