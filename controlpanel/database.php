@@ -2,7 +2,7 @@
 
 /*
  * Coding copyright Martin Lucas-Smith, University of Cambridge, 2003-13
- * Version 2.3.2
+ * Version 2.3.5
  * Uses prepared statements (see http://stackoverflow.com/questions/60174/best-way-to-stop-sql-injection-in-php ) where possible
  * Distributed under the terms of the GNU Public Licence - www.gnu.org/copyleft/gpl.html
  * Requires PHP 4.1+ with register_globals set to 'off'
@@ -56,8 +56,8 @@ class database
 		if ($unicode) {
 			$this->execute ("SET NAMES 'utf8'");
 			// # The following is a more portable version that could be used instead
-			//$charset = $this->getOne ("SHOW VARIABLES LIKE 'character_set_database';");
-			//$this->execute ("SET NAMES '" . $charset['Value'] . "';");
+			//$charset = $this->getVariable ('character_set_database');
+			//$this->execute ("SET NAMES '{$charset}';");
 		}
 	}
 	
@@ -391,6 +391,7 @@ class database
 		if (!in_array ($table, $tables)) {return false;}
 		
 		# Get the total
+		#!# 'WHERE' should be within this here, not part of the supplied parameter
 		$query = "SELECT COUNT(*) AS total FROM `{$database}`.`{$table}` {$restrictionSql};";
 		$data = $this->getOne ($query);
 		
@@ -821,27 +822,19 @@ class database
 		# Ensure the data is an array and that there is data
 		if (!is_array ($dataSet) || !$dataSet) {return false;}
 		
+		# Determine the number of fields in the data by checking against the first item in the dataset
+		if (!$fields = application::arrayFieldsConsistent ($dataSet)) {return false;}
+		
+		# Assemble the field names
+		$fields = '`' . implode ('`,`', $fields) . '`';
+		
 		# Loop through each set of data
 		$valuesPreparedSet = array ();
-		$dataPrepared = array ();
+		$preparedStatementValues = array ();
 		foreach ($dataSet as $index => $data) {
 			
 			# Ensure the data is an array and that there is data
 			if (!is_array ($data) || !$data) {return false;}
-			
-			# Get the field names
-			$fields = array_keys ($data);
-			
-			# Cache the previous field names and check for consistency, returning false if a different set of field names is found
-			if (isSet ($cachedFieldList)) {
-				if ($fields !== $cachedFieldList) {	// Enforce field list (including order) consistency across every record
-					return false;
-				}
-			}
-			$cachedFieldList = $fields;
-			
-			# Assemble the field names
-			$fields = '`' . implode ('`,`', $fields) . '`';
 			
 			# Assemble the values
 			$preparedValuePlaceholders = array ();
@@ -854,22 +847,22 @@ class database
 				}
 				$placeholder = ":{$index}_{$key}";
 				$preparedValuePlaceholders[] = ' ' . $placeholder;
-				$dataPrepared[$placeholder] = $data[$key];
+				$preparedStatementValues[$placeholder] = $data[$key];
 			}
 			$valuesPreparedSet[$index] = implode (',', $preparedValuePlaceholders);
 		}
 		
 		# Handle ON DUPLICATE KEY UPDATE support
-		$firstData = array_shift (array_values ($dataSet));
+		$dataSetValues = array_values ($dataSet);	// This temp has to be used to avoid "Strict Standards: Only variables should be passed by reference"
+		$firstData = array_shift ($dataSetValues);
 		$onDuplicateKeyUpdate = $this->onDuplicateKeyUpdate ($onDuplicateKeyUpdate, $firstData);
 		
 		# Assemble the query
 		$query = "INSERT INTO `{$database}`.`{$table}` ({$fields}) VALUES (" . implode ('),(', $valuesPreparedSet) . "){$onDuplicateKeyUpdate};\n";
 		
 		# Prevent submission of over-long queries
-		$maxLength = $this->getOne ("SHOW VARIABLES LIKE 'max_allowed_packet'");
-		if (isSet ($maxLength['Value'])) {
-			if (strlen ($query) > (int) $maxLength['Value']) {
+		if ($maxLength = $this->getVariable ('max_allowed_packet')) {
+			if (strlen ($query) > (int) $maxLength) {
 				return false;
 			}
 		}
@@ -881,7 +874,7 @@ class database
 		}
 		
 		# Execute the query
-		$rows = $this->execute ($query, $dataPrepared, $showErrors);
+		$rows = $this->execute ($query, $preparedStatementValues, $showErrors);
 		
 		# Determine the result
 		$result = ($rows !== false);
@@ -965,7 +958,89 @@ class database
 	}
 	
 	
-	#!# An update many would be useful sometimes
+	# Function to update many rows at once; see this good overview: http://www.karlrixon.co.uk/writing/update-multiple-rows-with-different-values-and-a-single-sql-query/
+	public function updateMany ($database, $table, $dataSet, $emptyToNull = true, $safe = false, $showErrors = false)
+	{
+		# Ensure the data is an array and that there is data
+		if (!is_array ($dataSet) || !$dataSet) {return false;}
+		
+		# Determine the number of fields in the data by checking against the first item in the dataset
+		if (!$fields = application::arrayFieldsConsistent ($dataSet)) {return false;}
+		
+		# Get the key field
+		$uniqueField = $this->getUniqueField ($database, $table);
+		
+		# Build the inner "SET %fieldname = CASE id WHEN foo THEN bar WHEN ..." statements, field by field
+		$querySetCaseBlocks = array ();
+		$preparedStatementValues = array ();
+		$keyPlaceholders = array ();
+		foreach ($fields as $index => $field) {
+			$querySetCaseBlocks[$field]  = "`{$field}` = CASE id";
+			$keyPlaceholderId = 0;	// These can be reused
+			foreach ($dataSet as $key => $data) {
+				$value = $data[$field];
+				
+				# Create a placeholder for the key
+				$keyPlaceholder = "k{$keyPlaceholderId}";	// Uses numeric values to be sure it is valid
+				$preparedStatementValues[$keyPlaceholder] = $key;
+				
+				# Register this data key in the keys list; this is done only once, rather than pointlessly for each field
+				if ($index == 0) {
+					$keyPlaceholders[$key] = ':' . $keyPlaceholder;
+				}
+				
+				# Create a placeholder (or, for special keywords, a string)
+				$valuePlaceholder = "v{$index}_{$keyPlaceholderId}";	// Uses numeric values to be sure it is valid
+				if ($emptyToNull && ($value === '')) {	// Convert empty to NULL if required
+					$value = 'NULL';	// i.e. an (unquoted) 'real' SQL NULL
+					$valuePlaceholder = false;
+				}
+				if ($value == 'NOW()') {	// Special handling for keywords, which are not quoted
+					$valuePlaceholder = false;
+				}
+				if ($valuePlaceholder) {
+					$preparedStatementValues[$valuePlaceholder] = $value;
+				}
+				
+				# Add the component
+				$querySetCaseBlocks[$field] .= "\n\t\tWHEN :k{$keyPlaceholderId} THEN " . ($valuePlaceholder ? ":{$valuePlaceholder}" : $value);
+				
+				# Advance counters
+				$keyPlaceholderId++;
+			}
+			$querySetCaseBlocks[$field] .= "\n\tEND";
+		}
+		
+		# Assemble the overall query
+		$query  = "UPDATE `{$table}`";
+		$query .= "\n\tSET " . implode (",\n\t", $querySetCaseBlocks);
+		$query .= "\nWHERE `{$uniqueField}` IN (" . implode (', ', $keyPlaceholders) . ')';
+		
+		# Prevent submission of over-long queries
+		if ($maxLength = $this->getVariable ('max_allowed_packet')) {
+			if (strlen ($query) > (int) $maxLength) {
+				return false;
+			}
+		}
+		
+		# In safe mode, only show the query
+		if ($safe) {
+			echo '<pre>' . $query . "</pre><br />";
+			return true;
+		}
+		
+		# Execute the query
+		$rows = $this->execute ($query, $preparedStatementValues, $showErrors);
+		
+		# Determine the result
+		$result = ($rows !== false);
+		
+		# Log the change
+		$this->logChange ($result);
+		
+		# Return the result
+		return $result;
+	}
 	
 	
 	# Function to delete data
@@ -1311,6 +1386,9 @@ class database
 					case (in_array ($matches[1] . 's', $tables)):	// Simple pluraliser, e.g. for a field 'caseId' look for a table 'cases'; if not present, it will assume 'case'
 						$table = $matches[1] . 's';
 						break;
+					case (in_array (preg_replace ('/y$/', 'ies', $matches[1]), $tables)):	// Pluraliser for ~y => ~ies, e.g. countryId => countries
+						$table =    preg_replace ('/y$/', 'ies', $matches[1]);
+						break;
 					default:
 						$table = $matches[1];
 						break;
@@ -1524,10 +1602,59 @@ class database
 	}
 	
 	
+	# Function to get a variable
+	public function getVariable ($variable)
+	{
+		# Get the data and return the value
+		$data = $this->getOne ("SHOW VARIABLES LIKE '{$variable}';");
+		
+		# End if none
+		if (!isSet ($data['Value'])) {return false;}
+		
+		# Return the value
+		return $data['Value'];
+	}
+	
+	
 	# Function to do sort trimming of a field name, to be put in an ORDER BY clause
 	public function trimSql ($fieldname)
 	{
-		return "TRIM( LEADING '{' FROM TRIM( LEADING '}' FROM TRIM( LEADING '(' FROM TRIM( LEADING '[' FROM TRIM( LEADING '\"' FROM TRIM( LEADING \"'\" FROM TRIM( LEADING '@' FROM TRIM( LEADING 'a ' FROM TRIM( LEADING 'an ' FROM TRIM( LEADING 'the ' FROM LOWER( `{$fieldname}` ) ) ) ) ) ) ) ) ) ) )";
+		# Assemble the fieldname quoted
+		$fieldname = '`' . str_replace ('.', '`.`', $fieldname) . '`';
+		
+		# Assemble the SQL
+		$sql = "TRIM( LEADING '{' FROM TRIM( LEADING '}' FROM TRIM( LEADING '(' FROM TRIM( LEADING '[' FROM TRIM( LEADING '\"' FROM TRIM( LEADING \"'\" FROM TRIM( LEADING '@' FROM TRIM( LEADING 'a ' FROM TRIM( LEADING 'an ' FROM TRIM( LEADING 'the ' FROM LOWER( {$fieldname} ) ) ) ) ) ) ) ) ) ) )";
+		
+		# Return the SQL
+		return $sql;
+	}
+	
+	
+	# Function to split any records in a set into multiple records where a SET field has multiple entries; note this will destroy all keys
+	public function splitSetToMultipleRecords ($records, $field, $namespace = '_')
+	{
+		# Work through each record
+		foreach ($records as $id => $record) {
+			
+			# Skip as unmodified if empty string
+			if (!strlen ($record[$field])) {continue;}
+			
+			# Get the values; this is applied consistently even when no commas
+			$values = explode (',', $record[$field]);
+			
+			# Add the values as new records with a namespaced ID
+			foreach ($values as $value) {
+				$createdId = $id . $namespace . $value;
+				$records[$createdId] = $record;
+				$records[$createdId][$field] = $value;
+			}
+			
+			# Remove the original record
+			unset ($records[$id]);
+		}
+		
+		# Return the records
+		return $records;
 	}
 	
 	

@@ -2,7 +2,7 @@
 
 /*
  * Coding copyright Martin Lucas-Smith, University of Cambridge, 2003-13
- * Version 1.7.0
+ * Version 1.7.1
  * Distributed under the terms of the GNU Public Licence - www.gnu.org/copyleft/gpl.html
  * Requires PHP 4.1+ with register_globals set to 'off'
  * Download latest from: http://download.geog.cam.ac.uk/projects/purecontent/
@@ -347,7 +347,7 @@ class pureContent {
 	
 	
 	# Function to combine a set of files having a submenu into a single page
-	public static function autocombine ($menufile = './menu.html', $div = 'autocombined')
+	public static function autocombine ($menufile = './menu.html', $div = 'autocombined', $removeHeadings = true)
 	{
 		# Get the links
 		$menu = file_get_contents ($menufile);
@@ -361,24 +361,34 @@ class pureContent {
 			if ($file == './') {$file = 'index.html';}
 			$contents = file_get_contents ($file);
 			
-			# Cache the main title (using the first file)
-			if (!isSet ($mainTitle)) {
-				$title = preg_match ('|<h1([^>]*)>([^<]+)</h1>|', $contents, $headingMatches);
-				$mainTitle = $headingMatches[2];
+			# Deal with headings
+			if ($removeHeadings) {
+				
+				# Cache the main title (using the first file)
+				if (!isSet ($mainTitle)) {
+					$title = preg_match ('|<h1([^>]*)>([^<]+)</h1>|', $contents, $headingMatches);
+					$mainTitle = $headingMatches[2];
+				}
+				
+				# Remove the heading if required
+				if ($removeHeadings) {
+					$contents = preg_replace ('|<h1([^>]*)>([^<]+)</h1>|', '', $contents);
+				}
 			}
-			
-			# Remove the heading
-			$contents = preg_replace ('|<h1([^>]*)>([^<]+)</h1>|', '', $contents);
 			
 			# Append the HTML
 			$html .= $contents;
 		}
 		
 		# Add the cached title
-		$html = "<h1>{$mainTitle}</h1>" . $html;
+		if ($removeHeadings) {
+			$html = "<h1>{$mainTitle}</h1>" . $html;
+		}
 		
-		# Surround with a div
-		$html = "<div class=\"{$div}\">{$html}</div>";
+		# Surround with a div if required
+		if ($div) {
+			$html = "<div class=\"{$div}\">{$html}</div>";
+		}
 		
 		# Show the HTML
 		return $html;
@@ -478,13 +488,18 @@ class pureContent {
 	{
 		# Loop through the list of pages numerically to find a match
 		$totalPages = count ($pages);
+		$foundPage = false;
 		for ($page = 0; $page < $totalPages; $page++) {
 			
 			# If there's a match with the current page, break out of the loop and assign the previous/next links
 			if ($pages[$page] == $_SERVER['REQUEST_URI']) {
+				$foundPage = true;	// And $page will now represent the page number
 				break;
 			}
 		}
+		
+		# End if no found page
+		if (!$foundPage) {return false;}
 		
 		# Construct the HTML
 		$html  = "\n" . '<ul class="thread">';

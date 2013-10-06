@@ -1,7 +1,7 @@
 <?php
 
 # Class to create various image manipulation -related static methods
-# Version 1.3.1
+# Version 1.3.2
 
 # Licence: GPL
 # (c) Martin Lucas-Smith, University of Cambridge
@@ -497,10 +497,10 @@ class image
 			}
 			
 			# Get the image size
-			list ($width, $height, $type, $attributes) = getimagesize ($_SERVER['DOCUMENT_ROOT'] . $_SERVER['PHP_SELF'] . $name);
+			list ($width, $height, $type, $htmlAttributes) = getimagesize ($_SERVER['DOCUMENT_ROOT'] . $_SERVER['PHP_SELF'] . $name);
 			
 			# Show the image
-			$html .= "\n\n<img src=\"$name\" $attributes alt=\"Page {$attributes['name']}\" />";
+			$html .= "\n\n<img src=\"{$name}\" {$htmlAttributes} title=\"Page {$attributes['name']}\" />";
 			
 			# Add in the HTML link list again
 			$html .= $jumplist;

@@ -5,7 +5,7 @@
 
 
 # Front Controller pattern application
-# Version 1.6.4
+# Version 1.6.10
 class frontControllerApplication
 {
  	# Define available actions; these should be extended by adding definitions in an overriden assignActions ()
@@ -128,6 +128,9 @@ class frontControllerApplication
 	# Internal auth
 	var $internalAuthClass = NULL;
 	
+	# Tab forcing
+	var $tabForced = false;
+	
 	
 	# Constructor
 	function __construct ($settings = array (), $disableAutoGui = false)
@@ -217,14 +220,6 @@ class frontControllerApplication
 			
 			# Assign a shortcut for the database table in use
 			$this->dataSource = $this->settings['database'] . '.' . $this->settings['table'];
-			
-			/* #!# Write a database setup routine
-			# Ensure the database is set up
-			if (!$this->databaseSetupOk ()) {
-				$this->throwError ('', 'There was a problem setting up the database.');
-				return false;
-			}
-			*/
 		}
 		
 		# Assign a shortcut for printing the home URL as http://servername... or www.servername...
@@ -256,6 +251,16 @@ class frontControllerApplication
 			echo $this->internalAuthClass->getHtml ();	// Basically will only appear if the user gets logged out for security reasons
 		}
 		
+		# Setup the database if required
+		if ($this->settings['useDatabase']) {
+			if (method_exists ($this, 'databaseStructure')) {
+				if (!$this->databaseSetup ($html)) {
+					echo $html;
+					return true;
+				}
+			}
+		}
+		
 		# Get the administrators and determine if the user is an administrator
 		#!# Should disable system or force entry if no administrators
 		$this->administrators = $this->getAdministrators ();
@@ -273,7 +278,7 @@ class frontControllerApplication
 			$this->restrictedAdministrator = ((isSet ($this->administrators[$this->user]['privilege']) && ($this->administrators[$this->user]['privilege'] == 'Restricted administrator')) ? true : NULL);
 		}
 		
-		# Additional processing, before actions, if required
+		# Additional processing, before actions processing phase, if required
 		if (method_exists ($this, 'mainPreActions')) {
 			if ($this->mainPreActions () === false) {
 				echo $endDiv;
@@ -355,7 +360,13 @@ class frontControllerApplication
 		$headerHtml  = "\n" . ($this->settings['h1'] === '' ? '' : ($this->settings['h1'] ? $this->settings['h1'] : '<h1>' . ($headerLogo ? $headerLogo : ucfirst (htmlspecialchars ($this->settings['applicationName']))) . '</h1>'));
 		
 		# Show the tabs, any subtabs, and the action name
-		$headerHtml .= $this->showTabs ($this->action, $this->settings['tabUlClass']);
+		$selectedTab = ($this->tabForced ? $this->tabForced : $this->action);
+		$headerHtml .= $this->showTabs ($selectedTab, $this->settings['tabUlClass']);
+		if (method_exists ($this, 'guiSearchBox')) {
+			$headerHtml .= "\n<div id=\"cornersearch\">";
+			$headerHtml .= $this->guiSearchBox ();
+			$headerHtml .= "\n</div>";
+		}
 		$headerHtml .= $this->showSubTabs ($this->action);
 		if (array_key_exists ('description', $this->actions[$this->action]) && $this->actions[$this->action]['description'] && !substr_count ($this->actions[$this->action]['description'], '%') && (!isSet ($this->actions[$this->action]['heading']) || $this->actions[$this->action]['heading'])) {$headerHtml .= "\n<h2>{$this->actions[$this->action]['description']}</h2>";}
 		
@@ -660,7 +671,7 @@ class frontControllerApplication
 	}
 	
 	
-	# Skeleton function to get local actions
+	# Skeleton function to define locally-defined actions; normally overridden
 	function actions ()
 	{
 		return $this->actions;
@@ -704,6 +715,14 @@ class frontControllerApplication
 				}
 			}
 			
+			# Disable (remove) an action if required; this is basically a convenience flag to avoid having to do unset() after an array definition
+			if (isSet ($attributes['enableIf'])) {
+				if (!$attributes['enableIf']) {
+					unset ($this->actions[$action]);
+					continue;
+				}
+			}
+			
 			# Skip if there is no tab attribute
 			if (!isSet ($attributes['tab'])) {continue;}
 			
@@ -732,7 +751,7 @@ class frontControllerApplication
 		}
 		
 		# Compile the HTML
-		$html = "\n" . "<ul class=\"{$class}\">" . "\n" . implode ("\n\t", $tabs) . "\n</ul>";
+		$html = "\n\n" . "<ul class=\"{$class}\">" . "\n\t" . implode ("\n\t", $tabs) . "\n</ul>\n";
 		
 		# Add on a surrounding div if required
 		if ($this->settings['tabDivId']) {
@@ -741,6 +760,73 @@ class frontControllerApplication
 		
 		# Return the HTML
 		return $html;
+	}
+	
+	
+	# Function to set up the database
+	private function databaseSetup (&$html)
+	{
+		# Get the tables, or end if already present
+		if ($tables = $this->databaseConnection->getTables ($this->settings['database'])) {return true;}
+		
+		# End if on the login page
+//		if ($this->action == 'login') {return true;}
+		
+		# If using internalAuth, this has to be temporarily switched to HTTP auth, to avoid the chicken-and-egg situation of not having an account to set up the tables, but there not being a user table
+//		if ($this->settings['internalAuth']) {$this->settings['internalAuth'] = false;}
+		
+		# Start the HTML
+		$html  = "\n<h2>Set up database</h2>";
+		
+		# Ensure the user is logged in
+
+//		$location = htmlspecialchars ($_SERVER['REQUEST_URI']);	// Note that this will not maintain any #anchor, because the server doesn't see any hash: http://stackoverflow.com/questions/940905
+//		$loginTextLink = "You are not currently logged in</a>";
+		$html .= "\n<p>The database is not yet set up. The site administrator needs to " . /* ($this->user ? */ "enter the database system password below." /* : "<a href=\"{$this->baseUrl}/login.html?{$location}\">log in</a> first.") */ . '</p>';
+//		if (!$this->user) {return false;}
+		
+		# Request the root database credentials
+		$form = new form (array (
+			'formCompleteText' => false,
+			'autofocus' => true,
+		));
+		$form->password (array (
+			'name'			=> 'password',
+			'title'			=> 'Database root password',
+			'required'		=> true,
+		));
+		if ($unfinalisedData = $form->getUnfinalisedData ()) {
+			if ($unfinalisedData['password']) {
+				$rootDatabaseConnection = new database ($this->settings['hostname'], 'root', $unfinalisedData['password'], $this->settings['database'], $this->settings['vendor'], $this->settings['logfile'], $this->user);
+				if (!$rootDatabaseConnection->connection) {
+					$form->registerProblem ('wrong', "Could not connect using that password for " . htmlspecialchars ($this->settings['hostname']), 'password');
+				}
+			}
+		}
+		if (!$result = $form->process ($html)) {return false;}
+		
+		# Get the database structure
+		$sql = $this->databaseStructure ();
+		
+		# Attach internalAuth structure if required
+		if ($this->settings['internalAuth']) {
+			$sql .= $this->internalAuthClass->databaseStructure ();
+		}
+		
+		# Execute the SQL
+		$result = $rootDatabaseConnection->query ($sql);
+		
+		# Show failure error message if something went wrong
+		if (!$result) {
+			$html  = "\n<p>The process did not complete. You may need to set this up manually. The database error was:</p>";
+			$databaseError = $rootDatabaseConnection->error ();
+			$html .= "\n<p><pre>" . wordwrap (htmlspecialchars ($databaseError[2])) . '</pre></p>';
+			return false;
+		}
+		
+		# Redirect
+		$redirectTo = $_SERVER['_SITE_URL'] . $this->baseUrl . ($this->settings['internalAuth'] ? '/register.html' : '/');	// Sadly, these have to be hard-coded as the action loading phase hasn't yet happened
+		application::sendHeader (302, $redirectTo);
 	}
 	
 	
@@ -1482,32 +1568,42 @@ class frontControllerApplication
 	}
 	
 	
-	# Function to show administrators
-	function administrators ($null = NULL, $boxClass = 'graybox', $showFields = array ('active' => 'Active?', 'email' => 'E-mail', 'privilege' => 'privilege', 'name' => 'name', 'forename' => 'forename', 'surname' => 'surname', ))
+	# Function to determine the administrator username field
+	private function administratorUsernameField ()
 	{
 		# Determine the name of the username field
 		#!# Use of $this->settings['administrators'] as table name here needs auditing
 		$fields = $this->databaseConnection->getFieldnames ($this->settings['database'], $this->settings['administrators']);
 		$possibleUsernameFields = array ('username', 'crsid', "username__JOIN__{$this->settings['peopleDatabase']}__people__reserved");
-		$usernameField = $possibleUsernameFields[0];
 		foreach ($possibleUsernameFields as $field) {
 			if (in_array ($field, $fields)) {
-				$usernameField = $field;
-				break;
+				return $field;
 			}
 		}
 		
+		# Return the default if not found
+		#!# This is not useful, since it should already have been found
+		return $possibleUsernameFields[0];
+	}
+	
+	
+	# Function to show administrators
+	function administrators ($null = NULL, $boxClass = 'graybox', $showFields = array ('active' => 'Active?', 'email' => 'E-mail', 'privilege' => 'privilege', 'name' => 'name', 'forename' => 'forename', 'surname' => 'surname', ))
+	{
 		# Start the HTML
 		$html  = '';
 		
+		# Get the username field
+		$administratorUsernameField = $this->administratorUsernameField ();
+		
 		# Add an administrator form
-		$html .= $this->administratorsAdd ($boxClass, $usernameField);
+		$html .= $this->administratorsAdd ($boxClass, $administratorUsernameField);
 		
 		# Delete an administrator form
-		$html .= $this->administratorsDelete ($boxClass, $usernameField);
+		$html .= $this->administratorsDelete ($boxClass, $administratorUsernameField);
 		
 		# Show current administrators
-		$html .= $this->administratorsShow ($boxClass, $usernameField, $showFields);
+		$html .= $this->administratorsShow ($boxClass, $administratorUsernameField, $showFields);
 		
 		# Show the HTML
 		echo $html;
@@ -1543,7 +1639,7 @@ class frontControllerApplication
 				'table' => $this->settings['administrators'],
 				'includeOnly' => array ($usernameField, 'forename', 'surname', 'name', 'email', 'privilege'),
 				'attributes' => array (
-					$usernameField => array ('current' => array_keys ($this->administrators)),
+					$usernameField => array ('current' => array_keys ($this->administrators), 'autocomplete' => ($this->settings['useCamUniLookup'] ? camUniData::autocompleteNamesUrlSource () : false), ),
 					'email' => array ('type' => 'email', ),
 			)));
 			
@@ -1773,6 +1869,9 @@ class frontControllerApplication
 		# Start the HTML
 		$html  = '';
 		
+		# Get the username field
+		$administratorUsernameField = $this->administratorUsernameField ();
+		
 		# Define the settings
 		$settings = array (
 			'database' => $this->settings['database'],
@@ -1789,7 +1888,8 @@ class frontControllerApplication
 			'pagination' => $this->settings['editingPagination'],
 			'showMetadata' => false,
 			'hideTableIntroduction' => true,
-			'fieldFiltering' => "{$this->settings['database']}.administrators.username__JOIN__people__people__reserved.{$this->user}.state",
+			#!# Inconsistent
+			'fieldFiltering' => "{$this->settings['database']}.{$this->settings['administrators']}.{$administratorUsernameField}.{$this->user}.state",
 			'deny' => $deny,
 			'denyAdministratorOverride' => false,
 			'tableCommentsInSelectionList' => true,
@@ -1824,6 +1924,9 @@ class frontControllerApplication
 		# Start the HTML
 		$html  = '';
 		
+		# Get the username field
+		$administratorUsernameField = $this->administratorUsernameField ();
+		
 		# Define the sinenomine settings, with any additional settings taking priority
 		$settings = array (
 			'database' => $this->settings['database'],
@@ -1836,7 +1939,7 @@ class frontControllerApplication
 			'pagination' => $this->settings['editingPagination'],
 			'showMetadata' => false,
 			'hideTableIntroduction' => true,
-			'fieldFiltering' => "{$this->settings['database']}.administrators.username__JOIN__people__people__reserved.{$this->user}.editingState" . ucfirst ($table),
+			'fieldFiltering' => "{$this->settings['database']}.{$this->settings['administrators']}.{$administratorUsernameField}.{$this->user}.editingState" . ucfirst ($table),
 			'formDiv' => $formDiv,
 		);
 		
