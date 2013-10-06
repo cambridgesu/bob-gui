@@ -102,6 +102,9 @@ class bobguiAdminister extends frontControllerApplication
 				'Candidate order has been automatically alphabetised' => 'Alphabetise: Candidate order should be automatically alphabetised',
 				'Candidates have been entered by the Returning Officer in the order shown' => 'Leave: The candidate order should remain in the order entered / Referendum only',
 			),
+			
+			# API key for bestow endpoint
+			'apiKey' => NULL,
 		);
 		
 		#!# Workaround to deal with lack of proper frontControllerApplication support for header/footer with exporting enabled, which is not yet easy to patch in
@@ -2429,8 +2432,9 @@ class bobguiAdminister extends frontControllerApplication
 			if ($_SERVER['_SERVER_PROTOCOL_TYPE'] != 'https') {return false;}
 		}
 		
-		# Check that there is a REMOTE_USER
-		if (!$_SERVER['REMOTE_USER']) {return false;}
+		# Check the API key is supplied and valid
+		if (!isSet ($_GET['key'])) {return false;}
+		if ($_GET['key'] != $this->settings['apiKey']) {return false;}
 		
 		# Start an array to hold the data to be transmitted
 		$data = array ();
