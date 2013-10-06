@@ -77,7 +77,7 @@ class bobguiAdminister extends frontControllerApplication
 			'recentDays' => 14,
 			
 			# Mail domain of users, beginning with @, and username regexp
-			'mailDomain' => 'cam.ac.uk',
+			'mailDomain' => NULL,
 			'usernameRegexp' => '^[a-z][a-z0-9]{1,7}$',	// As defined in Message-ID: <cEj*NC0dr@news.chiark.greenend.org.uk> to ucam.comp.misc on 060412
 			
 			# Maximum number of voters
