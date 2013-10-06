@@ -104,6 +104,13 @@ class bobguiAdminister extends frontControllerApplication
 			),
 		);
 		
+		#!# Workaround to deal with lack of proper frontControllerApplication support for header/footer with exporting enabled, which is not yet easy to patch in
+		if (isSet ($_GET['action']) && ($_GET['action'] == 'bestow')) {
+			$defaults['headerLocation'] = false;
+			$defaults['footerLocation'] = false;
+			$defaults['div'] = false;
+		}
+		
 		return $defaults;
 	}
 	
