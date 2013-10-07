@@ -1,0 +1,115 @@
+<?php
+
+/*
+	This class implements a unified directory access service.
+	Calling classes can use this class to obtain details about organisations.
+*/
+
+
+
+# Class to provide organisation data
+class providers
+{
+	# Register the directory providers
+	private $providers = array (
+		'colleges' => array (
+			'id' => 'colleges',
+			'classFile' => 'colleges.php',
+			'name' => 'Colleges database',
+			'baseUrl' => '/colleges',
+			'imageSubfolder' => '/images/',
+			'managerClaimFormLocation' => '/feedback.html',
+			'typeSingular' => 'college',
+			'typeSingularUcfirst' => 'College',
+			'disableTab' => true,
+			'tabText' => 'Colleges database',
+			'tabDescription' => 'Go to the Colleges database',
+			'imageStoreRoot' => '/path/to/colleges/images/',
+		),
+		'departments' => array (
+			'id' => 'departments',
+			'classFile' => 'departments.php',
+			'name' => 'Departments database',
+			'baseUrl' => '/departments',
+			'imageSubfolder' => '/images/',
+			'managerClaimFormLocation' => '/feedback.html',
+			'typeSingular' => 'department',
+			'typeSingularUcfirst' => 'Department',
+			'disableTab' => true,
+			'tabText' => 'Departments database',
+			'tabDescription' => 'Go to the Departments database',
+			'imageStoreRoot' => '/path/to/departments/images/',
+		),
+	);
+	
+	# Protected provider names, which the Provider API should not be presenting
+	private $protectedProviderNames = array ('bob', 'bobgui', 'images', 'openstv', 'style', );
+	
+	
+	
+	# Constructor
+	public function __construct ()
+	{
+		# Compute the imageStoreRoot
+		foreach ($this->providers as $provider => $attributes) {
+			$this->providers[$provider]['imageStoreRoot'] = $_SERVER['DOCUMENT_ROOT'] . $attributes['baseUrl'] . $attributes['imageSubfolder'];
+		}
+		
+	}
+	
+	
+	/*
+	 *	getProviders
+	 */
+	
+	# Public accessor
+	public function getProviders ()
+	{
+		return $this->providers;
+	}
+	
+	
+	# Function to get a user's organisations
+	public function getOrganisationsOfUser ($username, $limitToFields, $limitToProviderId = false, $includeTestOrganisations = false)
+	{
+		# Return false if no username supplied (e.g. not logged in)
+		if (!$username) {return array ();}
+		
+		# Ask each provider for the organisations of this user
+		$organisationsOfUser = array ();
+		foreach ($this->providers as $providerId => $provider) {
+			
+			# Skip if a specific provider has been requested, and this is not it
+			if ($limitToProviderId && ($providerId != $limitToProviderId)) {continue;}
+			
+			# Get the organisations of that user, and add them to the list
+			require_once ($provider['classFile']);
+			$providerInstance = new $providerId (array (), true);
+			$organisationsOfUser[$providerId] = $providerInstance->organisationsOfUser ($username, $includeTestOrganisations);
+			
+			# Ensure providers do not emit a protected name (which each provider should enforce anyway)
+			foreach ($organisationsOfUser[$providerId] as $organisationId => $organisation) {
+				if (in_array ($organisationId, $this->protectedProviderNames)) {
+					unset ($organisationsOfUser[$providerId][$organisationId]);
+				}
+			}
+			
+			# Limit to fields, to avoid leaking data
+			/*
+			bobguiAdminister requests: logoLocation, organisationName, profileBaseUrl
+			*/
+			foreach ($organisationsOfUser[$providerId] as $organisationId => $organisation) {
+				foreach ($organisation as $field => $value) {
+					if (!in_array ($field, $limitToFields)) {
+						unset ($organisationsOfUser[$providerId][$organisationId][$field]);
+					}
+				}
+			}
+		}
+		
+		# Return the list
+		return $organisationsOfUser;
+	}
+}
+
+?>
