@@ -2,6 +2,7 @@
 listing/bobguiListingWrapper.php
 ingest/bobguiIngestWrapper.php
 controlpanel/index.html
+controlpanel/providers.php
 
 # Ignore favicon if it exists
 favicon.ico
