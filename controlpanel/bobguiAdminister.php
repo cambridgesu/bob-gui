@@ -68,7 +68,7 @@ class bobguiAdminister extends frontControllerApplication
 			'minimumOpeningHours' => 4,
 			'maximumOpeningDays' => 3,
 			'maximumOpeningExtendedDays' => 5,	// Days that the list of groups below can have
-			'maximumOpeningExtendedGroups' => array ('cusu', 'elections', ),	// Use of this should be actively resisted, and reset each year
+			'maximumOpeningExtendedGroups' => array (),	// Example group IDs; use of this should be actively resisted, and reset each year
 			
 			# Month of the year when an academic year is split from
 			'startMonth' => 9,	// Actually October is more 'correct', but 9 is safer and will catch elections just before term-start; see also http://www.cam.ac.uk/about-the-university/term-dates-and-calendars
@@ -815,7 +815,7 @@ class bobguiAdminister extends frontControllerApplication
 			'organisationLogoUrl' => 'https://' . $_SERVER['SERVER_NAME'] . $organisation['logoLocation'],
 			'emailTech'	=> $this->settings['emailTech'],
 			'officialsUsernames' => $this->user,
-			'organisationUrl' => 'http://www.cusu.cam.ac.uk' . $organisation['profileBaseUrl'] . '/',
+			'organisationUrl' => $organisation['profileBaseUrl'] . '/',
 		);
 		
 		# Create the ballot form
@@ -2270,7 +2270,7 @@ class bobguiAdminister extends frontControllerApplication
 			# Add the title for this type of provider
 			$html .= "\n<h3 class=\"selectlist\">" . htmlspecialchars ($providerMetadata[$providerId]['name']) . ':</h3>';
 			if ($providerMetadata[$providerId]['managerClaimFormLocation']) {
-				$html .= "\n<p>" . ($organisations ? "If you think you should be the manager for a {$providerMetadata[$providerId]['typeSingularUcfirst']} not listed here" : "You do not appear to be not registered as the manager for any {$providerMetadata[$providerId]['typeSingularUcfirst']}.<br />If you think you should be") . ", please use the <a href=\"http://www.cusu.cam.ac.uk{$providerMetadata[$providerId]['baseUrl']}{$providerMetadata[$providerId]['managerClaimFormLocation']}\">{$providerMetadata[$providerId]['typeSingularUcfirst']} manager claim form</a> elsewhere on the CUSU website.</p>";
+				$html .= "\n<p>" . ($organisations ? "If you think you should be the manager for a {$providerMetadata[$providerId]['typeSingularUcfirst']} not listed here" : "You do not appear to be not registered as the manager for any {$providerMetadata[$providerId]['typeSingularUcfirst']}.<br />If you think you should be") . ", please use the <a href=\"http://www.cusu.cam.ac.uk{$providerMetadata[$providerId]['baseUrl']}{$providerMetadata[$providerId]['managerClaimFormLocation']}\">{$providerMetadata[$providerId]['typeSingularUcfirst']} manager claim form</a> elsewhere on the website.</p>";
 			} else {
 				$html .= "\n<p>You do not appear to be not registered as the manager for any group.</p>";
 			}
