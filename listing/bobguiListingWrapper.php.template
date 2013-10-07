@@ -8,6 +8,7 @@ $config['password'] = 'your_password_goes_here';
 $config['administratorEmail'] = 'webmaster@example.com';
 $config['organisationName'] = false;
 $config['mailDomain'] = 'example.com';
+$config['controlPanelUrl'] = 'https://www.controlpanel.vote.example.com/controlpanel/'
 $config['controlPanelLinkEnabled'] = true;	// or false or comma-separated string of usernames
 $config['controlPanelLinkDirectly'] = false;
 

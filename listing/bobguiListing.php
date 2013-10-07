@@ -29,7 +29,7 @@ class bobguiListing extends frontControllerApplication
 			# Control panel URL (on 'write' server)
 			'controlPanelLinkEnabled' => true,	// Show the control panel link for all users (true), never (false), or for specific users only (comma-separated list of usernames, e.g. 'user1,user2,user3' )
 			'controlPanelLinkDirectly' => false,	// Whether to link directly to the control panel or have an intermediate page
-			'controlPanelUrl' => 'https://www.cusu.cam.ac.uk/elections/system/',
+			'controlPanelUrl' => NULL,
 			
 			# Month of the year when an academic year is split from
 			'startMonth' => 9,	// Actually October is more 'correct', but 9 is safer and will catch elections just before term-start; see also http://www.cam.ac.uk/about-the-university/term-dates-and-calendars
