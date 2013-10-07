@@ -12,33 +12,22 @@ class providers
 {
 	# Register the directory providers
 	private $providers = array (
-		'colleges' => array (
-			'id' => 'colleges',
-			'classFile' => 'colleges.php',
-			'name' => 'Colleges database',
-			'baseUrl' => '/colleges',
+		'university' => array (
+			'id' => 'university',
+			'name' => 'University',
+			'baseUrl' => '/',
 			'imageSubfolder' => '/images/',
 			'managerClaimFormLocation' => '/feedback.html',
-			'typeSingular' => 'college',
-			'typeSingularUcfirst' => 'College',
-			'disableTab' => true,
-			'tabText' => 'Colleges database',
-			'tabDescription' => 'Go to the Colleges database',
-			'imageStoreRoot' => '/path/to/colleges/images/',
-		),
-		'departments' => array (
-			'id' => 'departments',
-			'classFile' => 'departments.php',
-			'name' => 'Departments database',
-			'baseUrl' => '/departments',
-			'imageSubfolder' => '/images/',
-			'managerClaimFormLocation' => '/feedback.html',
-			'typeSingular' => 'department',
-			'typeSingularUcfirst' => 'Department',
-			'disableTab' => true,
-			'tabText' => 'Departments database',
-			'tabDescription' => 'Go to the Departments database',
-			'imageStoreRoot' => '/path/to/departments/images/',
+			'typeSingular' => 'organisation',
+			'typeSingularUcfirst' => 'part of the University',
+			'administrators' => array ('abc123', 'spqr1', ),
+			'organisations' => array (
+				'council' => array (
+					'organisationName' => 'Council',
+					'profileBaseUrl' => 'http://www.example.com/',
+					'logoLocation' => 'http://www.example.com/logo.png',
+				),
+			),
 		),
 	);
 	
@@ -83,9 +72,7 @@ class providers
 			if ($limitToProviderId && ($providerId != $limitToProviderId)) {continue;}
 			
 			# Get the organisations of that user, and add them to the list
-			require_once ($provider['classFile']);
-			$providerInstance = new $providerId (array (), true);
-			$organisationsOfUser[$providerId] = $providerInstance->organisationsOfUser ($username, $includeTestOrganisations);
+			$organisationsOfUser[$providerId] = (in_array ($username, $provider['administrators']) ? $provider['organisations'] : array ());
 			
 			# Ensure providers do not emit a protected name (which each provider should enforce anyway)
 			foreach ($organisationsOfUser[$providerId] as $organisationId => $organisation) {
