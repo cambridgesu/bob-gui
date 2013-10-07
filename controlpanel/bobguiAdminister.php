@@ -250,12 +250,49 @@ class bobguiAdminister extends frontControllerApplication
 	{
 		# Return the styles
 		return '
-			#controlpanel ul.tabs {padding-bottom: 0;}
-			#controlpanel ul.tabs li a {-moz-border-radius: 3px 3px 0 0; -webkit-border-radius: 3px 3px 0 0;}
-			#controlpanel ul.tabs li a img {position: relative; top: -1px;}
+			p.loggedinas {float: right; font-size: 0.91em; text-align: right;}
+			ul.tabs {padding: 3px 0 4px 2px; margin-left: 0; margin-bottom: 1.5em; border-bottom: 1px solid #778; line-height: 1em;}
+			ul.tabs li {list-style: none; margin: 0; display: inline;}
+			ul.tabs li a {padding: 3px 0.5em; margin-left: 2px; border: 1px solid #778; border-bottom: none; background: #f7f7f7; text-decoration: none;}
+			ul.tabs li a:link {color: #448;}
+			ul.tabs li a:visited {color: #667;}
+			ul.tabs li a:hover {color: #000; background: #eee; border-color: #227;}
+			ul.tabs li.selected a {background: white; border-bottom: 1px solid white;}
+			ul.tabs img {border: 0; vertical-align: bottom; padding: 0;}
+			ul.tabs li select {margin-bottom: 1em;}
+			ul.tabs li select option {color: #603;}
+			ul.tabs li a {border-radius: 3px 3px 0 0;}
+			ul.tabs li a {-moz-border-radius: 3px 3px 0 0; -webkit-border-radius: 3px 3px 0 0;} /* Vendor-specific hacks */
+			
+			div.graybox {border: 1px solid #ddd; padding: 10px 15px; margin: 0 10px 10px 0; background-color: #fcfcfc; overflow: hidden; /* overflow prevents floats not being enclosed - see http://gtwebdev.com/workshop/floats/enclosing-floats.php */}
+			div.graybox:hover {background-color: #fafafa; border-color: #aaa;}
+			div.graybox h2, div.graybox h3 {margin-top: 0.4em;}
+			div.graybox p {text-align: left; margin-top: 10px;}
+			/* div.graybox img {border: 1px solid #999; margin-right: 10px;} */
+			
+			ul.actions {margin: 0; padding: 0; float: right; display: block; margin-left: 10px;}
+			ul.actions.inline {float: none; margin-top: 2em;}
+			ul.actions li {list-style: none; margin-bottom: 1px;}
+			ul.actions.inline li {display: inline; margin-right: 5px;}
+			ul.actions li a, ul.actions li form, p.actions a, a.actions, ul.actions li span.actions {border-bottom: 0; border: 1px solid #ddd; padding: 4px 8px 2px; -moz-border-radius: 4px; -webkit-border-radius: 4px; width: 185px;}
+			ul.actions li form, ul.actions li span.actions {padding: 0; width: /* 185px + 2*8px = */ 201px;}
+			ul.actions li form input, ul.actions li span.actions {width: 100%; border: 0; background-color: white; text-align: left; padding: 4px 8px 2px;}
+			ul.actions li a, ul.actions li form input.action, ul.actions li span.actions {display: block;}
+			p.actions a, a.actions {padding: 10px 8px 2px;}
+			ul.actions.inline li a {display: inline; width: auto;}
+			ul.actions li a:hover, ul.actions li form:hover, a.actions:hover {border-color: #aaa;}
+			ul.actions li form input:hover {cursor: pointer; cursor: hand;} /* See http://www.quirksmode.org/css/cursor.html#note */
+			ul.actions li a img, a.actions img {vertical-align: top; width: 16px; height: 16px; border: 0;}
+			img.icon {width: 16px; height: 16px; border: 0; vertical-align: middle;}
+			
+			ul.actions li a, p.actions a {border-bottom: 0; border: 1px solid #ddd; padding: 4px 8px 2px; -moz-border-radius: 4px; width: 185px;}
+			ul.actions li a {display: block;}
+			ul.actions.left {float: none;}
+			
+			.button {background-color: #eee; border-color: #eee #999 #999 #eee; border-style: solid; border-width: 2px; color: #000; padding: 2px; border-radius: 2px; -moz-border-radius: 2px; -webkit-border-radius: 2px; white-space: nowrap;}
+			
+			#controlpanel ul.tabs {padding-bottom: 1px;}
 			#controlpanel ul.tabs li {padding-bottom: 0;}
-			#controlpanel .wrapper {width: 984px;}	/* Use wider fixed width for this section */
-			#controlpanel #content {width: 792px;} /* Use wider fixed width for this section */
 			#controlpanel p.ballottitle {margin-bottom: 2px; font-weight: bold; color: #777;}
 			#controlpanel p.ballotinfo {margin-top: 0;}
 			#controlpanel ul.actions {margin-bottom: 1.2em;}
@@ -314,6 +351,9 @@ class bobguiAdminister extends frontControllerApplication
 			#controlpanel table.vote td, table.vote th {border: 2px #ddd solid; padding: 3px;}
 			#controlpanel div.checklist {float: right; width: 40%; margin-left: 15px;}
 			#controlpanel div.checklist ol li {margin-bottom: 6px;}
+
+
+
 		';
 	}
 	
