@@ -2270,7 +2270,7 @@ class bobguiAdminister extends frontControllerApplication
 			# Add the title for this type of provider
 			$html .= "\n<h3 class=\"selectlist\">" . htmlspecialchars ($providerMetadata[$providerId]['name']) . ':</h3>';
 			if ($providerMetadata[$providerId]['managerClaimFormLocation']) {
-				$html .= "\n<p>" . ($organisations ? "If you think you should be the manager for a {$providerMetadata[$providerId]['typeSingularUcfirst']} not listed here" : "You do not appear to be not registered as the manager for any {$providerMetadata[$providerId]['typeSingularUcfirst']}.<br />If you think you should be") . ", please use the <a href=\"http://www.cusu.cam.ac.uk{$providerMetadata[$providerId]['baseUrl']}{$providerMetadata[$providerId]['managerClaimFormLocation']}\">{$providerMetadata[$providerId]['typeSingularUcfirst']} manager claim form</a> elsewhere on the website.</p>";
+				$html .= "\n<p>" . ($organisations ? "If you think you should be the manager for a {$providerMetadata[$providerId]['typeSingularUcfirst']} not listed here" : "You do not appear to be not registered as the manager for any {$providerMetadata[$providerId]['typeSingularUcfirst']}.<br />If you think you should be") . ", please use the <a href=\"{$providerMetadata[$providerId]['baseUrl']}{$providerMetadata[$providerId]['managerClaimFormLocation']}\">{$providerMetadata[$providerId]['typeSingularUcfirst']} manager claim form</a> elsewhere on the website.</p>";
 			} else {
 				$html .= "\n<p>You do not appear to be not registered as the manager for any group.</p>";
 			}
