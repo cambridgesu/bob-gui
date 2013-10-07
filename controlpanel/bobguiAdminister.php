@@ -136,6 +136,7 @@ class bobguiAdminister extends frontControllerApplication
 				'url' => 'organisation.html',
 				'description' => 'Add a new ballot',
 				'authentication' => true,
+				'usetab' => 'add',
 			),
 			'administer' => array (
 				'url' => 'administer.html',
