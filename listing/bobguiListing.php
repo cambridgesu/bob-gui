@@ -28,6 +28,7 @@ class bobguiListing extends frontControllerApplication
 			
 			# Control panel URL (on 'write' server)
 			'controlPanelLinkEnabled' => true,	// Show the control panel link for all users (true), never (false), or for specific users only (comma-separated list of usernames, e.g. 'user1,user2,user3' )
+			'controlPanelLinkDirectly' => false,	// Whether to link directly to the control panel or have an intermediate page
 			'controlPanelUrl' => 'https://www.cusu.cam.ac.uk/elections/system/',
 			
 			# Month of the year when an academic year is split from
@@ -78,7 +79,8 @@ class bobguiListing extends frontControllerApplication
 			),
 			'controlpanel' => array (
 				'description' => 'Control panel',
-				'enableIf' => $this->settings['controlPanelLinkEnabled'],
+				#!# NB The URL /controlpanel.html is still registered at htaccess level, though this is not in practice a problem as the frontController will not respond to it
+				'enableIf' => ($this->settings['controlPanelLinkEnabled'] && !$this->settings['controlPanelLinkDirectly']),
 			),
 			'organisation' => array (
 				'description' => false,
@@ -208,9 +210,10 @@ class bobguiListing extends frontControllerApplication
 		$html .= "\n\t<li><a href=\"{$this->baseUrl}/archive.html\"><img src=\"/images/icons/book_addresses.png\" alt=\"\" class=\"icon\" /> Archive of all ballots</a></li>";
 		$html .= "\n</ul>";
 		if ($this->settings['controlPanelLinkEnabled']) {
+			$controlPanelLink = ($this->settings['controlPanelLinkDirectly'] ? $this->settings['controlPanelUrl'] : "{$this->baseUrl}/controlpanel.html");
 			$html .= "\n<h2>Create/administer ballots</h2>";
 			$html .= "\n<ul class=\"actions left\">";
-			$html .= "\n\t<li><a href=\"{$this->baseUrl}/controlpanel.html\"><img src=\"/images/icons/cog.png\" alt=\"\" class=\"icon\" /> Create/administer ballots</a></li>";
+			$html .= "\n\t<li><a href=\"{$controlPanelLink}\"><img src=\"/images/icons/cog.png\" alt=\"\" class=\"icon\" /> Create/administer ballots</a></li>";
 			$html .= "\n</ul>";
 		}
 		$html .= "\n" . '<p>Access to this system is only available via Raven, and all access is logged for security.</p>';

@@ -9,6 +9,7 @@ $config['administratorEmail'] = 'webmaster@example.com';
 $config['organisationName'] = false;
 $config['mailDomain'] = 'example.com';
 $config['controlPanelLinkEnabled'] = true;	// or false or comma-separated string of usernames
+$config['controlPanelLinkDirectly'] = false;
 
 # Load and run the BOB GUI with the specified settings
 require_once (dirname (__FILE__) . '/bobguiListing.php');
