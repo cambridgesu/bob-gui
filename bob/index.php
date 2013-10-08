@@ -31,7 +31,7 @@ $config['dbSetupUsername'] = 'testvotesetup';
 $config['dbConfigTable'] = 'instances';
 
 # Counting installation config; must end /openstv/ (slash-terminated)
-$config['countingInstallation'] = '%documentroot/../openSTV/SourceCode/OpenSTV-1.6/openstv/';
+$config['countingInstallation'] = '%documentroot/../openstv/openstv/';
 
 
 ## End of config; now run the system ##
