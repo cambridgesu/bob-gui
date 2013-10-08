@@ -882,7 +882,7 @@ class bobguiAdminister extends frontControllerApplication
 			'data' => ($isEditMode ? $data : $organisation),
 			'ordering' => array ('organisationName', 'organisationUrl', 'title', 'urlSlug', ),
 			#!# May be best soon to convert this to an includeOnly list instead
-			'exclude' => array ('id', 'url', 'academicYear', 'provider', 'organisation', 'emailTech', 'emailReturningOfficer', 'adminDuringElectionOK', 'headerLocation', 'footerLocation', 'organisationLogoUrl', 'electionInfo', 'ballotStart', 'ballotEnd', 'ballotViewable', 'instanceCompleteTimestamp', ),
+			'exclude' => array ('id', 'url', 'academicYear', 'provider', 'organisation', 'emailTech', 'emailReturningOfficer', 'adminDuringElectionOK', 'organisationLogoUrl', 'electionInfo', 'ballotStart', 'ballotEnd', 'ballotViewable', 'instanceCompleteTimestamp', ),
 			'intelligence' => true,
 			'attributes' => array (
 				'organisationName' => array ('editable' => false, 'heading' => array (3 => '<img src="/images/icons/application_view_list.png" alt="" class="icon" /> Organisation info'), ),

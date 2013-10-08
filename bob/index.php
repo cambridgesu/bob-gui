@@ -6,6 +6,7 @@
 # Deny direct running of this stub file, i.e. deny /bobstub.php?id=webmaster-09-10-testeleven
 if (substr ($_SERVER['REQUEST_URI'], 0, strlen ($_SERVER['SCRIPT_NAME'])) == $_SERVER['SCRIPT_NAME']) {
 	$_GET['action'] = 'page404';
+	#!# Hard-coded path
 	require_once ('./index.php');
 	return false;
 }
@@ -32,6 +33,10 @@ $config['dbConfigTable'] = 'instances';
 
 # Counting installation config; must end /openstv/ (slash-terminated)
 $config['countingInstallation'] = '%documentroot/../openstv/openstv/';
+
+# Location in the URL space of optional header and footer file; must start with /
+$config['headerLocation'] = '/style/header.html';
+$config['footerLocation'] = '/style/footer.html';
 
 
 ## End of config; now run the system ##
