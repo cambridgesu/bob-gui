@@ -24,7 +24,7 @@ if (isSet ($_GET['id'])) {
 $config['dbHostname'] = 'localhost';
 $config['dbPassword'] = 'your_password_goes_here';
 $config['dbDatabase'] = 'votes';
-$config['dbDatabaseStaging'] = 'staging';
+$config['dbDatabaseStaging'] = 'votesstaging';
 $config['dbUsername'] = 'testvote';
 $config['dbSetupUsername'] = 'testvotesetup';
 

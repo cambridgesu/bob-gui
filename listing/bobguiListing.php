@@ -17,7 +17,7 @@ class bobguiListing extends frontControllerApplication
 			'password' => NULL,
 			'database' => 'votes',
 			'table' => 'instances',
-			'databaseStaging' => 'staging',
+			'databaseStaging' => 'votesstaging',
 			'vendor'						=> 'mysql',	// Database vendor
 			
 			# Organisation name

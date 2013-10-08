@@ -4,7 +4,7 @@
 # This is a script to pull data from a BOB GUI control panel instance and push it into a BOB GUI live instance (via a staging database).
 # It runs in a shell context, not a web context.
 
-# Requires database privileges: SELECT,INSERT,DELETE,CREATE,ALTER,DROP on staging database and SELECT,INSERT,CREATE on votes (live) database
+# Requires database privileges: SELECT,INSERT,DELETE,CREATE,ALTER,DROP on votesstaging (staging) database and SELECT,INSERT,CREATE on votes (live) database
 
 
 /*
@@ -20,16 +20,16 @@ ingest script
 =Retrieve data as non-empty string or raise error
 =Check dates in sync or raise error
 Check the time is around 30 minutes past the hour
-=Empty all data in staging.instances table and delete staging.vote(r|s) tables
+=Empty all data in staging instances table and delete staging vote(r|s) tables
 If retrieved data is not empty
 	=Check structure of data for completeness
 	=Check that they are not set to open within an hour from now
 	=Check that no IDs match the live.instances table
-	=Add new staging.instances entry
-	=Create new staging.vote(r|s) tables
+	=Add new staging instances entry
+	=Create new staging vote(r|s) tables
 If any future instances
-	=Move staging.vote(r|s) tables to live.vote(r|s) tables
-	=Move forthcoming staging.instances entry(ies) to live.instances
+	=Move staging vote(r|s) tables to live.vote(r|s) tables
+	=Move forthcoming staging instances entry(ies) to live.instances
 =Close database connection
 =Delete lockfile
 
@@ -73,7 +73,7 @@ class bobguiIngest
 			'hostname'				=> 'localhost',
 			'username'				=> NULL,
 			'password'				=> NULL,
-			'databaseStaging'		=> 'staging',
+			'databaseStaging'		=> 'votesstaging',
 			'databaseLive'			=> 'votes',
 			'instancesTableName'	=> 'instances',
 			'vendor'				=> 'mysql',	// Database vendor
@@ -275,7 +275,7 @@ class bobguiIngest
 		# Confirm a single table left, staging
 		$stagingTables = $this->databaseConnection->getTables ($this->settings['databaseStaging']);
 		if (!$stagingTables || (count ($stagingTables) != 1) || $stagingTables[0] != 'instances') {
-			$this->errors[] = 'After attempted deletion of the staging voter+votes tables, there was not just a single staging.instances table left.';
+			$this->errors[] = 'After attempted deletion of the staging voter+votes tables, there was not just a single staging instances table left.';
 			$this->reportErrors ();
 			return false;
 		}
@@ -285,7 +285,7 @@ class bobguiIngest
 		$query = "TRUNCATE {$this->dataSourceStaging};";
 		$result = $this->databaseConnection->execute ($query);
 		if ($result === false) {
-			$this->errors[] = "The list of entries in the staging.instances table could not be cleared out. The database server said:\n" . print_r ($this->databaseConnection->error (), true);
+			$this->errors[] = "The list of entries in the staging instances table could not be cleared out. The database server said:\n" . print_r ($this->databaseConnection->error (), true);
 			$this->reportErrors ();
 			return false;
 		}
@@ -293,7 +293,7 @@ class bobguiIngest
 		# Confirm an empty staging table
 		$totalRecords = $this->databaseConnection->getTotal ($this->settings['databaseStaging'], $this->settings['instancesTableName']);
 		if ($totalRecords != '0') {
-			$this->errors[] = 'The staging.instances table is not empty after attempting to clear it out.';
+			$this->errors[] = 'The staging instances table is not empty after attempting to clear it out.';
 			$this->reportErrors ();
 			return false;
 		}
@@ -528,14 +528,14 @@ class bobguiIngest
 			}
 			$this->logMessage ("Checkpoint 16[{$instanceId}]: Copied instance configuration from staging to live side; instanceID = {$instanceId}");
 			
-			# Delete the staging.instance table entry
+			# Delete the staging instance table entry
 			$query = "DELETE FROM `{$this->settings['databaseStaging']}`.instances WHERE id = :instanceId LIMIT 1;";
 			if (!$result = $this->databaseConnection->query ($query, array ('instanceId' => $instanceId))) {
-				$this->errors[] = "The deleting of the {$instanceId} staging.instance configuration failed. The database server said:\n" . print_r ($this->databaseConnection->error (), true);
+				$this->errors[] = "The deleting of the {$instanceId} staging instance configuration failed. The database server said:\n" . print_r ($this->databaseConnection->error (), true);
 				$this->reportErrors ();
 				return false;
 			}
-			$this->logMessage ("Checkpoint 17[{$instanceId}]: Deleted staging.instance configuration; instanceID = {$instanceId}");
+			$this->logMessage ("Checkpoint 17[{$instanceId}]: Deleted staging instance configuration; instanceID = {$instanceId}");
 			
 			# Mail the admin to confirm that a vote has been pushed into live
 			$subject = ($this->settings['organisationName'] ? $this->settings['organisationName'] . ' online' : 'Online') . " voting system: vote pushed live! - {$instance['title']} [{$instanceId}]";

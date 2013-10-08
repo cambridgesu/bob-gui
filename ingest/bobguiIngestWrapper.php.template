@@ -3,7 +3,7 @@
 # Stub launching file for the ingest side of the BOB GUI
 
 # Settings
-$config['databaseStaging']= 'staging';
+$config['databaseStaging']= 'votesstaging';
 $config['databaseLive'] = 'votes';
 $config['username'] = 'bobguiIngest';
 $config['password'] = 'your_password_goes_here';
