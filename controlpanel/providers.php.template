@@ -17,14 +17,14 @@ class providers
 			'name' => 'University',
 			'baseUrl' => '/',
 			'imageSubfolder' => '/images/',
-			'managerClaimFormLocation' => '/feedback.html',
+			'managerClaimFormLocation' => '/feedback.html',		// or false if none
 			'typeSingular' => 'organisation',
 			'typeSingularUcfirst' => 'part of the University',
 			'administrators' => array ('abc123', 'spqr1', ),
 			'organisations' => array (
 				'council' => array (
 					'organisationName' => 'Council',
-					'profileBaseUrl' => 'http://www.example.com/',
+					'profileBaseUrl' => 'http://www.example.com',	// Not slash-terminated
 					'logoLocation' => 'http://www.example.com/logo.png',
 				),
 			),
