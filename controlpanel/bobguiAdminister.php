@@ -394,7 +394,7 @@ class bobguiAdminister extends frontControllerApplication
 			#controlpanel #footerleft {width: 350px;}
 			#controlpanel #footerright {color: #aaa;}
 			#controlpanel #footerarea span {padding: 10px 40px;}
-			#controlpanel form p.row {margin-top: 1.8em;}
+			#controlpanel form p.row {margin-top: 1.8em; margin-bottom: 3em;}
 			#controlpanel form div p.description, form div p.widget, form div p.hint {padding: 0; margin: 0; line-height: 1.2em;}
 			#controlpanel form div p.description {margin-top: 1em;}
 			#controlpanel form div p.widget {margin-top: 0.3em; color: #603;}
@@ -406,7 +406,7 @@ class bobguiAdminister extends frontControllerApplication
 			#controlpanel form p.submit input {font-size: 1.2em; font-weight: bold; min-width: 15em;}
 			#controlpanel form h3 {margin-top: 2em; border-bottom: 1px solid #ccc;}
 			#controlpanel span.formprepend, span.formappend {color: #603;}
-			#controlpanel p.ballotStart_time, p.ballotEnd_time, p.ballotViewable_time {margin-bottom: 0;}
+			#controlpanel p.row.ballotStart_time, #controlpanel p.row.ballotEnd_time, #controlpanel p.row.ballotViewable_time {margin-bottom: 0;}
 			#controlpanel form p.row.ballotStart_date, #controlpanel form p.row.ballotEnd_date, #controlpanel form p.row.ballotViewable_date {margin-top: 0; position: relative; top: -0.8em;}
 			#controlpanel * html #pagemenu ul li.page_item a, #pagemenu ul li.cat-item a {padding: 5px 20px;} /* IE6 layout hack */
 			#controlpanel p.winner {color: #603; font-weight: bold; background-image: url(/images/icons/bullet_go.png); background-position: 5px 1px;}
