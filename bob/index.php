@@ -22,11 +22,11 @@ if (isSet ($_GET['id'])) {
 
 # Database connection details
 $config['dbHostname'] = 'localhost';
-$config['dbPassword'] = 'your_password_goes_here';
 $config['dbDatabase'] = 'votes';
 $config['dbDatabaseStaging'] = 'votesstaging';
 $config['dbUsername'] = 'testvote';
 $config['dbSetupUsername'] = 'testvotesetup';
+$config['dbPassword'] = 'your_password_goes_here';
 
 # Database table containing the config which the dbSetupUsername has SELECT rights on
 $config['dbConfigTable'] = 'instances';
