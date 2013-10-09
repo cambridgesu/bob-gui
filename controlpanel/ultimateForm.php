@@ -57,7 +57,7 @@
  * @license	http://opensource.org/licenses/gpl-license.php GNU Public License
  * @author	{@link http://www.geog.cam.ac.uk/contacts/webmaster.html Martin Lucas-Smith}, University of Cambridge
  * @copyright Copyright  2003-13, Martin Lucas-Smith, University of Cambridge
- * @version 1.20.7
+ * @version 1.20.8
  */
 class form
 {
@@ -5542,6 +5542,7 @@ class form
 			
 			# Check the rule
 			#!# Ideally refactor to avoid the same list of cases specified as $this->validationTypes
+			$validationFailed = false;
 			if (
 				   ( ($rule['type'] == 'different') && ($nonEmptyValues) && (count ($nonEmptyValues) != count (array_unique ($nonEmptyValues))) )
 				|| ( ($rule['type'] == 'same')      && ((count ($values) > 1) && count (array_unique ($values)) != 1) )
@@ -5551,13 +5552,16 @@ class form
 				|| ( ($rule['type'] == 'master')    && $nonEmptyValues && array_key_exists ($firstField, $emptyValues) )
 			) {
 				$problems['validationFailed' . ucfirst ($rule['type']) . $index] = str_replace (array ('%fields', '%parameter'), array ($this->_fieldListString ($rule['fields']), $rule['parameter']), $this->validationTypes[$rule['type']]);
+				$validationFailed = true;
 			}
 			
-			# Highlight empty fields
+			# Highlight empty fields if validation failed
 			#!# Currently only implemented for 'all' - this must have all highlighted (others are more selective)
-			if ($rule['type'] == 'all') {
-				foreach (array_keys ($emptyValues) as $emptyField) {
-					$this->elements[$emptyField]['requiredButEmpty'] = true;
+			if ($validationFailed) {
+				if ($rule['type'] == 'all') {
+					foreach (array_keys ($emptyValues) as $emptyField) {
+						$this->elements[$emptyField]['requiredButEmpty'] = true;
+					}
 				}
 			}
 		}
