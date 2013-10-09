@@ -292,6 +292,72 @@ class bobguiAdminister extends frontControllerApplication
 			
 			.button {background-color: #eee; border-color: #eee #999 #999 #eee; border-style: solid; border-width: 2px; color: #000; padding: 2px; border-radius: 2px; -moz-border-radius: 2px; -webkit-border-radius: 2px; white-space: nowrap;}
 			
+			/* UltimateForm styles */
+			/* Font scaling needs to be in the calling stylesheet
+			.ultimateform * {font-family: verdana, arial, helvetica, sans-serif;}
+			body {font-size: 69%;}
+			h1 {font-size: 2.2em;}
+			h2 {font-size: 1.6em;}
+			h3 {font-size: 1.2em;}
+			h4 {font-size: 1em;}
+			p, table, input, select, textarea {font-size: 1.0em;}
+			pre, code {font-size: 110%;}
+			*/
+			/* Headings */
+			.ultimateform h2 {margin-top: 30px;}
+			.ultimateform input, .ultimateform select, .ultimateform textarea, .ultimateform option, .ultimateform td.data label, .ultimateform table td p.currentfile span.filename {color: #603;}
+			.ultimateform .spaced li {margin-top: 10px;}
+			.ultimateform .comment {color: #888; text-align: left;}
+			.ultimateform .button, .ultimateform .resetbutton {cursor: pointer; background-color: #ddd; border-color: #eee #999 #999 #eee; border-style: solid; border-width: 2px;}
+			.ultimateform td.title {text-align: right; vertical-align: top;}
+			.ultimateform.leftlabels td.title {text-align: left;}
+			.ultimateform td.data {vertical-align: top;}
+			.ultimateform td.description {text-align: left; vertical-align: top; color: #888;}
+			.ultimateform span.description {color: #888; font-style: italic;}
+			.ultimateform span.restriction {color: #999; font-style: italic;}
+			.ultimateform table td, .ultimateform table.noborder td table td, .ultimateform table th, .ultimateform table.noborder td table th {border: 1px #eee solid; padding: 4px;}
+			.ultimateform.compressed table td, .ultimateform.compressed table.noborder td table td, .ultimateform.compressed table th, .ultimateform.compressed table.noborder td table th {padding: 2px;}
+			.ultimateform table td p.currentfile {margin-top: 0; margin-bottom: 2px; padding-top: 0; padding-bottom: 0;}
+			.ultimateform table td p.currentfilenext {margin-top: 5px;}
+			.ultimateform table {border: 0; border-collapse: collapse; border-spacing: 0;}
+			.ultimateform table.noborder td {border: 0; padding: 0 16px 10px 0;}
+			.ultimateform th {text-align: center;}
+			.ultimateform td.results {text-align: center;}
+			.ultimateform td.comment {color: #ccc; font-style: italic;}
+			.ultimateform td.totals {text-align: center; color: #666;}
+			.ultimateform input.refresh {background-color: transparent; border: 0; padding: 1px; color: #aaa; font-size: 1.1em;}
+			/* Error box and warning highlighting */
+			.ultimateform div.error {border: 1px dashed gray; padding: 5px 10px; margin-top: 5px; margin-bottom: 5px;}
+			.ultimateform div.error p {margin-bottom: 5px;}
+			.ultimateform div.error ul {margin-top: 0;}
+			.ultimateform div.error p, div.error ul, div.error li {color: red; margin-top: 5px;}
+			.ultimateform .warning, .ultimateform .error {color: red;}
+			.ultimateform span.unsuccessful {display: block; border-left: 1px solid red;}
+			.ultimateform span.unsuccessful input, .ultimateform span.unsuccessful select, .ultimateform span.unsuccessful textarea {margin-left: 5px;}
+			.ultimateform .success {color: green;}
+			.ultimateform .completion {font-weight: bold;}
+			.ultimateform div.debug {border: 1px dashed gray; padding: 5px 10px; color: red; margin-top: 5px; margin-bottom: 5px;}
+			/* CSS layout version to replace form tables */
+			.ultimateform div.row, .ultimateform p.submit {border-top: 1px solid #e9e9e9; vertical-align: top; padding: 5px 0 10px;}
+			.ultimateform div.row {clear: both;}
+			.ultimateform div.row span.label {float: left; width: 27%; text-align: right; padding-right: 10px;}
+			.ultimateform div.row span.restriction {display: block;} /* Forces line-break */
+			.ultimateform div.row span.data {float: left; width: 40%; text-align: left; padding-right: 10px;}
+			.ultimateform div.row span.description {float: left; width: 28%; text-align: left;}
+			/* Fieldset */
+			.ultimateform fieldset {border: 0;}
+			/* On-screen layout results */
+			.ultimateform table.results td.key {font-weight: bold; text-align: right;}
+			.ultimateform table.results td {vertical-align: top;}
+			/* Self-documentation */
+			.ultimateform table.documentation th {text-align: left;}
+			.ultimateform table.documentation th.displayformat, .ultimateform td.displayformat {text-align: right;}
+			.ultimateform td.defaultdisplayformat {text-align: left;}
+			/* Checkboxes/radiobuttons */
+			.ultimateform label {vertical-align: top; margin-right: 0.5em;}	/* For the margin, ideally, input[type=radio] should be used instead, but that is poorly supported */
+			.ultimateform.horizontalonly td, .ultimateform.horizontalonly th {border-left: 0; border-right: 0;}
+			.ultimateform tr.checkboxes table td {border: 0; padding: 0; padding-right: 4px; vertical-align: top;}
+			
 			#controlpanel ul.tabs {padding-bottom: 1px;}
 			#controlpanel ul.tabs li {padding-bottom: 0;}
 			#controlpanel p.ballottitle {margin-bottom: 2px; font-weight: bold; color: #777;}
@@ -352,9 +418,6 @@ class bobguiAdminister extends frontControllerApplication
 			#controlpanel table.vote td, table.vote th {border: 2px #ddd solid; padding: 3px;}
 			#controlpanel div.checklist {float: right; width: 40%; margin-left: 15px;}
 			#controlpanel div.checklist ol li {margin-bottom: 6px;}
-
-
-
 		';
 	}
 	
