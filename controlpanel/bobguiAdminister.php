@@ -1043,8 +1043,9 @@ class bobguiAdminister extends frontControllerApplication
 			}
 			
 			# Ensure the election info is validly formatted
-			if (!$this->timesDatesValid ($unfinalisedData, $organisationId, $error['ballotStart_time'], $fieldname)) {
-				$form->registerProblem ($fieldname, $error['ballotStart_time']);
+			if (!$this->timesDatesValid ($unfinalisedData, $organisationId, $timesDatesValidError, $fieldname)) {
+				$error[$fieldname] = $timesDatesValidError;
+				$form->registerProblem ('timesDatesValidError', $error[$fieldname], $fieldname);
 			}
 		}
 		
