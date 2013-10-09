@@ -126,8 +126,11 @@ class bobguiIngest
 		#!# Can be removed when inefficient array handling reduced
 		ini_set('memory_limit', '600M');
 		
+		# Set include_path to include current directory at start, so libraries are correctly loaded
+		ini_set ('include_path', dirname (__FILE__) . '/' . PATH_SEPARATOR . ini_get ('include_path'));
+		
 		# Load external libraries
-		require_once (dirname (__FILE__) . '/database.php');
+		require_once ('database.php');
 		
 		# Function to merge the arguments; note that $errors returns the errors by reference and not as a result from the method
 		if (!$this->settings = $this->mergeConfiguration ($this->defaults (), $settings)) {
