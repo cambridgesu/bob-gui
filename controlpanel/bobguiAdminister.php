@@ -1220,13 +1220,13 @@ class bobguiAdminister extends frontControllerApplication
 			if ($totalVoters) {		// $ballot['instanceCompleteTimestamp'] could also be used, but we need the $totalVoters below anyway, and it's a more direct check
 				$html .= "\n<div class=\"basicbox\">";
 				if ($ballot['copiedToLive']) {
-					$html .= "\n<p><img src=\"/images/icons/tick.png\" alt=\"\" class=\"icon\" /> Now that you have finished setting up the ballot, you need to e-mail your voters,<br />and give them the web address (URL) of <strong>the public ballot page</strong>, i.e.:<br /><a href=\"{$this->settings['liveServerUrl']}{$ballot['url']}\">{$this->settings['liveServerUrl']}{$ballot['url']}</a></p>";
+					$html .= "\n<p><img src=\"/images/icons/tick.png\" alt=\"\" class=\"icon\" /> Now that you have finished setting up the ballot, you should e-mail your voters,<br />and give them the web address (URL) of <strong>the public ballot page</strong>, i.e.:<br /><a href=\"{$this->settings['liveServerUrl']}{$ballot['url']}\">{$this->settings['liveServerUrl']}{$ballot['url']}</a></p>";
 					if ($ballot['organisation'] == 'test') {
 						$html .= "\n<p>Note that this test ballot will not appear in the main ballot listings &ndash; only in the <a href=\"{$this->settings['liveServerUrl']}/test/\">Test Society ballot listings</a>.</p>";
 					}
 				} else {
 					$html .= "\n<p><img src=\"/images/icons/clock.png\" alt=\"\" class=\"icon\" /> At <strong>{$ballot['copyToLiveTime']}</strong>, the vote configuration will be copied to the high-security voting server.</p>";
-					$html .= "\n<p><strong>After that time</strong>, you need to e-mail your voters, and give them the web address (URL) of <strong>the public ballot page</strong>.<br /><strong>This will be:</strong> {$this->settings['liveServerUrl']}{$ballot['url']}</p>";
+					$html .= "\n<p><strong>After that time</strong>, you should e-mail your voters, and give them the web address (URL) of <strong>the public ballot page</strong>.<br /><strong>This will be:</strong> {$this->settings['liveServerUrl']}{$ballot['url']}</p>";
 				}
 				$html .= "\n</div>";
 				$html .= "\n<br />";
@@ -2547,6 +2547,7 @@ class bobguiAdminister extends frontControllerApplication
 		$data['_timestamp'] = time ();
 		
 		# Get all future instances which start more than an hour ahead; this does not run through getBallotInstances as that results in computed fields, which are not wanted
+		#!# Seems to transmit instanceCompleteTimestamp=NULL; need to audit this
 		$query = "SELECT * FROM {$this->dataSource} WHERE NOW() < DATE_SUB(ballotStart, INTERVAL " . ($this->settings['ballotFixedHoursFromOpening'] - 1) . " HOUR);";
 		if (!$futureInstances = $this->databaseConnection->getData ($query, $this->dataSource)) {
 			echo serialize ($data);	// Return an serialised empty array (plus the timestamp), i.e. return a string, but which will evaluate to false when unserialised
