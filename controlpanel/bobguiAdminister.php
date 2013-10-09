@@ -870,7 +870,7 @@ class bobguiAdminister extends frontControllerApplication
 			'display' => 'paragraphs',
 			'div' => 'ultimateform',
 			'nullText' => '',
-			'displayColons' => false,
+			'displayColons' => true,
 		));
 		$form->heading ('', '<div class="graybox"><p><img src="/images/icons/exclamation.png" alt="*" class="icon" /> Ballot details can be edited only until ' . ($this->settings['ballotFixedHoursFromOpening'] == 1 ? 'one hour' : $this->settings['ballotFixedHoursFromOpening'] . ' hours') . ' before the opening time you set.<br /><strong>After that time they cannot be edited or deleted.</strong></p><p>To ' . ($isEditMode ? 'edit this ballot, amend the details' : 'create a ballot, fill in the form') . ' below.<br />Those sections marked * <em>must</em> be entered. Organisation info is not editable.<br />When you have completed the form, <strong>please check carefully</strong> then press the Submit button at the end.</p></div>');
 		if ($isEditMode) {
