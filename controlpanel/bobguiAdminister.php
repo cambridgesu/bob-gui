@@ -871,12 +871,16 @@ class bobguiAdminister extends frontControllerApplication
 		# Start the HTML
 		$html  = "\n<h3>Create a new ballot for " . htmlspecialchars ($organisation['organisationName']) . '</h3>';
 		
+		# Determine the logo URL
+		$organisationLogoUrl = (preg_match ('|^https?://|', $organisation['logoLocation']) ? '' : 'https://' . $_SERVER['SERVER_NAME']) . $organisation['logoLocation'];
+		
+		
 		# Provide only specific fixed data from the organisation, not the whole lot
 		$organisationData = array (
 			'organisation' => $organisation['id'],
 			'provider' => $organisation['provider'],
 			'organisationName' => $organisation['organisationName'],
-			'organisationLogoUrl' => 'https://' . $_SERVER['SERVER_NAME'] . $organisation['logoLocation'],
+			'organisationLogoUrl' => $organisationLogoUrl,
 			'emailTech'	=> $this->settings['emailTech'],
 			'officialsUsernames' => $this->user,
 			'organisationUrl' => $organisation['profileBaseUrl'] . '/',
