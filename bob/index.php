@@ -38,6 +38,9 @@ $config['countingInstallation'] = '%documentroot/../openstv/openstv/';
 $config['headerLocation'] = '/style/header.html';
 $config['footerLocation'] = '/style/footer.html';
 
+# Whether to disable the list of usernames who voted that appears on the show votes page afterwards
+$config['disableListWhoVoted'] = false;
+
 
 ## End of config; now run the system ##
 
