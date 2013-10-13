@@ -31,7 +31,7 @@ $config['dbPassword'] = 'your_password_goes_here';
 # Database table containing the config which the dbSetupUsername has SELECT rights on
 $config['dbConfigTable'] = 'instances';
 
-# Counting installation config; must end /openstv/ (slash-terminated)
+# Counting installation config; must end /openstv/ (slash-terminated), or false to disable auto-count
 $config['countingInstallation'] = '%documentroot/../openstv/openstv/';
 
 # Location in the URL space of optional header and footer file; must start with /
