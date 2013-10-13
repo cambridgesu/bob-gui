@@ -2551,11 +2551,14 @@ class bobguiAdminister extends frontControllerApplication
 		# Include a timestamp of seconds since the Unix Epoch
 		$data['_timestamp'] = time ();
 		
+		# Send JSON header
+		header('Content-type: application/json');
+		
 		# Get all future instances which start more than an hour ahead; this does not run through getBallotInstances as that results in computed fields, which are not wanted
 		#!# Seems to transmit instanceCompleteTimestamp=NULL; need to audit this
 		$query = "SELECT * FROM {$this->dataSource} WHERE NOW() < DATE_SUB(ballotStart, INTERVAL " . ($this->settings['ballotFixedHoursFromOpening'] - 1) . " HOUR);";
 		if (!$futureInstances = $this->databaseConnection->getData ($query, $this->dataSource)) {
-			echo serialize ($data);	// Return an serialised empty array (plus the timestamp), i.e. return a string, but which will evaluate to false when unserialised
+			echo json_encode ($data);	// Return an empty dataset (plus the timestamp), i.e. return a string, but which will evaluate to false when decoded
 			return true;
 		}
 		
@@ -2596,8 +2599,8 @@ class bobguiAdminister extends frontControllerApplication
 			);
 		}
 		
-		# Serialise the data (which could be an empty array) into a string
-		$string = serialize ($data);
+		# Serialise the data (which could be an empty array)
+		$string = json_encode ($data);
 		
 		# Transmit
 		echo $string;

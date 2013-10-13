@@ -234,8 +234,8 @@ class bobguiIngest
 		}
 		$this->logMessage ('START Checkpoint 1: Instance data obtained; string length = ' . strlen ($data));
 		
-		# Unserialize the string of new data back into an array
-		$newInstances = unserialize ($data);
+		# Decode the string of new data back into an array
+		$newInstances = json_decode ($data, true);
 		
 		# Ensure the script is not taking too long
 		$now = time ();
