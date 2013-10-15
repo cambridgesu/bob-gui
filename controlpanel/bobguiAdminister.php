@@ -96,6 +96,9 @@ class bobguiAdminister extends frontControllerApplication
 			# Whether BOB is set to disable the list of usernames who voted that appears on the show votes page afterwards
 			'disableListWhoVoted' => false,
 			
+			# Counting method
+			'countingMethod' => 'ERS97STV',
+			
 			# LGBT whitelisted ballots, e.g. array ('test-12-13-foo', ...)
 			'lgbtWhitelist' => array (),
 			
@@ -214,6 +217,12 @@ class bobguiAdminister extends frontControllerApplication
 	
 	# Name of RON
 	var $reOpenNominations = 'Re-Open Nominations (RON)';
+	
+	# Supported counting methods, and their textual description
+	private $supportedCountingMethods = array (
+		'ERS97STV'	=> 'ERS97 STV',
+		'UcamSTV'	=> 'University of Cambridge STV',
+	);
 	
 	# Set the minimum number of fields required
 	var $fieldsTypes = array (
@@ -474,7 +483,7 @@ class bobguiAdminister extends frontControllerApplication
 			<li>You (the RO) must be <strong>registered as a manager</strong> of your group in the " . implode (' or ', $providerList) . ".</li>
 			<li>You must finalise setting up the vote <strong>at least 2 hours</strong> before it is due to open. (This required by the security architecture.)</li>
 			<li>From 2 hours before a ballot opens, it <strong>cannot</strong> be deleted or edited in any way.</li>
-			<li>Your constitution must require votes to be counted using standard (ERS) <strong>STV</strong>. This system cannot run first-past-the-post ballots.</li>
+			<li>Your constitution must require votes to be counted using <strong>" . htmlspecialchars ($this->supportedCountingMethods[$this->settings['countingMethod']]) . "</strong>. This system cannot run first-past-the-post ballots.</li>
 			<li>You must have <strong>a spreadsheet of all your voters</strong>, with at least University usernames.</li>
 			<li>All voters must have a Raven account.</li>
 			" . ($this->cautionAboutSensitiveBallots ? "<li>Do not use this system for elections where the only ballot is for an LGBT officer, i.e. where making the list of those who have voted would not be acceptable. (Please contact {$this->settings['administratorEmail']} to discuss this.)</li>" : '') . "
