@@ -93,6 +93,9 @@ class bobguiAdminister extends frontControllerApplication
 			# Runtime credentials used by BOB and put in each stub filename
 			'bobDirectory' => 'BOB/',	// as an include_path
 			
+			# Whether BOB is set to disable the list of usernames who voted that appears on the show votes page afterwards
+			'disableListWhoVoted' => false,
+			
 			# LGBT whitelisted ballots, e.g. array ('test-12-13-foo', ...)
 			'lgbtWhitelist' => array (),
 			
@@ -242,6 +245,9 @@ class bobguiAdminister extends frontControllerApplication
 			echo $this->defaultStyles ();
 			echo "\n" . '</style>';
 		}
+		
+		# Determine whether to warn about sensitive ballots: unless the list of those who voted is revealed, the system should warn about creating e.g. LGBT-only votes
+		$this->cautionAboutSensitiveBallots = (!$this->settings['disableListWhoVoted']);
 		
 	}
 	
@@ -471,7 +477,7 @@ class bobguiAdminister extends frontControllerApplication
 			<li>Your constitution must require votes to be counted using standard (ERS) <strong>STV</strong>. This system cannot run first-past-the-post ballots.</li>
 			<li>You must have <strong>a spreadsheet of all your voters</strong>, with at least University usernames.</li>
 			<li>All voters must have a Raven account.</li>
-			<li>Do not use this system for elections where the only ballot is for an LGBT officer, i.e. where making the list of those who have voted would not be acceptable. (Please contact {$this->settings['administratorEmail']} to discuss this.)</li>
+			" . ($this->cautionAboutSensitiveBallots ? "<li>Do not use this system for elections where the only ballot is for an LGBT officer, i.e. where making the list of those who have voted would not be acceptable. (Please contact {$this->settings['administratorEmail']} to discuss this.)</li>" : '') . "
 		</ol>";
 		
 		# Return the HTML
@@ -1043,16 +1049,18 @@ class bobguiAdminister extends frontControllerApplication
 				$form->registerProblem ('electionInfoAsEntered', $error['electionInfoAsEntered']);
 			}
 			
-			# Prevent single-ballot LGBT-only votes
-			if (count ($electionInfo) == 1) {
-				if (strlen ($unfinalisedData['urlSlug'])) {
-					$lgbtRegexp = '/(lgbt|lbgt|lgb|lbg|l g b t|l b g t|l g b|l b g|l-g-b-t|l-b-g-t|l-g-b|l-b-g|lesbigay|lesbian|transgen|transex)/';
-					foreach ($electionInfo as $index => $election) {
-						if (preg_match ($lgbtRegexp, strtolower ($election['title'])) || preg_match ($lgbtRegexp, strtolower ($unfinalisedData['title']))) {
-							$lgbtCodeAcademicYear = $this->academicYearFromStartDate (($unfinalisedData['ballotStart_date']) ? $unfinalisedData['ballotStart_date'] : date ('Y-m-d'));
-							$lgbtCode = htmlspecialchars ("{$organisationId}-" . $lgbtCodeAcademicYear . "-{$unfinalisedData['urlSlug']}");
-							if (!in_array ($lgbtCode, $this->settings['lgbtWhitelist'])) {
-								$form->registerProblem ('electionInfoAsEntered', "It appears that you are attempting to create a ballot where only an LGBT officer is being elected. The system does not normally allow this, because the voter list is revealed after the election (thereby forcing people to reveal their sexuality if they wish to vote). If your Committee has discussed the implications of this and you wish to go ahead, please <strong>e-mail {$this->settings['administratorEmail']} to request that this ballot be whitelisted</strong>, quoting this code: <strong>&lt;{$lgbtCode}&gt;</strong> .");
+			# Prevent single-ballot LGBT-only votes if required
+			if ($this->cautionAboutSensitiveBallots) {
+				if (count ($electionInfo) == 1) {
+					if (strlen ($unfinalisedData['urlSlug'])) {
+						$lgbtRegexp = '/(lgbt|lbgt|lgb|lbg|l g b t|l b g t|l g b|l b g|l-g-b-t|l-b-g-t|l-g-b|l-b-g|lesbigay|lesbian|transgen|transex)/';
+						foreach ($electionInfo as $index => $election) {
+							if (preg_match ($lgbtRegexp, strtolower ($election['title'])) || preg_match ($lgbtRegexp, strtolower ($unfinalisedData['title']))) {
+								$lgbtCodeAcademicYear = $this->academicYearFromStartDate (($unfinalisedData['ballotStart_date']) ? $unfinalisedData['ballotStart_date'] : date ('Y-m-d'));
+								$lgbtCode = htmlspecialchars ("{$organisationId}-" . $lgbtCodeAcademicYear . "-{$unfinalisedData['urlSlug']}");
+								if (!in_array ($lgbtCode, $this->settings['lgbtWhitelist'])) {
+									$form->registerProblem ('electionInfoAsEntered', "It appears that you are attempting to create a ballot where only an LGBT officer is being elected. The system does not normally allow this, because the voter list is revealed after the election (thereby forcing people to reveal their sexuality, or creating a potential implication, if they wish to vote). If your Committee has discussed the implications of this and you wish to go ahead, please <strong>e-mail {$this->settings['administratorEmail']} to request that this ballot be whitelisted</strong>, quoting this code: <strong>&lt;{$lgbtCode}&gt;</strong> .");
+								}
 							}
 						}
 					}
