@@ -453,9 +453,19 @@ class bobguiAdminister extends frontControllerApplication
 	# Checklist
 	private function checklist ($spaced = false)
 	{
-		return $html  = "\n<ol" . ($spaced ? ' class="spaced"' : '') . ">
+		# Get the list of provider names
+		require_once ('providers.php');
+		$providerApi = new providers ();
+		$providerMetadata = $providerApi->getProviders ();
+		$providerList = array ();
+		foreach ($providerMetadata as $provider) {
+			$providerList[] = "<a href=\"{$provider['baseUrl']}\">" . htmlspecialchars ($provider['name']) . '</a>';
+		}
+		
+		# Compile the HTML
+		$html  = "\n<ol" . ($spaced ? ' class="spaced"' : '') . ">
 			<li>Ballots should be created <strong>by the Returning Officer</strong>.</li>
-			<li>You (the RO) must be <strong>registered as a manager</strong> of your group in the <a href=\"/database/\">College Database</a> or <a href=\"/societies/directory/\">Societies Directory</a>.</li>
+			<li>You (the RO) must be <strong>registered as a manager</strong> of your group in the " . implode (' or ', $providerList) . ".</li>
 			<li>You must finalise setting up the vote <strong>at least 2 hours</strong> before it is due to open. (This required by the security architecture.)</li>
 			<li>From 2 hours before a ballot opens, it <strong>cannot</strong> be deleted or edited in any way.</li>
 			<li>Your constitution must require votes to be counted using standard (ERS) <strong>STV</strong>. This system cannot run first-past-the-post ballots.</li>
@@ -463,6 +473,9 @@ class bobguiAdminister extends frontControllerApplication
 			<li>All voters must have a Raven account.</li>
 			<li>Do not use this system for elections where the only ballot is for an LGBT officer, i.e. where making the list of those who have voted would not be acceptable. (Please contact {$this->settings['administratorEmail']} to discuss this.)</li>
 		</ol>";
+		
+		# Return the HTML
+		return $html;
 	}
 	
 	
