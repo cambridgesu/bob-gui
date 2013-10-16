@@ -110,8 +110,8 @@ class bobguiIngest
 			# Live server URL (for use in an e-mail only)
 			'liveServerUrl' => NULL,	// Not slash-terminated, e.g. 'https://www.example.com'
 			
-			# Document root (used for checking folder names)
-			'documentRoot' => '../../',
+			# Document root (used for checking folder names to prevent clashes)
+			'documentRoot' => '../',
 		);
 	}
 	
@@ -324,6 +324,9 @@ class bobguiIngest
 		}
 		$this->logMessage ('Checkpoint 5: New instance data confirmed correctly structured; total instances = ' . count ($newInstances));
 		
+		# Canonicalise the documentRoot setting
+		$this->settings['documentRoot'] = realpath (dirname (__FILE__) . '/' . $this->settings['documentRoot']) . '/';
+		
 		# Get a list of folders in the documentRoot
 		$subdirectories = array ();
 		if (!is_readable ($this->settings['documentRoot']) || (!$dir = opendir ($this->settings['documentRoot']))) {
@@ -333,7 +336,7 @@ class bobguiIngest
 		} else {
 			while ($file = readdir ($dir)) {
 				if ($file != '.' && $file != '..') {
-					if (is_dir ($this->settings['documentRoot'] . '/' . $file)) {
+					if (is_dir ($this->settings['documentRoot'] . $file)) {
 						$subdirectories[] = $file;
 					}
 				}
