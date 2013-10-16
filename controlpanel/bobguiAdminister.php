@@ -996,11 +996,12 @@ class bobguiAdminister extends frontControllerApplication
 			),
 		));
 		$form->heading (3, '<img src="/images/icons/clock_red.png" alt="" class="icon" /> Times and dates');
-		$form->heading ('p', 'Ballots can be created starting ' . ($this->settings['ballotFixedHoursFromOpening'] == 1 ? 'one hour' : $this->settings['ballotFixedHoursFromOpening'] . ' hours') . ' from now, up to ' . ($this->settings['daysAhead'] == 1 ? 'one day' : $this->settings['daysAhead'] . ' days') . ' ahead.');
+		$form->heading ('p', 'Ballots can be created starting ' . ($this->settings['ballotFixedHoursFromOpening'] == 1 ? 'one hour' : $this->settings['ballotFixedHoursFromOpening'] . ' hours') . ' from now, up to ' . $this->settings['daysAhead'] . ' days ahead, to run for a maximum period of ' . ($this->settings['maximumOpeningDays'] == 1 ? 'one day' : "{$this->settings['maximumOpeningDays']} days") . '.');
 		$fields = array ('ballotStart' => '<strong>Start</strong> time/date of the ballot', 'ballotEnd' => '<strong>Closing</strong> time/date of the ballot', 'ballotViewable' => '<strong>If</strong> you need to have paper voting (opening after the online vote), enter the time/date when the paper voting closes.<br /><strong>A better solution</strong> is usually to have a laptop/PC available in college for in-person voting, as this avoids spreadsheet-based counts.', );
 		$preformattedTimes = $this->preformattedTimes ();
-		$preformattedDates = $this->preformattedDates ();
 		foreach ($fields as $field => $label) {
+			$daysToShow = $this->settings['daysAhead'] + ($field == 'ballotStart' ? 0 : $this->settings['maximumOpeningDays']);
+			$preformattedDates = $this->preformattedDates ($daysToShow);
 			$form->select (array (
 				'name'					=> $field . '_time',
 				'title'					=> $label,
@@ -2322,7 +2323,7 @@ class bobguiAdminister extends frontControllerApplication
 	
 	
 	# Function to return pre-formatted times
-	private function preformattedDates ()
+	private function preformattedDates ($daysAhead)
 	{
 		# Get the earliest time that a ballot can be created for
 		$earliest = $this->earliestUnixTime ();
@@ -2330,7 +2331,7 @@ class bobguiAdminister extends frontControllerApplication
 		# Construct the list of dates
 		$oneDay = (24 * 60 * 60);
 		$dates = array ();
-		for ($days = 0; $days < $this->settings['daysAhead']; $days++) {
+		for ($days = 0; $days < $daysAhead; $days++) {
 			$unixTime = $earliest + ($days * $oneDay);
 			$dateSql = date ('Y-m-d', $unixTime);
 			$dateVisible = date ('l, jS F, Y', $unixTime);

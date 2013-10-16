@@ -14,6 +14,7 @@ $config['liveServerUrl'] = 'https://www.vote.example.com';
 $config['apiKey'] = 'api_key_goes_here';
 $config['disableListWhoVoted'] = false;
 $config['countingMethod'] = 'ERS97STV';
+$config['maximumOpeningDays'] = 3;
 
 # Load and run the BOB GUI with the specified settings
 require_once (dirname (__FILE__) . '/bobguiAdminister.php');
