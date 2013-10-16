@@ -5,7 +5,7 @@
 
 
 # Front Controller pattern application
-# Version 1.6.11
+# Version 1.6.12
 class frontControllerApplication
 {
  	# Define available actions; these should be extended by adding definitions in an overriden assignActions ()
@@ -297,13 +297,11 @@ class frontControllerApplication
 			$this->restrictedAdministrator = ((isSet ($this->administrators[$this->user]['privilege']) && ($this->administrators[$this->user]['privilege'] == 'Restricted administrator')) ? true : NULL);
 		}
 		
-		# Start a div if required to hold the application and define the ending div
-		if ($this->settings['div']) {echo "\n<div id=\"{$this->settings['div']}\">\n";}
-		$endDiv = ($this->settings['div'] ? "\n</div>" : '');
-		
 		# Additional processing, before actions processing phase, if required
 		if (method_exists ($this, 'mainPreActions')) {
 			if ($this->mainPreActions () === false) {
+				if ($this->settings['div']) {echo "\n<div id=\"{$this->settings['div']}\">\n";}
+				$endDiv = ($this->settings['div'] ? "\n</div>" : '');
 				echo $endDiv;
 				echo $footer;
 				return false;
@@ -336,6 +334,10 @@ class frontControllerApplication
 		# Determine whether the action is an export type, i.e. has no house style or loaded outside the system
 		$this->exportType = ($disableAutoGui || (isSet ($this->actions[$this->action]['export']) && ($this->actions[$this->action]['export'])));
 		if ($this->exportType) {$this->settings['div'] = false;}
+		
+		# Start a div if required to hold the application and define the ending div
+		if ($this->settings['div']) {echo "\n<div id=\"{$this->settings['div']}\">\n";}
+		$endDiv = ($this->settings['div'] ? "\n</div>" : '');
 		
 		# Determine if this action has parent action, and if so, what it is
 		$this->parentAction = (isSet ($this->actions[$this->action]['parent']) ? $this->actions[$this->action]['parent'] : false);
