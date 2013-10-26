@@ -3,37 +3,35 @@
 ## Stub launching file for BOB instances ##
 
 
+# Other settings
+$configBob['dbHostname'] = 'localhost';
+$configBob['dbDatabase'] = 'votes';
+$configBob['dbDatabaseStaging'] = 'votesstaging';
+$configBob['dbUsername'] = 'testvote';
+$configBob['dbSetupUsername'] = 'testvotesetup';
+$configBob['dbPassword'] = 'your_password_goes_here';
+$configBob['dbConfigTable'] = 'instances';		// Database table containing the config which the dbSetupUsername has SELECT rights on
+$configBob['countingInstallation'] = '%documentroot/../../openstv/openstv/';	// Counting installation config; must end /openstv/ (slash-terminated), or false to disable auto-count
+$configBob['countingMethod'] = 'ERS97STV';
+$configBob['disableListWhoVoted'] = false;		// Whether to disable the list of usernames who voted that appears on the show votes page afterwards
+
+
+# Fix the header and footer location
+$configBob['headerLocation'] = '/style/header.html';
+$configBob['footerLocation'] = '/style/footer.html';
+
 # Get the unique name for this ballot from the query string, then remove it so that BOB gets ?admin rather than ?id=webmaster-08-09-supportteam&admin or ?id=webmaster-08-09-supportteam
 if (isSet ($_GET['id'])) {
-	$config['id'] = $_GET['id'];
+	$configBob['id'] = $_GET['id'];
 	$_SERVER['QUERY_STRING'] = str_replace ('id=' . $_GET['id'] . '&', '', $_SERVER['QUERY_STRING']);
 	$_SERVER['QUERY_STRING'] = str_replace ('id=' . $_GET['id'], '', $_SERVER['QUERY_STRING']);
 } else {
-	$config['id'] = false;  // Which will result in a 404 in the application itself
+	$configBob['id'] = false;  // Which will result in a 404 in the application itself
 }
-
-# Location in the URL space of optional header and footer file; must start with /
-$config['headerLocation'] = '/style/header.html';
-$config['footerLocation'] = '/style/footer.html';
-
-# Other settings
-$config['dbHostname'] = 'localhost';
-$config['dbDatabase'] = 'votes';
-$config['dbDatabaseStaging'] = 'votesstaging';
-$config['dbUsername'] = 'testvote';
-$config['dbSetupUsername'] = 'testvotesetup';
-$config['dbPassword'] = 'your_password_goes_here';
-$config['dbConfigTable'] = 'instances';		// Database table containing the config which the dbSetupUsername has SELECT rights on
-$config['countingInstallation'] = '%documentroot/../../openstv/openstv/';	// Counting installation config; must end /openstv/ (slash-terminated), or false to disable auto-count
-$config['countingMethod'] = 'ERS97STV';
-$config['disableListWhoVoted'] = false;		// Whether to disable the list of usernames who voted that appears on the show votes page afterwards
-
-
-## End of config; now run the system ##
 
 # Load and run the BOB class
 #!# Hard-coded path
 require_once ('../../bob/BOB.php');
-new BOB ($config);
+new BOB ($configBob);
 
 ?>

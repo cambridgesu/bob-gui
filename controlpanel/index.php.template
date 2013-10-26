@@ -3,22 +3,22 @@
 # Stub launching file for the control panel side of the BOB GUI
 
 # Settings
-$config['enabled'] = false;	// Not enabled on live site by default
-$config['username'] = 'bobgui';
-$config['password'] = 'your_password_goes_here';
-$config['administratorEmail'] = 'webmaster@example.com';
-$config['organisationName'] = false;
-$config['mailDomain'] = 'example.com';
-$config['emailTech'] = 'evote@example.com';
-$config['emailReturningOfficerReceipts'] = 'votereceipts@example.com';
-$config['liveServerUrl'] = 'https://www.vote.example.com';
-$config['apiKey'] = 'api_key_goes_here';
-$config['disableListWhoVoted'] = false;
-$config['countingMethod'] = 'ERS97STV';
-$config['maximumOpeningDays'] = 3;
+$configControlpanel['enabled'] = false;	// Not enabled on live site by default
+$configControlpanel['username'] = 'bobgui';
+$configControlpanel['password'] = 'your_password_goes_here';
+$configControlpanel['administratorEmail'] = 'webmaster@example.com';
+$configControlpanel['organisationName'] = false;
+$configControlpanel['mailDomain'] = 'example.com';
+$configControlpanel['emailTech'] = 'evote@example.com';
+$configControlpanel['emailReturningOfficerReceipts'] = 'votereceipts@example.com';
+$configControlpanel['liveServerUrl'] = 'https://www.vote.example.com';
+$configControlpanel['apiKey'] = 'api_key_goes_here';
+$configControlpanel['disableListWhoVoted'] = false;
+$configControlpanel['countingMethod'] = 'ERS97STV';
+$configControlpanel['maximumOpeningDays'] = 3;
 
 # Load and run the BOB GUI with the specified settings
 require_once (dirname (__FILE__) . '/bobguiAdminister.php');
-new bobguiAdminister ($config);
+new bobguiAdminister ($configControlpanel);
 
 ?>

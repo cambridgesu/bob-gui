@@ -3,23 +3,23 @@
 # Stub launching file for the ingest side of the BOB GUI
 
 # Settings
-$config['databaseStaging']= 'votesstaging';
-$config['databaseLive'] = 'votes';
-$config['username'] = 'bobguiIngest';
-$config['password'] = 'your_password_goes_here';
-$config['administratorEmail'] = 'webmaster@example.com';
-$config['organisationName'] = false;
-$config['instanceDataUrl'] = 'https://www.controlpanel.vote.example.com/bestow.json';
-$config['instanceDataApiKey'] = 'your_api_key_here';
-$config['liveServerUrl'] = 'https://www.vote.example.com';	// Not slash-terminated
-$config['smsRecipient'] = '441234567890';
-$config['smsApiKey'] = false;
+$configIngest['databaseStaging']= 'votesstaging';
+$configIngest['databaseLive'] = 'votes';
+$configIngest['username'] = 'bobguiIngest';
+$configIngest['password'] = 'your_password_goes_here';
+$configIngest['administratorEmail'] = 'webmaster@example.com';
+$configIngest['organisationName'] = false;
+$configIngest['instanceDataUrl'] = 'https://www.controlpanel.vote.example.com/bestow.json';
+$configIngest['instanceDataApiKey'] = 'your_api_key_here';
+$configIngest['liveServerUrl'] = 'https://www.vote.example.com';	// Not slash-terminated
+$configIngest['smsRecipient'] = '441234567890';
+$configIngest['smsApiKey'] = false;
 
 #!# TEMPORARY while testing
-$config['launchTimeMismatch'] = 3600;
+$configIngest['launchTimeMismatch'] = 3600;
 
 # Load and run the BOB GUI with the specified settings
 require_once (dirname (__FILE__) . '/bobguiIngest.php');
-new bobguiIngest ($config);
+new bobguiIngest ($configIngest);
 
 ?>
