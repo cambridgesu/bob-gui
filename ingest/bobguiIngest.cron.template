@@ -1,2 +1,2 @@
 # Run ingest process each hour, on the half-hour
-30 * * * * php -d memory_limit=700M %documentroot/ingest/bobguiIngestWrapper.php
+30 * * * * php -d memory_limit=700M %documentroot/ingest/index.php
