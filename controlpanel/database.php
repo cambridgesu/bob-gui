@@ -2,7 +2,7 @@
 
 /*
  * Coding copyright Martin Lucas-Smith, University of Cambridge, 2003-13
- * Version 2.3.5
+ * Version 2.3.6
  * Uses prepared statements (see http://stackoverflow.com/questions/60174/best-way-to-stop-sql-injection-in-php ) where possible
  * Distributed under the terms of the GNU Public Licence - www.gnu.org/copyleft/gpl.html
  * Requires PHP 4.1+ with register_globals set to 'off'
@@ -823,6 +823,7 @@ class database
 		if (!is_array ($dataSet) || !$dataSet) {return false;}
 		
 		# Determine the number of fields in the data by checking against the first item in the dataset
+		require_once ('application.php');
 		if (!$fields = application::arrayFieldsConsistent ($dataSet)) {return false;}
 		
 		# Assemble the field names
@@ -965,6 +966,7 @@ class database
 		if (!is_array ($dataSet) || !$dataSet) {return false;}
 		
 		# Determine the number of fields in the data by checking against the first item in the dataset
+		require_once ('application.php');
 		if (!$fields = application::arrayFieldsConsistent ($dataSet)) {return false;}
 		
 		# Get the key field
