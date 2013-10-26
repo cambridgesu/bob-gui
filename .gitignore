@@ -1,4 +1,5 @@
 # Ignore the instantiated copy of the bootstrap files
+bob/index.php
 listing/bobguiListingWrapper.php
 ingest/bobguiIngestWrapper.php
 controlpanel/index.html
