@@ -1758,7 +1758,7 @@ class bobguiAdminister extends frontControllerApplication
 	{
 		# Log this change
 		$logEntry = date ('r') . "\t" . $this->user . "\t" . $function . "\t" . $organisationId . "\t" . "Voters: " . ($voters ? count ($voters) : 'n/a') . "\t" . str_replace (array ("\r", "\n"), array ('', "\\n"), print_r ($ballot, true)) . "\r\n";
-		$logfile = $_SERVER['DOCUMENT_ROOT'] . $this->baseUrl . $this->settings['logfile'];
+		$logfile = realpath ($_SERVER['DOCUMENT_ROOT'] . '/..' . $this->baseUrl . $this->settings['logfile']);
 		file_put_contents ($logfile, $logEntry, FILE_APPEND);
 		
 		# Take action depending on the function
