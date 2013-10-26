@@ -12,27 +12,21 @@ if (isSet ($_GET['id'])) {
 	$config['id'] = false;  // Which will result in a 404 in the application itself
 }
 
-# Database connection details
+# Location in the URL space of optional header and footer file; must start with /
+$config['headerLocation'] = '/style/header.html';
+$config['footerLocation'] = '/style/footer.html';
+
+# Other settings
 $config['dbHostname'] = 'localhost';
 $config['dbDatabase'] = 'votes';
 $config['dbDatabaseStaging'] = 'votesstaging';
 $config['dbUsername'] = 'testvote';
 $config['dbSetupUsername'] = 'testvotesetup';
 $config['dbPassword'] = 'your_password_goes_here';
-
-# Database table containing the config which the dbSetupUsername has SELECT rights on
-$config['dbConfigTable'] = 'instances';
-
-# Counting method and installation config; must end /openstv/ (slash-terminated), or false to disable auto-count
-$config['countingInstallation'] = '%documentroot/../../openstv/openstv/';
+$config['dbConfigTable'] = 'instances';		// Database table containing the config which the dbSetupUsername has SELECT rights on
+$config['countingInstallation'] = '%documentroot/../../openstv/openstv/';	// Counting installation config; must end /openstv/ (slash-terminated), or false to disable auto-count
 $config['countingMethod'] = 'ERS97STV';
-
-# Location in the URL space of optional header and footer file; must start with /
-$config['headerLocation'] = '/style/header.html';
-$config['footerLocation'] = '/style/footer.html';
-
-# Whether to disable the list of usernames who voted that appears on the show votes page afterwards
-$config['disableListWhoVoted'] = false;
+$config['disableListWhoVoted'] = false;		// Whether to disable the list of usernames who voted that appears on the show votes page afterwards
 
 
 ## End of config; now run the system ##
