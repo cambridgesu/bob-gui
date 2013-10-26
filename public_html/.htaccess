@@ -19,13 +19,19 @@ ErrorDocument 404 /index.php?action=page404
 
 
 
+### Settings for BOB control panel ###
+
+# These are currently in the ../controlpanel/apache.conf file
+
+
 ### Settings for BOB (native - the actual voting software) ###
 
 RewriteEngine on
 RewriteBase /
 # Launch the BOB instance
-RewriteRule ^([-a-z]+)/([0-9]{2}-[0-9]{2})/([a-z]+)/(|index.html|index.php)$ /bob/index.php?id=$1-$2-$3 [L,QSA]
+RewriteRule ^([-a-z]+)/([0-9]{2}-[0-9]{2})/([a-z]+)/(|index.html|index.php)$ /bob.php?id=$1-$2-$3 [L,QSA]
 RewriteRule ^([-a-z]+)/([0-9]{2}-[0-9]{2})/([a-z]+)$ /$1/$2/$3/ [R]
 #!# Need to work out why this is needed
 RewriteRule ^([-a-z]+)/([0-9]{2}-[0-9]{2})/([a-z]+)/logout\.html$ /logout.html [L]
+
 

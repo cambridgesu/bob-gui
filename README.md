@@ -17,3 +17,8 @@ https://github.com/cusu/bob
 The code is licensed under the version 2 of the GPL.
 
 
+## Deployment
+
+See https://github.com/cusu/bob-gui-deploy
+
+Set your VirtualHost's DOCUMENT_ROOT to the path of the public_html directory.

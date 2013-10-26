@@ -3,7 +3,7 @@
 ## Stub launching file for BOB instances ##
 
 
-# Deny direct running of this stub file, i.e. deny /bobstub.php?id=webmaster-09-10-testeleven
+# Deny direct running of the stub file, i.e. deny /bob.php?id=webmaster-09-10-testeleven
 if (substr ($_SERVER['REQUEST_URI'], 0, strlen ($_SERVER['SCRIPT_NAME'])) == $_SERVER['SCRIPT_NAME']) {
 	$_GET['action'] = 'page404';
 	#!# Hard-coded path
@@ -32,7 +32,7 @@ $config['dbPassword'] = 'your_password_goes_here';
 $config['dbConfigTable'] = 'instances';
 
 # Counting method and installation config; must end /openstv/ (slash-terminated), or false to disable auto-count
-$config['countingInstallation'] = '%documentroot/../openstv/openstv/';
+$config['countingInstallation'] = '%documentroot/../../openstv/openstv/';
 $config['countingMethod'] = 'ERS97STV';
 
 # Location in the URL space of optional header and footer file; must start with /

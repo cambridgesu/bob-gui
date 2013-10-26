@@ -6,12 +6,12 @@ controlpanel/index.php
 controlpanel/providers.php
 
 # Ignore favicon if it exists
-favicon.ico
+public_html/favicon.ico
 
 # Ignore any contents of the style folder, except its .gitignore file
-style/*
-!style/header.html.template
-!style/footer.html.template
+public_html/style/*
+!public_html/style/header.html.template
+!public_html/style/footer.html.template
 
 # Ignore any ingest log file and lock file
 ingest/bobguiIngestLog.txt
