@@ -90,6 +90,9 @@ class bobguiAdminister extends frontControllerApplication
 			# CSS style div
 			'div' => 'controlpanel',
 			
+			# Set to use the internal 404 page
+			'page404' => false,
+			
 			# Runtime credentials used by BOB and put in each stub filename
 			'bobDirectory' => 'BOB/',	// as an include_path
 			

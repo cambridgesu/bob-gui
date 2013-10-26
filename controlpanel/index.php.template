@@ -3,6 +3,7 @@
 # Stub launching file for the control panel side of the BOB GUI
 
 # Settings
+$config['enabled'] = false;	// Not enabled on live site by default
 $config['username'] = 'bobgui';
 $config['password'] = 'your_password_goes_here';
 $config['administratorEmail'] = 'webmaster@example.com';

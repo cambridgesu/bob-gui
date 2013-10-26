@@ -5,7 +5,7 @@
 
 
 # Front Controller pattern application
-# Version 1.6.12
+# Version 1.6.13
 class frontControllerApplication
 {
  	# Define available actions; these should be extended by adding definitions in an overriden assignActions ()
@@ -157,6 +157,12 @@ class frontControllerApplication
 		# Function to merge the arguments; note that $errors returns the errors by reference and not as a result from the method
 		#!# Ideally the start and end div would surround these items before $this->action is determined, but that would break external type handling
 		if (!$this->settings = application::assignArguments ($errors, $settings, $this->defaults, get_class ($this), NULL, $handleErrors = true)) {return false;}
+		
+		# End if not enabled
+		if (!$this->settings['enabled']) {
+			$this->page404 ();
+			return false;
+		}
 		
 		# Deal with table prefixes
 		if ($this->settings['tablePrefix']) {
@@ -552,6 +558,7 @@ class frontControllerApplication
 		# Specify available arguments as defaults or as NULL (to represent a required argument)
 		$this->globalDefaults = array (
 			'applicationName'								=> application::unCamelCase (get_class ($this)),
+			'enabled'										=> true,		// Whether this application is enabled
 			'authentication' 								=> false,		// Whether all pages require authentication
 			'dataDisableAuth'								=> false,		// Whether to disable auth on the data function (only relevant when using authentication=true); this can cause logout due to fast cookie transfer
 			'externalAuth'									=> false,		// Allow external authentication/authorisation
