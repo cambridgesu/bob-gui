@@ -758,7 +758,7 @@ class frontControllerApplication
 	{
 		# Load external libraries
 		#!# Upgrade path loading to __DIR__ when PHP 5.3 on server
-		require_once (dirname (__FILE__) . '/database.php');
+		require_once (dirname (__FILE__) . '/../lib/database.php');
 		
 		# Clean server globals
 		pureContent::cleanServerGlobals ();
