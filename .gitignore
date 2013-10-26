@@ -1,8 +1,5 @@
 # Ignore the instantiated copy of the bootstrap files
-bob/index.php
-listing/index.php
-ingest/index.php
-controlpanel/index.php
+config.php
 controlpanel/providers.php
 
 # Ignore favicon if it exists

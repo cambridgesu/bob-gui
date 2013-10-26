@@ -1,0 +1,55 @@
+<?php
+
+# Config, used by all modules
+
+# BOB wrapper settings
+$configBob['dbHostname'] = 'localhost';
+$configBob['dbDatabase'] = 'votes';
+$configBob['dbDatabaseStaging'] = 'votesstaging';
+$configBob['dbUsername'] = 'testvote';
+$configBob['dbSetupUsername'] = 'testvotesetup';
+$configBob['dbPassword'] = 'your_password_goes_here';
+$configBob['dbConfigTable'] = 'instances';		// Database table containing the config which the dbSetupUsername has SELECT rights on
+$configBob['countingInstallation'] = '%documentroot/../../openstv/openstv/';	// Counting installation config; must end /openstv/ (slash-terminated), or false to disable auto-count
+$configBob['countingMethod'] = 'ERS97STV';
+$configBob['disableListWhoVoted'] = false;		// Whether to disable the list of usernames who voted that appears on the show votes page afterwards
+
+# Control panel settings
+$configControlpanel['enabled'] = false;	// Not enabled on live site by default
+$configControlpanel['username'] = 'bobgui';
+$configControlpanel['password'] = 'your_password_goes_here';
+$configControlpanel['administratorEmail'] = 'webmaster@example.com';
+$configControlpanel['organisationName'] = false;
+$configControlpanel['mailDomain'] = 'example.com';
+$configControlpanel['emailTech'] = 'evote@example.com';
+$configControlpanel['emailReturningOfficerReceipts'] = 'votereceipts@example.com';
+$configControlpanel['liveServerUrl'] = 'https://www.vote.example.com';
+$configControlpanel['apiKey'] = 'api_key_goes_here';
+$configControlpanel['disableListWhoVoted'] = false;
+$configControlpanel['countingMethod'] = 'ERS97STV';
+$configControlpanel['maximumOpeningDays'] = 3;
+
+# Ingest settings
+$configIngest['databaseStaging']= 'votesstaging';
+$configIngest['databaseLive'] = 'votes';
+$configIngest['username'] = 'bobguiIngest';
+$configIngest['password'] = 'your_password_goes_here';
+$configIngest['administratorEmail'] = 'webmaster@example.com';
+$configIngest['organisationName'] = false;
+$configIngest['instanceDataUrl'] = 'https://www.controlpanel.vote.example.com/bestow.json';
+$configIngest['instanceDataApiKey'] = 'your_api_key_here';
+$configIngest['liveServerUrl'] = 'https://www.vote.example.com';	// Not slash-terminated
+$configIngest['smsRecipient'] = '441234567890';
+$configIngest['smsApiKey'] = false;
+
+# Listing side
+$configListing['username'] = 'bobguiListing';
+$configListing['password'] = 'your_password_goes_here';
+$configListing['administratorEmail'] = 'webmaster@example.com';
+$configListing['organisationName'] = false;
+$configListing['mailDomain'] = 'example.com';
+$configListing['controlPanelUrl'] = 'https://www.controlpanel.vote.example.com/controlpanel/'
+$configListing['controlPanelLinkEnabled'] = true;	// or false or comma-separated string of usernames
+$configListing['controlPanelLinkDirectly'] = false;
+
+?>

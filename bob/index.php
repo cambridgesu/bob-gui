@@ -3,18 +3,8 @@
 ## Stub launching file for BOB instances ##
 
 
-# Other settings
-$configBob['dbHostname'] = 'localhost';
-$configBob['dbDatabase'] = 'votes';
-$configBob['dbDatabaseStaging'] = 'votesstaging';
-$configBob['dbUsername'] = 'testvote';
-$configBob['dbSetupUsername'] = 'testvotesetup';
-$configBob['dbPassword'] = 'your_password_goes_here';
-$configBob['dbConfigTable'] = 'instances';		// Database table containing the config which the dbSetupUsername has SELECT rights on
-$configBob['countingInstallation'] = '%documentroot/../../openstv/openstv/';	// Counting installation config; must end /openstv/ (slash-terminated), or false to disable auto-count
-$configBob['countingMethod'] = 'ERS97STV';
-$configBob['disableListWhoVoted'] = false;		// Whether to disable the list of usernames who voted that appears on the show votes page afterwards
-
+# Load the settings
+require_once (dirname (__FILE__) . '/../config.php');
 
 # Fix the header and footer location
 $configBob['headerLocation'] = '/style/header.html';
