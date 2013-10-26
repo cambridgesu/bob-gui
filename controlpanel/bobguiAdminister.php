@@ -48,7 +48,7 @@ class bobguiAdminister extends frontControllerApplication
 			'table' => 'instances',
 			
 			# Log file (from baseUrl) for auditing (if any)
-			'logfile' => '/.ht-logfile.txt',
+			'logfile' => '/logfile.txt',
 			
 			# Unique ID regexp
 			'uniqueIdRegexp' => '^([a-z]{3,20})$',
