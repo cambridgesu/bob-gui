@@ -28,7 +28,6 @@ class bobguiListing extends frontControllerApplication
 			
 			# Control panel URL (on 'write' server)
 			'controlPanelOnlyUsers' => false,	// Show the control panel link for specified users only (space-separated list of usersnames, e.g. 'user1 user2 user3', or do not limit (i.e. show to everyone) (boolean false)
-			'controlPanelLinkEnabled' => true,	// Show the control panel link for all users (true), never (false), or for specific users only (comma-separated list of usernames, e.g. 'user1,user2,user3' )
 			'controlPanelLinkDirectly' => false,	// Whether to link directly to the control panel or have an intermediate page
 			'controlPanelUrl' => NULL,
 			
