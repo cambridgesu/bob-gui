@@ -14,3 +14,7 @@ public_html/style/*
 ingest/bobguiIngestLog.txt
 ingest/lock/*
 !ingest/lock/.gitignore
+
+# Ignore any .htaccess file for the control panel
+public_html/controlpanel/.htaccess
+
