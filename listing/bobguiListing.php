@@ -27,6 +27,7 @@ class bobguiListing extends frontControllerApplication
 			'administratorEmail' => NULL,
 			
 			# Control panel URL (on 'write' server)
+			'controlPanelOnlyUsers' => false,	// Show the control panel link for specified users only (space-separated list of usersnames, e.g. 'user1 user2 user3', or do not limit (i.e. show to everyone) (boolean false)
 			'controlPanelLinkEnabled' => true,	// Show the control panel link for all users (true), never (false), or for specific users only (comma-separated list of usernames, e.g. 'user1,user2,user3' )
 			'controlPanelLinkDirectly' => false,	// Whether to link directly to the control panel or have an intermediate page
 			'controlPanelUrl' => NULL,
@@ -80,7 +81,7 @@ class bobguiListing extends frontControllerApplication
 			'controlpanel' => array (
 				'description' => 'Control panel',
 				#!# NB The URL /controlpanel.html is still registered at htaccess level, though this is not in practice a problem as the frontController will not respond to it
-				'enableIf' => ($this->settings['controlPanelLinkEnabled'] && !$this->settings['controlPanelLinkDirectly']),
+				'enableIf' => ($this->controlPanelLinkEnabled && !$this->settings['controlPanelLinkDirectly']),
 			),
 			'organisation' => array (
 				'description' => false,
@@ -97,17 +98,11 @@ class bobguiListing extends frontControllerApplication
 	# Additional default processing, before actions processing
 	public function mainPreActions ()
 	{
-		# For the control panel visibility setting, normalise to boolean; if the user is one of the usernames, convert to true
-		if (!is_bool ($this->settings['controlPanelLinkEnabled'])) {
-			if (is_string ($this->settings['controlPanelLinkEnabled']) && strlen ($this->settings['controlPanelLinkEnabled'])) {
-				$usernames = explode (',', trim ($this->settings['controlPanelLinkEnabled']));
-				foreach ($usernames as $index => $username) {
-					$usernames[$index] = trim ($username);
-				}
-				$this->settings['controlPanelLinkEnabled'] = (in_array ($this->user, $usernames, true));	// True or false, depending on whether the user is in the list
-			} else {
-				$this->settings['controlPanelLinkEnabled'] = false;	// Anything else, e.g. array, object, etc. becomes false, for safety
-			}
+		# Enable the control panel for all users, except if a username list has been supplied, in which case determine if the current user is amongst them
+		$this->controlPanelLinkEnabled = true;	// Enabled for all users by default
+		if (is_string ($this->settings['controlPanelOnlyUsers']) && strlen ($this->settings['controlPanelOnlyUsers'])) {
+			$usernames = preg_split ("/[\s]+/", trim ($this->settings['controlPanelOnlyUsers']));
+			$this->controlPanelLinkEnabled = (in_array ($this->user, $usernames, true));	// True or false, depending on whether the user is in the list
 		}
 		
 	}
@@ -209,7 +204,7 @@ class bobguiListing extends frontControllerApplication
 		$html .= "\n\t<li><a href=\"{$this->baseUrl}/closed.html\"><img src=\"/images/icons/book.png\" alt=\"\" class=\"icon\" /> Recent ballots</a></li>";
 		$html .= "\n\t<li><a href=\"{$this->baseUrl}/archive.html\"><img src=\"/images/icons/book_addresses.png\" alt=\"\" class=\"icon\" /> Archive of all ballots</a></li>";
 		$html .= "\n</ul>";
-		if ($this->settings['controlPanelLinkEnabled']) {
+		if ($this->controlPanelLinkEnabled) {
 			$controlPanelLink = ($this->settings['controlPanelLinkDirectly'] ? $this->settings['controlPanelUrl'] : "{$this->baseUrl}/controlpanel.html");
 			$html .= "\n<h2>Create/administer ballots</h2>";
 			$html .= "\n<ul class=\"actions left\">";

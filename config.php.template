@@ -49,7 +49,7 @@ $configListing['administratorEmail'] = 'webmaster@example.com';
 $configListing['organisationName'] = false;
 $configListing['mailDomain'] = 'example.com';
 $configListing['controlPanelUrl'] = 'https://www.controlpanel.vote.example.com/controlpanel/'
-$configListing['controlPanelLinkEnabled'] = true;	// or false or comma-separated string of usernames
+$configListing['controlPanelOnlyUsers'] = '';	// Space-separated string of usernames, or false/empty-string for no limitation (i.e. allow all authenticated users)
 $configListing['controlPanelLinkDirectly'] = false;
 
 ?>
