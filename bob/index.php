@@ -10,6 +10,9 @@ require_once (dirname (__FILE__) . '/../config.php');
 $configBob['headerLocation'] = '/style/header.html';
 $configBob['footerLocation'] = '/style/footer.html';
 
+# Fix the CSV count files directory
+$configBob['additionalVotesCsvDirectory'] = dirname (__FILE__) . '/../controlpanel/additionalvotescsv/';
+
 # Get the unique name for this ballot from the query string, then remove it so that BOB gets ?admin rather than ?id=webmaster-08-09-supportteam&admin or ?id=webmaster-08-09-supportteam
 if (isSet ($_GET['id'])) {
 	$configBob['id'] = $_GET['id'];

@@ -5,10 +5,14 @@ controlpanel/providers.php
 # Ignore favicon if it exists
 public_html/favicon.ico
 
-# Ignore any contents of the style folder, except its .gitignore file
+# Ignore any contents of the style folder, except its header and footer template
 public_html/style/*
 !public_html/style/header.html.template
 !public_html/style/footer.html.template
+
+# Ignore any contents of the additional votes folder, except its .gitignore file
+controlpanel/additionalvotescsv/*
+!controlpanel/additionalvotescsv/.gitignore
 
 # Ignore any ingest log file and lock file
 ingest/bobguiIngestLog.txt
