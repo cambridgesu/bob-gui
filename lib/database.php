@@ -2,7 +2,7 @@
 
 /*
  * Coding copyright Martin Lucas-Smith, University of Cambridge, 2003-13
- * Version 2.3.6
+ * Version 2.3.7
  * Uses prepared statements (see http://stackoverflow.com/questions/60174/best-way-to-stop-sql-injection-in-php ) where possible
  * Distributed under the terms of the GNU Public Licence - www.gnu.org/copyleft/gpl.html
  * Requires PHP 4.1+ with register_globals set to 'off'
@@ -715,10 +715,10 @@ class database
 	
 	
 	# Function to select the data where only one item will be returned (as per getOne); this function has the same signature as select, except for the default on associative
-	public function selectOne ($database, $table, $conditions = array (), $columns = array (), $associative_ArgumentIgnored = false, $orderBy = false)
+	public function selectOne ($database, $table, $conditions = array (), $columns = array (), $associative_ArgumentIgnored = false, $orderBy = false, $limit = false)
 	{
 		# Get the data
-		$data = $this->select ($database, $table, $conditions, $columns, false, $orderBy);
+		$data = $this->select ($database, $table, $conditions, $columns, false, $orderBy, $limit);
 		
 		# Ensure that only one item is returned
 		if (count ($data) > 1) {return NULL;}

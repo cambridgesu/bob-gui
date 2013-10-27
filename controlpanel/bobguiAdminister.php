@@ -1325,6 +1325,28 @@ class bobguiAdminister extends frontControllerApplication
 	}
 	
 	
+	# Function to get a cloned list of voters from the last ballot the user completed setting up for this organisation
+	private function cloneVotersListFromLast ($ballot, &$voterListCloned = false)
+	{
+		# Determine the required number of fields the current ballot requires, i.e. what structure of data to paste in
+		$requiredFields = $this->requiredFields ($ballot);
+		
+		# Get the last completed entry, or end
+		if (!$lastBallot = $this->databaseConnection->selectOne ($this->settings['database'], $this->settings['table'], array ('provider' => $ballot['provider'], 'organisation' => $ballot['organisation']), array (), false, 'instanceCompleteTimestamp DESC', 1)) {return false;}
+		
+		# Pass back by reference the metadata of the chosen ballot, so that the interface can show the user details of that ballot
+		$voterListCloned = $lastBallot;
+		
+		# Obtain the fieldnames
+		$fieldnames = $this->fieldsTypes[$requiredFields]['fieldnames'];
+		
+		# Derive the table name and return the list of voters
+		$voterTable = $lastBallot['id'] . '_voter';
+		$voters = $this->databaseConnection->select ($this->settings['database'], $voterTable, array (), $fieldnames, true, $orderBy = 'username');
+		return $voters;
+	}
+	
+	
 	# Function to create a short metadata table for a ballot
 	private function ballotMetadataTable ($ballot)
 	{
@@ -1407,8 +1429,15 @@ class bobguiAdminister extends frontControllerApplication
 		# Determine the required number of fields, i.e. what structure of data to paste in
 		$requiredFields = $this->requiredFields ($ballot);
 		
-		# Obtain the current list of voters, including a flag for whether a present list has been wiped because it is unsufficient for this type of ballot
+		# Obtain the current list of voters
+		#!# Consider whether a flag is needed for when a present list has been wiped because it is unsufficient for this type of ballot
 		$currentVoters = $this->getVotersList ($ballot);
+		
+		# If there are no current voters, clone from the last ballot the user set up
+		$voterListCloned = false;
+		if (!$currentVoters) {
+			$currentVoters = $this->cloneVotersListFromLast ($ballot, $voterListCloned);
+		}
 		
 		# Format the list of voters if any
 		$votersListFormatted = '';
@@ -1432,6 +1461,9 @@ class bobguiAdminister extends frontControllerApplication
 				<li>The list of usernames/people does <strong>not</strong> have to be in alphabetical order.</li>
 			</ul>
 		");
+		if ($voterListCloned) {
+			$form->heading ('', "<p class=\"warning\">A suggested list of " . count ($currentVoters) . " voters has been pre-filled, as a starting point, copied from the <a target=\"_blank\" title=\"[Link opens in a new tab/window]\" href=\"{$this->settings['liveServerUrl']}{$voterListCloned['url']}\">last ballot ('" . htmlspecialchars ($voterListCloned['title']) . "')</a> that you completed setting up for this organisation.</p>\n<p class=\"warning\"><strong>The list below has not yet been saved.</strong>");
+		}
 		$form->textarea (array (
 			'name'					=> 'voters',
 			'title'					=> 'List of voters',
