@@ -1,7 +1,7 @@
 <?php
 
 # Class to create various image manipulation -related static methods
-# Version 1.3.2
+# Version 1.3.3
 
 # Licence: GPL
 # (c) Martin Lucas-Smith, University of Cambridge
@@ -679,9 +679,19 @@ class image
 		# Return empty string if no location
 		if (!$location) {return '';}
 		
+		# Get the HTML size attributes
+		if (preg_match ('@^(http|https)://@i', $location)) {
+			$attributes = '';	// Disabled for remote images, as this causes a noticable page delay (and there is the potential for a DoS if the image size is large)
+		} else {
+			list ($width, $height, $type, $attributes) = getimagesize ($_SERVER['DOCUMENT_ROOT'] . $location);
+			$attributes = ' ' . $attributes;
+		}
+		
 		# Compile the HTML; the random number is added to prevent caching
-		list ($width, $height, $type, $attributes) = getimagesize ($_SERVER['DOCUMENT_ROOT'] . $location);
-		return $imageHtml = '<img alt="' . htmlspecialchars ($altText) . '" title="' . htmlspecialchars ($altText) . '" src="' . $location . ($preventCaching ? '?' . rand (1, 999) : '') . '" ' . $attributes . ($align ? " align=\"{$align}\"" : '') . ' />';
+		$html = '<img alt="' . htmlspecialchars ($altText) . '" title="' . htmlspecialchars ($altText) . '" src="' . $location . ($preventCaching ? '?' . rand (1, 999) : '') . '"' . $attributes . ($align ? " align=\"{$align}\"" : '') . ' />';
+		
+		# Return the HTML
+		return $html;
 	}
 	
 	
