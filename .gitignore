@@ -11,8 +11,8 @@ public_html/style/*
 !public_html/style/footer.html.template
 
 # Ignore any contents of the additional votes folder, except its .gitignore file
-controlpanel/additionalvotescsv/*
-!controlpanel/additionalvotescsv/.gitignore
+bob/additionalvotescsv/*
+!bob/additionalvotescsv/.gitignore
 
 # Ignore any ingest log file and lock file
 ingest/bobguiIngestLog.txt

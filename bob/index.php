@@ -11,7 +11,7 @@ $configBob['headerLocation'] = '/style/header.html';
 $configBob['footerLocation'] = '/style/footer.html';
 
 # Fix the CSV count files directory
-$configBob['additionalVotesCsvDirectory'] = dirname (__FILE__) . '/../controlpanel/additionalvotescsv/';
+$configBob['additionalVotesCsvDirectory'] = dirname (__FILE__) . '/additionalvotescsv/';
 
 # Get the unique name for this ballot from the query string, then remove it so that BOB gets ?admin rather than ?id=webmaster-08-09-supportteam&admin or ?id=webmaster-08-09-supportteam
 if (isSet ($_GET['id'])) {
