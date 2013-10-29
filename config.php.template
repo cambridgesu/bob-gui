@@ -29,6 +29,7 @@ $configControlpanel['disableListWhoVoted'] = false;
 $configControlpanel['countingMethod'] = 'ERS97STV';
 $configControlpanel['maximumOpeningDays'] = 3;
 $configControlpanel['disableSurnameForenameRequirement'] = false;
+$configControlpanel['disableRonAvailability'] = false;
 
 # Ingest settings
 $configIngest['databaseStaging']= 'votesstaging';

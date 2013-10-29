@@ -97,6 +97,9 @@ class bobguiAdminister extends frontControllerApplication
 			# Runtime credentials used by BOB and put in each stub filename
 			'bobDirectory' => 'BOB/',	// as an include_path
 			
+			# Whether to disable the availability of a RON option; enabling this option fixes 'Should Re-Open Nominations (RON) be automatically added' to 'No' internally
+			'disableRonAvailability' => false,
+			
 			# Whether to disable the requirement for "SURNAME, Forename" format name entry
 			'disableSurnameForenameRequirement' => false,
 			
@@ -979,13 +982,17 @@ class bobguiAdminister extends frontControllerApplication
 		if ($isEditMode) {
 			$form->heading ('', "<p>(If you don't want to make changes after all, return to the <a href=\"{$this->baseUrl}{$data['url']}\">Ballot editing options page</a>.)</p>");
 		}
+		$exclude = array ('id', 'url', 'academicYear', 'provider', 'organisation', 'emailTech', 'emailReturningOfficer', 'organisationLogoUrl', 'electionInfo', 'ballotStart', 'ballotEnd', 'ballotViewable', 'instanceCompleteTimestamp', );
+		if ($this->settings['disableRonAvailability']) {
+			$exclude[] = 'addRon';
+		}
 		$form->dataBinding (array (
 			'database' => $this->settings['database'],
 			'table' => $this->settings['table'],
 			'data' => ($isEditMode ? $data : $organisation),
 			'ordering' => array ('organisationName', 'organisationUrl', 'title', 'urlSlug', ),
 			#!# May be best soon to convert this to an includeOnly list instead
-			'exclude' => array ('id', 'url', 'academicYear', 'provider', 'organisation', 'emailTech', 'emailReturningOfficer', 'organisationLogoUrl', 'electionInfo', 'ballotStart', 'ballotEnd', 'ballotViewable', 'instanceCompleteTimestamp', ),
+			'exclude' => $exclude,
 			'intelligence' => true,
 			'attributes' => array (
 				'organisationName' => array ('editable' => false, 'heading' => array (3 => '<img src="/images/icons/application_view_list.png" alt="" class="icon" /> Organisation info'), ),
@@ -1127,6 +1134,11 @@ class bobguiAdminister extends frontControllerApplication
 		
 		# Add in the master Returning Officer e-mail
 		$result['emailReturningOfficer'] = $this->settings['emailReturningOfficerReceipts'];
+		
+		# Fix addRon if required
+		if ($this->settings['disableRonAvailability']) {
+			$result['addRon'] = 'No';
+		}
 		
 		# Create a copy of the ballot data, randomising if necessary, which will be stored as the actual version used
 		$result['electionInfo'] = $this->processElectionInfoTextBlock ($result);
