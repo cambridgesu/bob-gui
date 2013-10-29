@@ -97,6 +97,9 @@ class bobguiAdminister extends frontControllerApplication
 			# Runtime credentials used by BOB and put in each stub filename
 			'bobDirectory' => 'BOB/',	// as an include_path
 			
+			# Whether to disable the requirement for "SURNAME, Forename" format name entry
+			'disableSurnameForenameRequirement' => false,
+			
 			# Whether BOB is set to disable the list of usernames who voted that appears on the show votes page afterwards
 			'disableListWhoVoted' => false,
 			
@@ -956,6 +959,7 @@ class bobguiAdminister extends frontControllerApplication
 		# Define the help text for the randomisation section
 		$randomisationHelp = '
 			<p><br />In the box below, you will need to enter the list of candidates in a specially-formatted way.<br />It will be checked when you submit the form.</p>
+			' . ($this->settings['disableSurnameForenameRequirement'] ? '<p>You can enter the choices, one per line, either in free-form text or the <em>SURNAME, Forename</em> format shown below.</p>' : '') . '
 			<p>Here are some examples and explanations:</p>
 			<p><img src="' . $this->baseUrl . '/electioninfo.png" width="596" height="468" alt="Election info" border="1" /></p>
 		';
@@ -2223,18 +2227,20 @@ class bobguiAdminister extends frontControllerApplication
 			$rearrangedData[$index]['candidates'] = $electionInfo[$index];	// The remainder
 			
 			# Ensure the candidates are SURNAME, forename
-			foreach ($rearrangedData[$index]['candidates'] as $candidate) {
-				#!# Would ideally check that RON is actually being added automatically
-				if (($candidate != $this->reOpenNominations) && !$rearrangedData[$index]['isReferendum']) {
-					if (!preg_match ('/([^,]+), (.+)/i', $candidate, $matches)) {
-						$error = 'All candidates must be listed as: <strong>SURNAME, forename</strong> but <strong>' . htmlspecialchars ($candidate) . '</strong> was not';
-						return false;
-					}
-					list ($complete, $surname, $forename) = $matches;
-					$surnameUppercased = utf8_encode (strtoupper (utf8_decode ($surname)));	// i.e. mb_strtoupper
-					if ($surname != $surnameUppercased) {
-						$error = 'All candidates must be listed as: <strong>SURNAME, forename</strong> but <strong>' . htmlspecialchars ($candidate) . '</strong> was not';
-						return false;
+			if (!$this->settings['disableSurnameForenameRequirement']) {
+				foreach ($rearrangedData[$index]['candidates'] as $candidate) {
+					#!# Would ideally check that RON is actually being added automatically
+					if (($candidate != $this->reOpenNominations) && !$rearrangedData[$index]['isReferendum']) {
+						if (!preg_match ('/([^,]+), (.+)/i', $candidate, $matches)) {
+							$error = 'All candidates must be listed as: <strong>SURNAME, forename</strong> but <strong>' . htmlspecialchars ($candidate) . '</strong> was not';
+							return false;
+						}
+						list ($complete, $surname, $forename) = $matches;
+						$surnameUppercased = utf8_encode (strtoupper (utf8_decode ($surname)));	// i.e. mb_strtoupper
+						if ($surname != $surnameUppercased) {
+							$error = 'All candidates must be listed as: <strong>SURNAME, forename</strong> but <strong>' . htmlspecialchars ($candidate) . '</strong> was not';
+							return false;
+						}
 					}
 				}
 			}
