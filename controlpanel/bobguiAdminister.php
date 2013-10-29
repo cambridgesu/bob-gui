@@ -1466,7 +1466,7 @@ class bobguiAdminister extends frontControllerApplication
 			</ul>
 		");
 		if ($voterListCloned) {
-			$form->heading ('', "<p class=\"warning\">A suggested list of " . count ($currentVoters) . " voters has been pre-filled, as a starting point, copied from the <a target=\"_blank\" title=\"[Link opens in a new tab/window]\" href=\"{$this->settings['liveServerUrl']}{$voterListCloned['url']}\">last ballot ('" . htmlspecialchars ($voterListCloned['title']) . "')</a> that you completed setting up for this organisation.</p>\n<p class=\"warning\"><strong>The list below has not yet been saved.</strong>");
+			$form->heading ('', "<p class=\"warning\">A suggested list of " . count ($currentVoters) . " voters has been pre-filled, as a starting point, copied from the <a target=\"_blank\" title=\"[Link opens in a new tab/window]\" href=\"{$this->settings['liveServerUrl']}{$voterListCloned['url']}\">last ballot ('" . htmlspecialchars ($voterListCloned['title']) . "')</a> that was set up (completely) for this organisation.</p>\n<p class=\"warning\"><strong>The list below has not yet been saved.</strong>");
 		}
 		$form->textarea (array (
 			'name'					=> 'voters',
