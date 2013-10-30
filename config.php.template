@@ -24,7 +24,7 @@ $configListing['installerPassword'] = $config['installerPassword'];
 $configListing['administratorEmail'] = 'webmaster@example.com';
 $configListing['organisationName'] = false;
 $configListing['mailDomain'] = 'example.com';
-$configListing['controlPanelUrl'] = 'https://www.controlpanel.vote.example.com/controlpanel/'
+$configListing['controlPanelUrl'] = 'https://www.controlpanel.vote.example.com/controlpanel/';
 $configListing['controlPanelOnlyUsers'] = '';	// Space-separated string of usernames, or false/empty-string for no limitation (i.e. allow all authenticated users)
 $configListing['controlPanelLinkDirectly'] = false;
 
