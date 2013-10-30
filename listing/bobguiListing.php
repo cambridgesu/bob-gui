@@ -1029,17 +1029,23 @@ class frontControllerApplication
 		}
 		
 		# Get the database structure
-		$sql = $this->databaseStructure ();
+		$databaseStructure = $this->databaseStructure ();
 		
-		# Execute the SQL
-		$result = $installerDatabaseConnection->query ($sql);
+		# Ensure the SQL is an array of queries
+		if (!is_array ($databaseStructure)) {
+			$databaseStructure = array ($databaseStructure);
+		}
 		
-		# Show failure error message if something went wrong
-		if (!$result) {
-			$html  = "\n<p>The database setup process did not complete. You may need to set this up manually. The database error was:</p>";
-			$databaseError = $installerDatabaseConnection->error ();
-			$html .= "\n<p><pre>" . wordwrap (htmlspecialchars ($databaseError[2])) . '</pre></p>';
-			return false;
+		# Execute each query, and show failure error message if something went wrong
+		$i = 0;
+		foreach ($databaseStructure as $query) {
+			$i++;
+			if (!$result = $installerDatabaseConnection->query ($query)) {
+				$html  = "\n<p>The database setup process did not complete" . (count ($databaseStructure) > 1 ? ", failing at query #{$i}" : '') . ". You may need to set this up manually. The database error was:</p>";
+				$databaseError = $installerDatabaseConnection->error ();
+				$html .= "\n<p><pre>" . wordwrap (htmlspecialchars ($databaseError[2])) . '</pre></p>';
+				return false;
+			}
 		}
 		
 		# Confirm success
