@@ -101,9 +101,9 @@ class bobguiListing extends frontControllerApplication
 	# Database bootstrapping
 	protected function databaseStructure ()
 	{
-		# Define and return the database bootstrap SQL
-		return $sql = "
-		CREATE TABLE IF NOT EXISTS `instances` (
+		# Define the database bootstrap SQL, with %s as a placeholder for a database name
+		$sql = "
+		CREATE TABLE IF NOT EXISTS `%s`.`instances` (
 		  `id` varchar(255) collate utf8_unicode_ci NOT NULL COMMENT 'Generated globally-unique ID',
 		  `url` varchar(255) collate utf8_unicode_ci NOT NULL COMMENT 'Computed URL location of this ballot',
 		  `academicYear` varchar(5) collate utf8_unicode_ci NOT NULL COMMENT 'Computed academic year string',
@@ -132,6 +132,15 @@ class bobguiListing extends frontControllerApplication
 		  PRIMARY KEY  (`id`)
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 		";
+		
+		# Create a set of statements, one for each database
+		$sql = array (
+			sprintf ($sql, $this->settings['database']),
+			sprintf ($sql, $this->settings['databaseStaging']),
+		);
+		
+		# Return the SQL array
+		return $sql;
 	}
 	
 	
