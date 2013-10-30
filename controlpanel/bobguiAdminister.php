@@ -1391,15 +1391,17 @@ class bobguiAdminister extends frontControllerApplication
 		# Get the last completed entry, or end
 		if (!$lastBallot = $this->databaseConnection->selectOne ($this->settings['database'], $this->settings['table'], array ('provider' => $ballot['provider'], 'organisation' => $ballot['organisation']), array (), false, 'instanceCompleteTimestamp DESC', 1)) {return false;}
 		
-		# Pass back by reference the metadata of the chosen ballot, so that the interface can show the user details of that ballot
-		$voterListCloned = $lastBallot;
-		
 		# Obtain the fieldnames
 		$fieldnames = $this->fieldsTypes[$requiredFields]['fieldnames'];
 		
-		# Derive the table name and return the list of voters
+		# Derive the table name and obtain the list of voters; if there are none, treat this as non-cloned
 		$voterTable = $lastBallot['id'] . '_voter';
-		$voters = $this->databaseConnection->select ($this->settings['database'], $voterTable, array (), $fieldnames, true, $orderBy = 'username');
+		if (!$voters = $this->databaseConnection->select ($this->settings['database'], $voterTable, array (), $fieldnames, true, $orderBy = 'username')) {return false;}
+		
+		# Pass back by reference the metadata of the chosen ballot, so that the interface can show the user details of that ballot
+		$voterListCloned = $lastBallot;
+		
+		# Return the list of voters
 		return $voters;
 	}
 	
