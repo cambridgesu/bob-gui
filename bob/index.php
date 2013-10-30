@@ -6,6 +6,9 @@
 # Load the settings
 require_once (dirname (__FILE__) . '/../config.php');
 
+# Fix instances table location
+$configBob['dbConfigTable'] = 'instances';
+
 # Fix the header and footer location
 $configBob['headerLocation'] = '/style/header.html';
 $configBob['footerLocation'] = '/style/footer.html';

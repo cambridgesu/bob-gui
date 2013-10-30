@@ -16,7 +16,6 @@ $configBob['dbDatabaseStaging'] = 'votesstaging';
 $configBob['dbUsername'] = 'testvote';
 $configBob['dbSetupUsername'] = 'testvotesetup';
 $configBob['dbPassword'] = 'your_password_goes_here';
-$configBob['dbConfigTable'] = 'instances';		// Database table containing the config which the dbSetupUsername has SELECT rights on
 $configBob['countingInstallation'] = '%documentroot/../../openstv/openstv/';	// Counting installation config; must end /openstv/ (slash-terminated), or false to disable auto-count
 $configBob['countingMethod'] = $config['countingMethod'];
 $configBob['disableListWhoVoted'] = false;		// Whether to disable the list of usernames who voted that appears on the show votes page afterwards
