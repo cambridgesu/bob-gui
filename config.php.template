@@ -51,6 +51,8 @@ $configIngest['smsApiKey'] = false;
 # Listing side
 $configListing['username'] = 'bobguiListing';
 $configListing['password'] = 'your_password_goes_here';
+$configListing['installerUsername'] = $config['installerUsername'];
+$configListing['installerPassword'] = $config['installerPassword'];
 $configListing['administratorEmail'] = 'webmaster@example.com';
 $configListing['organisationName'] = false;
 $configListing['mailDomain'] = 'example.com';
