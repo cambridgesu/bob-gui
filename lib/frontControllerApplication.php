@@ -5,7 +5,7 @@
 
 
 # Front Controller pattern application
-# Version 1.6.14
+# Version 1.6.15
 class frontControllerApplication
 {
  	# Define available actions; these should be extended by adding definitions in an overriden assignActions ()
@@ -579,6 +579,8 @@ class frontControllerApplication
 			'database'										=> NULL,
 			'databaseStrictWhere'							=> false,	// Whether automatically-constructed WHERE=... clauses do proper, exact comparisons, so that id="1 x" doesn't match against id value 1 in the database
 			'vendor'										=> 'mysql',	// Database vendor
+			'installerUsername'								=> 'root',	// Username for database installer account
+			'installerPassword'								=> false,	// Password for database installer account; if not defined, the user will be prompted for it with a GUI form
 			'jQuery'										=> false,	// Whether to load jQuery
 			'peopleDatabase'								=> 'people',
 			'table'											=> NULL,
@@ -808,41 +810,49 @@ class frontControllerApplication
 		# Get the tables, or end if already present
 		if ($tables = $this->databaseConnection->getTables ($this->settings['database'])) {return true;}
 		
-		# End if on the login page
-//		if ($this->action == 'login') {return true;}
-		
-		# If using internalAuth, this has to be temporarily switched to HTTP auth, to avoid the chicken-and-egg situation of not having an account to set up the tables, but there not being a user table
-//		if ($this->settings['internalAuth']) {$this->settings['internalAuth'] = false;}
-		
-		# Start the HTML
-		$html  = "\n<h2>Set up database</h2>";
-		
-		# Ensure the user is logged in
-
-//		$location = htmlspecialchars ($_SERVER['REQUEST_URI']);	// Note that this will not maintain any #anchor, because the server doesn't see any hash: http://stackoverflow.com/questions/940905
-//		$loginTextLink = "You are not currently logged in</a>";
-		$html .= "\n<p>The database is not yet set up. The site administrator needs to " . /* ($this->user ? */ "enter the database system password below." /* : "<a href=\"{$this->baseUrl}/login.html?{$location}\">log in</a> first.") */ . '</p>';
-//		if (!$this->user) {return false;}
-		
-		# Request the root database credentials
-		$form = new form (array (
-			'formCompleteText' => false,
-			'autofocus' => true,
-		));
-		$form->password (array (
-			'name'			=> 'password',
-			'title'			=> 'Database root password',
-			'required'		=> true,
-		));
-		if ($unfinalisedData = $form->getUnfinalisedData ()) {
-			if ($unfinalisedData['password']) {
-				$rootDatabaseConnection = new database ($this->settings['hostname'], 'root', $unfinalisedData['password'], $this->settings['database'], $this->settings['vendor'], $this->settings['logfile'], $this->user);
-				if (!$rootDatabaseConnection->connection) {
-					$form->registerProblem ('wrong', "Could not connect using that password for " . htmlspecialchars ($this->settings['hostname']), 'password');
+		# If a database password is supplied, use this rather than running the setup routine interactively
+		if ($this->settings['installerPassword']) {
+			if (!$installerDatabaseConnection = $this->installerDatabaseConnection ($this->settings['installerPassword'], $databaseError)) {
+				$html  = "\n<p>The database setup process did not complete. You may need to set this up manually. The database error was:</p>";
+				$html .= "\n<p><pre>" . wordwrap (htmlspecialchars ($databaseError)) . '</pre></p>';
+				return false;
+			}
+		} else {
+			
+			# End if on the login page
+//			if ($this->action == 'login') {return true;}
+			
+			# If using internalAuth, this has to be temporarily switched to HTTP auth, to avoid the chicken-and-egg situation of not having an account to set up the tables, but there not being a user table
+//			if ($this->settings['internalAuth']) {$this->settings['internalAuth'] = false;}
+			
+			# Start the HTML
+			$html  = "\n<h2>Set up database</h2>";
+			
+			# Ensure the user is logged in
+//			$location = htmlspecialchars ($_SERVER['REQUEST_URI']);	// Note that this will not maintain any #anchor, because the server doesn't see any hash: http://stackoverflow.com/questions/940905
+//			$loginTextLink = "You are not currently logged in</a>";
+			$html .= "\n<p>The database is not yet set up. The site administrator needs to " . /* ($this->user ? */ "enter the database system password below." /* : "<a href=\"{$this->baseUrl}/login.html?{$location}\">log in</a> first.") */ . '</p>';
+//			if (!$this->user) {return false;}
+			
+			# Request the root database credentials
+			$form = new form (array (
+				'formCompleteText' => false,
+				'autofocus' => true,
+			));
+			$form->password (array (
+				'name'			=> 'password',
+				'title'			=> 'Database root password',
+				'required'		=> true,
+			));
+			if ($unfinalisedData = $form->getUnfinalisedData ()) {
+				if ($unfinalisedData['password']) {
+					if (!$installerDatabaseConnection = $this->installerDatabaseConnection ($unfinalisedData['password'], $errorMessage)) {
+						$form->registerProblem ('wrong', $errorMessage, 'password');
+					}
 				}
 			}
+			if (!$result = $form->process ($html)) {return false;}
 		}
-		if (!$result = $form->process ($html)) {return false;}
 		
 		# Get the database structure
 		$sql = $this->databaseStructure ();
@@ -853,12 +863,12 @@ class frontControllerApplication
 		}
 		
 		# Execute the SQL
-		$result = $rootDatabaseConnection->query ($sql);
+		$result = $installerDatabaseConnection->query ($sql);
 		
 		# Show failure error message if something went wrong
 		if (!$result) {
-			$html  = "\n<p>The process did not complete. You may need to set this up manually. The database error was:</p>";
-			$databaseError = $rootDatabaseConnection->error ();
+			$html  = "\n<p>The database setup process did not complete. You may need to set this up manually. The database error was:</p>";
+			$databaseError = $installerDatabaseConnection->error ();
 			$html .= "\n<p><pre>" . wordwrap (htmlspecialchars ($databaseError[2])) . '</pre></p>';
 			return false;
 		}
@@ -866,6 +876,23 @@ class frontControllerApplication
 		# Redirect
 		$redirectTo = $_SERVER['_SITE_URL'] . $this->baseUrl . ($this->settings['internalAuth'] ? '/register.html' : '/');	// Sadly, these have to be hard-coded as the action loading phase hasn't yet happened
 		application::sendHeader (302, $redirectTo);
+	}
+	
+	
+	# Function to connect to the database with the installer account
+	private function installerDatabaseConnection ($password, &$errorMessage = '')
+	{
+		# Attempt the connection
+		$installerDatabaseConnection = new database ($this->settings['hostname'], $this->settings['installerUsername'], $password, $this->settings['database'], $this->settings['vendor'], $this->settings['logfile'], $this->user);
+		
+		# End if no connection, defining the error message
+		if (!$installerDatabaseConnection->connection) {
+			$errorMessage = "Could not connect using that password for " . htmlspecialchars ($this->settings['hostname']);
+			return false;
+		}
+		
+		# Return the connection resource
+		return $installerDatabaseConnection;
 	}
 	
 	
