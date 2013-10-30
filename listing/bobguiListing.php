@@ -817,6 +817,15 @@ class frontControllerApplication
 		$this->action = (isSet ($_GET['action']) ? $_GET['action'] : 'home');
 		$this->item = (isSet ($_GET['item']) ? strtolower ($_GET['item']) : false);
 		
+		# Setup the database if required
+		if (method_exists ($this, 'databaseStructure')) {
+			if (!$this->databaseSetup ($html)) {
+				echo $html;
+				echo $footer;
+				return true;
+			}
+		}
+		
 		# Get the registered actions
 		$this->actions = array_merge ($this->globalActions, $this->actions ());
 		
@@ -959,6 +968,58 @@ class frontControllerApplication
 		
 		# Return the username
 		return $_SERVER['REMOTE_USER'];
+	}
+	
+	
+	# Function to set up the database
+	private function databaseSetup (&$html)
+	{
+		# Get the tables, or end if already present
+		if ($tables = $this->databaseConnection->getTables ($this->settings['database'])) {return true;}
+		
+		# End if no database installer password is supplied
+		if (!$this->settings['installerPassword']) {return false;}
+		
+		# Make a database collection using the installer password
+		if (!$installerDatabaseConnection = $this->installerDatabaseConnection ($this->settings['installerPassword'], $databaseError)) {
+			$html  = "\n<p>The database setup process did not complete. You may need to set this up manually. The database error was:</p>";
+			$html .= "\n<p><pre>" . wordwrap (htmlspecialchars ($databaseError)) . '</pre></p>';
+			return false;
+		}
+		
+		# Get the database structure
+		$sql = $this->databaseStructure ();
+		
+		# Execute the SQL
+		$result = $installerDatabaseConnection->query ($sql);
+		
+		# Show failure error message if something went wrong
+		if (!$result) {
+			$html  = "\n<p>The database setup process did not complete. You may need to set this up manually. The database error was:</p>";
+			$databaseError = $installerDatabaseConnection->error ();
+			$html .= "\n<p><pre>" . wordwrap (htmlspecialchars ($databaseError[2])) . '</pre></p>';
+			return false;
+		}
+		
+		# Confirm success
+		return true;
+	}
+	
+	
+	# Function to connect to the database with the installer account
+	private function installerDatabaseConnection ($password, &$errorMessage = '')
+	{
+		# Attempt the connection
+		$installerDatabaseConnection = new database ($this->settings['hostname'], $this->settings['installerUsername'], $password, $this->settings['database'], $this->settings['vendor'], false, $this->user);
+		
+		# End if no connection, defining the error message
+		if (!$installerDatabaseConnection->connection) {
+			$errorMessage = "Could not connect using that password for " . htmlspecialchars ($this->settings['hostname']);
+			return false;
+		}
+		
+		# Return the connection resource
+		return $installerDatabaseConnection;
 	}
 	
 	
