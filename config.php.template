@@ -1,6 +1,6 @@
 <?php
 
-# Config used by all modules
+# Config across all modules
 $config['liveServerUrl'] = 'https://www.vote.example.com';	// Not slash-terminated
 $config['administratorEmail'] = 'webmaster@example.com';
 $config['mailDomain'] = 'example.com';
@@ -38,64 +38,5 @@ $config['apiKey'] = 'api_key_goes_here';
 $config['maximumOpeningDays'] = 3;
 $config['disableSurnameForenameRequirement'] = false;
 $config['disableRonAvailability'] = false;
-
-
-
-/* Leave the following unchanged */
-
-# BOB wrapper settings
-$configBob['dbHostname'] = $config['dbHostname'];
-$configBob['dbDatabase'] = $config['dbDatabase'];
-$configBob['dbDatabaseStaging'] = $config['dbDatabaseStaging'];
-$configBob['dbUsername'] = $config['dbUsername'];
-$configBob['dbSetupUsername'] = $config['dbSetupUsername'];
-$configBob['dbPassword'] = $config['dbPassword'];
-$configBob['countingInstallation'] = $config['countingInstallation'];
-$configBob['countingMethod'] = $config['countingMethod'];
-$configBob['disableListWhoVoted'] = $config['disableListWhoVoted'];
-
-# Listing side
-$configListing['username'] = $config['listingUsername'];
-$configListing['password'] = $config['listingPassword'];
-$configListing['installerUsername'] = $config['installerUsername'];
-$configListing['installerPassword'] = $config['installerPassword'];
-$configListing['administratorEmail'] = $config['administratorEmail'];
-$configListing['organisationName'] = $config['organisationName'];
-$configListing['mailDomain'] = $config['mailDomain'];
-$configListing['controlPanelUrl'] = $config['controlPanelUrl'];
-$configListing['controlPanelOnlyUsers'] = $config['controlPanelOnlyUsers'];
-$configListing['controlPanelLinkDirectly'] = $config['controlPanelLinkDirectly'];
-
-# Ingest settings
-$configIngest['databaseStaging']= $config['databaseStaging'];
-$configIngest['databaseLive'] = $config['databaseLive'];
-$configIngest['username'] = $config['ingestUsername'];
-$configIngest['password'] = $config['ingestPassword'];
-$configIngest['administratorEmail'] = $config['administratorEmail'];
-$configIngest['organisationName'] = $config['organisationName'];
-$configIngest['instanceDataUrl'] = $config['instanceDataUrl'];
-$configIngest['instanceDataApiKey'] = $config['instanceDataApiKey'];
-$configIngest['liveServerUrl'] = $config['liveServerUrl'];
-$configIngest['smsRecipient'] = $config['smsRecipient'];
-$configIngest['smsApiKey'] = $config['smsApiKey'];
-
-# Control panel settings
-$configControlpanel['enabled'] = $config['enabled'];
-$configControlpanel['username'] = $config['controlpanelUsername'];
-$configControlpanel['password'] = $config['controlpanelPassword'];
-$configControlpanel['installerUsername'] = $config['installerUsername'];
-$configControlpanel['installerPassword'] = $config['installerPassword'];
-$configControlpanel['administratorEmail'] = $config['administratorEmail'];
-$configControlpanel['organisationName'] = $config['organisationName'];
-$configControlpanel['mailDomain'] = $config['mailDomain'];
-$configControlpanel['emailTech'] = $config['emailTech'];
-$configControlpanel['emailReturningOfficerReceipts'] = $config['emailReturningOfficerReceipts'];
-$configControlpanel['liveServerUrl'] = $config['liveServerUrl'];
-$configControlpanel['apiKey'] = $config['apiKey'];
-$configControlpanel['disableListWhoVoted'] = $config['disableListWhoVoted'];
-$configControlpanel['countingMethod'] = $config['countingMethod'];
-$configControlpanel['maximumOpeningDays'] = $config['maximumOpeningDays'];
-$configControlpanel['disableSurnameForenameRequirement'] = $config['disableSurnameForenameRequirement'];
-$configControlpanel['disableRonAvailability'] = $config['disableRonAvailability'];
 
 ?>

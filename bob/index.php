@@ -3,8 +3,19 @@
 ## Stub launching file for BOB instances ##
 
 
-# Load the settings
+# Load the settings file
 require_once (dirname (__FILE__) . '/../config.php');
+
+# BOB wrapper config items
+$configBob['dbHostname'] = $config['dbHostname'];
+$configBob['dbDatabase'] = $config['dbDatabase'];
+$configBob['dbDatabaseStaging'] = $config['dbDatabaseStaging'];
+$configBob['dbUsername'] = $config['dbUsername'];
+$configBob['dbSetupUsername'] = $config['dbSetupUsername'];
+$configBob['dbPassword'] = $config['dbPassword'];
+$configBob['countingInstallation'] = $config['countingInstallation'];
+$configBob['countingMethod'] = $config['countingMethod'];
+$configBob['disableListWhoVoted'] = $config['disableListWhoVoted'];
 
 # Fix instances table location
 $configBob['dbConfigTable'] = 'instances';
