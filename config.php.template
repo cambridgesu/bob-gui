@@ -16,6 +16,31 @@ $configBob['countingInstallation'] = '%documentroot/../../openstv/openstv/';	// 
 $configBob['countingMethod'] = 'ERS97STV';
 $configBob['disableListWhoVoted'] = false;		// Whether to disable the list of usernames who voted that appears on the show votes page afterwards
 
+# Listing side
+$configListing['username'] = 'bobguiListing';
+$configListing['password'] = 'your_password_goes_here';
+$configListing['installerUsername'] = $config['installerUsername'];
+$configListing['installerPassword'] = $config['installerPassword'];
+$configListing['administratorEmail'] = 'webmaster@example.com';
+$configListing['organisationName'] = false;
+$configListing['mailDomain'] = 'example.com';
+$configListing['controlPanelUrl'] = 'https://www.controlpanel.vote.example.com/controlpanel/'
+$configListing['controlPanelOnlyUsers'] = '';	// Space-separated string of usernames, or false/empty-string for no limitation (i.e. allow all authenticated users)
+$configListing['controlPanelLinkDirectly'] = false;
+
+# Ingest settings
+$configIngest['databaseStaging']= 'votesstaging';
+$configIngest['databaseLive'] = 'votes';
+$configIngest['username'] = 'bobguiIngest';
+$configIngest['password'] = 'your_password_goes_here';
+$configIngest['administratorEmail'] = 'webmaster@example.com';
+$configIngest['organisationName'] = false;
+$configIngest['instanceDataUrl'] = 'https://www.controlpanel.vote.example.com/bestow.json';
+$configIngest['instanceDataApiKey'] = 'your_api_key_here';
+$configIngest['liveServerUrl'] = 'https://www.vote.example.com';	// Not slash-terminated
+$configIngest['smsRecipient'] = '441234567890';
+$configIngest['smsApiKey'] = false;
+
 # Control panel settings
 $configControlpanel['enabled'] = false;	// Not enabled on live site by default
 $configControlpanel['username'] = 'bobgui';
@@ -34,30 +59,5 @@ $configControlpanel['countingMethod'] = 'ERS97STV';
 $configControlpanel['maximumOpeningDays'] = 3;
 $configControlpanel['disableSurnameForenameRequirement'] = false;
 $configControlpanel['disableRonAvailability'] = false;
-
-# Ingest settings
-$configIngest['databaseStaging']= 'votesstaging';
-$configIngest['databaseLive'] = 'votes';
-$configIngest['username'] = 'bobguiIngest';
-$configIngest['password'] = 'your_password_goes_here';
-$configIngest['administratorEmail'] = 'webmaster@example.com';
-$configIngest['organisationName'] = false;
-$configIngest['instanceDataUrl'] = 'https://www.controlpanel.vote.example.com/bestow.json';
-$configIngest['instanceDataApiKey'] = 'your_api_key_here';
-$configIngest['liveServerUrl'] = 'https://www.vote.example.com';	// Not slash-terminated
-$configIngest['smsRecipient'] = '441234567890';
-$configIngest['smsApiKey'] = false;
-
-# Listing side
-$configListing['username'] = 'bobguiListing';
-$configListing['password'] = 'your_password_goes_here';
-$configListing['installerUsername'] = $config['installerUsername'];
-$configListing['installerPassword'] = $config['installerPassword'];
-$configListing['administratorEmail'] = 'webmaster@example.com';
-$configListing['organisationName'] = false;
-$configListing['mailDomain'] = 'example.com';
-$configListing['controlPanelUrl'] = 'https://www.controlpanel.vote.example.com/controlpanel/'
-$configListing['controlPanelOnlyUsers'] = '';	// Space-separated string of usernames, or false/empty-string for no limitation (i.e. allow all authenticated users)
-$configListing['controlPanelLinkDirectly'] = false;
 
 ?>
