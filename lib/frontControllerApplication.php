@@ -5,7 +5,7 @@
 
 
 # Front Controller pattern application
-# Version 1.6.15
+# Version 1.6.16
 class frontControllerApplication
 {
  	# Define available actions; these should be extended by adding definitions in an overriden assignActions ()
@@ -854,28 +854,37 @@ class frontControllerApplication
 			if (!$result = $form->process ($html)) {return false;}
 		}
 		
-		# Get the database structure
-		$sql = $this->databaseStructure ();
+		# Get the database structure, either an SQL statement or a simple array of queries
+		$databaseStructure = $this->databaseStructure ();
+		
+		# Ensure the SQL is an array of queries
+		if (!is_array ($databaseStructure)) {
+			$databaseStructure = array ($databaseStructure);
+		}
 		
 		# Attach internalAuth structure if required
 		if ($this->settings['internalAuth']) {
-			$sql .= $this->internalAuthClass->databaseStructure ();
+			$databaseStructure[] = $this->internalAuthClass->databaseStructure ();
 		}
 		
-		# Execute the SQL
-		$result = $installerDatabaseConnection->query ($sql);
-		
-		# Show failure error message if something went wrong
-		if (!$result) {
-			$html  = "\n<p>The database setup process did not complete. You may need to set this up manually. The database error was:</p>";
-			$databaseError = $installerDatabaseConnection->error ();
-			$html .= "\n<p><pre>" . wordwrap (htmlspecialchars ($databaseError[2])) . '</pre></p>';
-			return false;
+		# Execute each query, and show failure error message if something went wrong
+		$i = 0;
+		foreach ($databaseStructure as $query) {
+			$i++;
+			if (!$result = $installerDatabaseConnection->query ($query)) {
+				$html  = "\n<p>The database setup process did not complete" . (count ($databaseStructure) > 1 ? ", failing at query #{$i}" : '') . ". You may need to set this up manually. The database error was:</p>";
+				$databaseError = $installerDatabaseConnection->error ();
+				$html .= "\n<p><pre>" . wordwrap (htmlspecialchars ($databaseError[2])) . '</pre></p>';
+				return false;
+			}
 		}
 		
 		# Redirect
 		$redirectTo = $_SERVER['_SITE_URL'] . $this->baseUrl . ($this->settings['internalAuth'] ? '/register.html' : '/');	// Sadly, these have to be hard-coded as the action loading phase hasn't yet happened
 		application::sendHeader (302, $redirectTo);
+		
+		# Confirm success (in case the header redirection failed)
+		return true;
 	}
 	
 	
