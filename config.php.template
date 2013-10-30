@@ -8,60 +8,94 @@ $config['installerUsername'] = 'root';
 $config['installerPassword'] = false;
 $config['countingMethod'] = 'ERS97STV';
 $config['organisationName'] = false;
+$config['dbHostname'] = 'localhost';
+$config['dbDatabase'] = 'votes';
+$config['dbDatabaseStaging'] = 'votesstaging';
+$config['dbUsername'] = 'testvote';
+$config['dbSetupUsername'] = 'testvotesetup';
+$config['dbPassword'] = 'your_password_goes_here';
+$config['countingInstallation'] = '%documentroot/../../openstv/openstv/';	// Counting installation config; must end /openstv/ (slash-terminated), or false to disable auto-count
+$config['disableListWhoVoted'] = false;		// Whether to disable the list of usernames who voted that appears on the show votes page afterwards
+$config['usernameListing'] = 'bobguiListing';
+$config['passwordListing'] = 'your_password_goes_here';
+$config['controlPanelUrl'] = 'https://www.controlpanel.vote.example.com/controlpanel/';
+$config['controlPanelOnlyUsers'] = '';	// Space-separated string of usernames, or false/empty-string for no limitation (i.e. allow all authenticated users)
+$config['controlPanelLinkDirectly'] = false;
+$config['databaseStaging'] = 'votesstaging';
+$config['databaseLive'] = 'votes';
+$config['usernameIngest'] = 'bobguiIngest';
+$config['passwordIngest'] = 'your_password_goes_here';
+$config['instanceDataUrl'] = 'https://www.controlpanel.vote.example.com/bestow.json';
+$config['instanceDataApiKey'] = 'your_api_key_here';
+$config['smsRecipient'] = '441234567890';
+$config['smsApiKey'] = false;
+$config['enabled'] = false;	// Not enabled on live site by default
+$config['usernameControlpanel'] = 'bobgui';
+$config['passwordControlpanel'] = 'your_password_goes_here';
+$config['emailTech'] = 'evote@example.com';
+$config['emailReturningOfficerReceipts'] = 'votereceipts@example.com';
+$config['apiKey'] = 'api_key_goes_here';
+$config['maximumOpeningDays'] = 3;
+$config['disableSurnameForenameRequirement'] = false;
+$config['disableRonAvailability'] = false;
+
+
+
+/* Leave the following unchanged */
 
 # BOB wrapper settings
-$configBob['dbHostname'] = 'localhost';
-$configBob['dbDatabase'] = 'votes';
-$configBob['dbDatabaseStaging'] = 'votesstaging';
-$configBob['dbUsername'] = 'testvote';
-$configBob['dbSetupUsername'] = 'testvotesetup';
-$configBob['dbPassword'] = 'your_password_goes_here';
-$configBob['countingInstallation'] = '%documentroot/../../openstv/openstv/';	// Counting installation config; must end /openstv/ (slash-terminated), or false to disable auto-count
+$configBob['dbHostname'] = $config['dbHostname'];
+$configBob['dbDatabase'] = $config['dbDatabase'];
+$configBob['dbDatabaseStaging'] = $config['dbDatabaseStaging'];
+$configBob['dbUsername'] = $config['dbUsername'];
+$configBob['dbSetupUsername'] = $config['dbSetupUsername'];
+$configBob['dbPassword'] = $config['dbPassword'];
+$configBob['countingInstallation'] = $config['countingInstallation'];
 $configBob['countingMethod'] = $config['countingMethod'];
-$configBob['disableListWhoVoted'] = false;		// Whether to disable the list of usernames who voted that appears on the show votes page afterwards
+$configBob['disableListWhoVoted'] = $config['disableListWhoVoted'];
 
 # Listing side
-$configListing['username'] = 'bobguiListing';
-$configListing['password'] = 'your_password_goes_here';
+$configListing['username'] = $config['usernameListing'];
+$configListing['password'] = $config['passwordListing'];
 $configListing['installerUsername'] = $config['installerUsername'];
 $configListing['installerPassword'] = $config['installerPassword'];
 $configListing['administratorEmail'] = $config['administratorEmail'];
 $configListing['organisationName'] = $config['organisationName'];
 $configListing['mailDomain'] = $config['mailDomain'];
-$configListing['controlPanelUrl'] = 'https://www.controlpanel.vote.example.com/controlpanel/';
-$configListing['controlPanelOnlyUsers'] = '';	// Space-separated string of usernames, or false/empty-string for no limitation (i.e. allow all authenticated users)
-$configListing['controlPanelLinkDirectly'] = false;
+$configListing['controlPanelUrl'] = $config['controlPanelUrl'];
+$configListing['controlPanelOnlyUsers'] = $config['controlPanelOnlyUsers'];
+$configListing['controlPanelLinkDirectly'] = $config['controlPanelLinkDirectly'];
 
 # Ingest settings
-$configIngest['databaseStaging']= 'votesstaging';
-$configIngest['databaseLive'] = 'votes';
-$configIngest['username'] = 'bobguiIngest';
-$configIngest['password'] = 'your_password_goes_here';
+$configIngest['databaseStaging']= $config['databaseStaging'];
+$configIngest['databaseLive'] = $config['databaseLive'];
+$configIngest['username'] = $config['usernameIngest'];
+$configIngest['password'] = $config['passwordIngest'];
 $configIngest['administratorEmail'] = $config['administratorEmail'];
 $configIngest['organisationName'] = $config['organisationName'];
-$configIngest['instanceDataUrl'] = 'https://www.controlpanel.vote.example.com/bestow.json';
-$configIngest['instanceDataApiKey'] = 'your_api_key_here';
+$configIngest['instanceDataUrl'] = $config['instanceDataUrl'];
+$configIngest['instanceDataApiKey'] = $config['instanceDataApiKey'];
 $configIngest['liveServerUrl'] = $config['liveServerUrl'];
-$configIngest['smsRecipient'] = '441234567890';
-$configIngest['smsApiKey'] = false;
+$configIngest['smsRecipient'] = $config['smsRecipient'];
+$configIngest['smsApiKey'] = $config['smsApiKey'];
 
 # Control panel settings
-$configControlpanel['enabled'] = false;	// Not enabled on live site by default
-$configControlpanel['username'] = 'bobgui';
-$configControlpanel['password'] = 'your_password_goes_here';
+$configControlpanel['enabled'] = $config['enabled'];
+$configControlpanel['username'] = $config['usernameControlpanel'];
+$configControlpanel['password'] = $config['passwordControlpanel'];
 $configControlpanel['installerUsername'] = $config['installerUsername'];
 $configControlpanel['installerPassword'] = $config['installerPassword'];
 $configControlpanel['administratorEmail'] = $config['administratorEmail'];
 $configControlpanel['organisationName'] = $config['organisationName'];
 $configControlpanel['mailDomain'] = $config['mailDomain'];
-$configControlpanel['emailTech'] = 'evote@example.com';
-$configControlpanel['emailReturningOfficerReceipts'] = 'votereceipts@example.com';
+$configControlpanel['emailTech'] = $config['emailTech'];
+$configControlpanel['emailReturningOfficerReceipts'] = $config['emailReturningOfficerReceipts'];
 $configControlpanel['liveServerUrl'] = $config['liveServerUrl'];
-$configControlpanel['apiKey'] = 'api_key_goes_here';
-$configControlpanel['disableListWhoVoted'] = false;
+$configControlpanel['apiKey'] = $config['apiKey'];
+$configControlpanel['disableListWhoVoted'] = $config['disableListWhoVoted'];
 $configControlpanel['countingMethod'] = $config['countingMethod'];
-$configControlpanel['maximumOpeningDays'] = 3;
-$configControlpanel['disableSurnameForenameRequirement'] = false;
-$configControlpanel['disableRonAvailability'] = false;
+$configControlpanel['maximumOpeningDays'] = $config['maximumOpeningDays'];
+$configControlpanel['disableSurnameForenameRequirement'] = $config['disableSurnameForenameRequirement'];
+$configControlpanel['disableRonAvailability'] = $config['disableRonAvailability'];
 
 ?>
