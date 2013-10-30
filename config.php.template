@@ -31,6 +31,7 @@ $config['installerUsername'] = 'root';
 $config['installerPassword'] = false;
 
 # BOB config, fixed by administrator
+$config['voterReceiptDisableable'] = false;
 $config['countingMethod'] = 'ERS97STV';
 $config['countingInstallation'] = '%documentroot/../../openstv/openstv/';	// Counting installation config; must end /openstv/ (slash-terminated), or false to disable auto-count
 $config['disableListWhoVoted'] = false;		// Whether to disable the list of usernames who voted that appears on the show votes page afterwards

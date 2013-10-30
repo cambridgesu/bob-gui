@@ -13,8 +13,9 @@ $configBob['dbDatabaseStaging'] = $config['dbDatabaseStaging'];
 $configBob['dbUsername'] = $config['dbUsername'];
 $configBob['dbSetupUsername'] = $config['dbSetupUsername'];
 $configBob['dbPassword'] = $config['dbPassword'];
-$configBob['countingInstallation'] = $config['countingInstallation'];
+$configBob['voterReceiptDisableable'] = $config['voterReceiptDisableable'];
 $configBob['countingMethod'] = $config['countingMethod'];
+$configBob['countingInstallation'] = $config['countingInstallation'];
 $configBob['disableListWhoVoted'] = $config['disableListWhoVoted'];
 
 # Fix instances table location
