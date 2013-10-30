@@ -1,6 +1,8 @@
 <?php
 
-# Config, used by all modules
+# Config used by all modules
+$config['installerUsername'] = 'root';
+$config['installerPassword'] = false;
 
 # BOB wrapper settings
 $configBob['dbHostname'] = 'localhost';
@@ -18,8 +20,8 @@ $configBob['disableListWhoVoted'] = false;		// Whether to disable the list of us
 $configControlpanel['enabled'] = false;	// Not enabled on live site by default
 $configControlpanel['username'] = 'bobgui';
 $configControlpanel['password'] = 'your_password_goes_here';
-$configControlpanel['installerUsername'] = 'root';
-$configControlpanel['installerPassword'] = false;
+$configControlpanel['installerUsername'] = $config['installerUsername'];
+$configControlpanel['installerPassword'] = $config['installerPassword'];
 $configControlpanel['administratorEmail'] = 'webmaster@example.com';
 $configControlpanel['organisationName'] = false;
 $configControlpanel['mailDomain'] = 'example.com';
