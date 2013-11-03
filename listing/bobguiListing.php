@@ -86,6 +86,9 @@ class bobguiListing extends frontControllerApplication
 				#!# NB The URL /controlpanel.html is still registered at htaccess level, though this is not in practice a problem as the frontController will not respond to it
 				'enableIf' => ($this->controlPanelLinkEnabled && !$this->settings['controlPanelLinkDirectly']),
 			),
+			'loggedout' => array (
+				'description' => 'Logged out',
+			),
 			'organisation' => array (
 				'description' => false,
 			),
@@ -261,6 +264,17 @@ class bobguiListing extends frontControllerApplication
 			$html .= "\n</ul>";
 		}
 		$html .= "\n" . '<p>Access to this system is only available via Raven, and all access is logged for security.</p>';
+		
+		# Show the HTML
+		echo $html;
+	}
+	
+	
+	# Logged out
+	protected function loggedout ()
+	{
+		# Create the HTML
+		$html  = "\n<p>You have been logged out.</p>";
 		
 		# Show the HTML
 		echo $html;
