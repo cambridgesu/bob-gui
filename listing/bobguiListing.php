@@ -598,7 +598,7 @@ class bobguiListing extends frontControllerApplication
 		
 		# Current ballots (show if there is no date limitation, or there is date limitation and it is the current year)
 		if (!$date || $date['isCurrentAcademicYear']) {
-			$html .= "\n<h2>Current ballots for " . htmlspecialchars ($organisation['organisationName']) . "</h2>";
+			$html .= "\n<h2>Current ballots &mdash; " . htmlspecialchars ($organisation['organisationName']) . '</h2>';
 			if ($currentBallots = $this->getBallotInstances (false, $organisationId, $dateLimitation = false, $regroupByOrganisation = false, $currentBallotsOnly = true)) {
 				$html .= $this->ballotsToListing ($currentBallots, 'ballotEndFormatted', 'Closes ', $singleOrganisationOnly = true);
 			} else {
@@ -607,7 +607,7 @@ class bobguiListing extends frontControllerApplication
 		}
 		
 		# Older ballots
-		$html .= "\n<h2>All ballots for " . htmlspecialchars ($organisation['organisationName']) . ($date ? $date['yearString'] : '') . '</h2>';
+		$html .= "\n<h2>All ballots &mdash; " . htmlspecialchars ($organisation['organisationName']) . ($date ? $date['yearString'] : '') . '</h2>';
 		$html .= "\n<p>The following is a list of all the ballots (past, current or future) registered on this system" . ($date ? $date['yearString'] : '') . ".<br />The opening month of each ballot is also shown.</p>";
 		$html .= $this->ballotsToListing ($organisationBallots, 'ballotStartMonthYear', '', $singleOrganisationOnly = true);
 		
