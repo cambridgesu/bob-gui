@@ -229,6 +229,9 @@ class bobguiListing extends frontControllerApplication
 		table.lines td.transferexplanation {padding-bottom: 1.25em;}
 		table.regulated td.key p {width: 150px;}
 		form h3 {padding-top: 1em;}
+		div.controlpanelonlyusers {border-top: 1px dashed #bbb; border-bottom: 1px dashed #bbb; padding: 10px 10px 3px 0; margin: 30px 0; background-image: linear-gradient(to top right, #FFFFFF 0%, #EEEEEE 100%);}
+		body div.controlpanelonlyusers h2 {margin-top: 0; padding-top: 0;}
+		div.controlpanelonlyusers p.limitedaccess {float: right; color: gray;}
 		
 		/* CUSU house style overrides */
 		h1 {padding-right: 11em; margin-top: 5px; margin-bottom: 1em;}
@@ -258,10 +261,15 @@ class bobguiListing extends frontControllerApplication
 		$html .= "\n</ul>";
 		if ($this->controlPanelLinkEnabled) {
 			$controlPanelLink = ($this->settings['controlPanelLinkDirectly'] ? $this->settings['controlPanelUrl'] : "{$this->baseUrl}/controlpanel.html");
-			$html .= "\n<h2>Create/administer ballots</h2>";
-			$html .= "\n<ul class=\"actions left\">";
-			$html .= "\n\t<li><a href=\"{$controlPanelLink}\"><img src=\"/images/icons/cog.png\" alt=\"\" class=\"icon\" /> Create/administer ballots</a></li>";
-			$html .= "\n</ul>";
+			$html .= "\n<div class=\"administerballots" . ($this->settings['controlPanelOnlyUsers'] ? ' controlpanelonlyusers' : '') . '">';
+			if ($this->settings['controlPanelOnlyUsers']) {
+				$html .= "\n\t<p class=\"limitedaccess\">This section does not appear to ordinary users.</p>";
+			}
+			$html .= "\n\t<h2>Create/administer ballots</h2>";
+			$html .= "\n\t<ul class=\"actions left\">";
+			$html .= "\n\t\t<li><a href=\"{$controlPanelLink}\"><img src=\"/images/icons/cog.png\" alt=\"\" class=\"icon\" /> Create/administer ballots</a></li>";
+			$html .= "\n\t</ul>";
+			$html .= "\n</div>";
 		}
 		$html .= "\n" . '<p>Access to this system is only available via Raven, and all access is logged for security.</p>';
 		
