@@ -99,7 +99,7 @@ class bobguiAdminister extends frontControllerApplication
 			'page404' => false,
 			
 			# Runtime credentials used by BOB and put in each stub filename
-			'bobDirectory' => 'BOB/',	// as an include_path
+			'bobDirectory' => dirname (__FILE__) . '/../../bob/',	// as an include_path
 			
 			# Whether to disable the availability of a RON option; enabling this option fixes 'Should Re-Open Nominations (RON) be automatically added' to 'No' internally
 			'disableRonAvailability' => false,
