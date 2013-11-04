@@ -532,8 +532,8 @@ class bobguiAdminister extends frontControllerApplication
 		$html  = "\n<ol" . ($spaced ? ' class="spaced"' : '') . ">
 			<li>Ballots should be created <strong>by the Returning Officer</strong>.</li>
 			<li>You (the RO) must be <strong>registered as a manager</strong> of your group in the " . implode (' or ', $providerList) . ".</li>
-			<li>You must finalise setting up the vote <strong>at least 2 hours</strong> before it is due to open. (This required by the security architecture.)</li>
-			<li>From 2 hours before a ballot opens, it <strong>cannot</strong> be deleted or edited in any way.</li>
+			<li>You must finalise the set up of the ballot <strong>at least 2 hours</strong> before it is due to open. (This is required by the security architecture.)</li>
+			<li>At <strong>2 hours</strong> before a ballot opens, it <strong>cannot</strong> then be deleted or edited in any way.</li>
 			<li>Your constitution must require votes to be counted using <strong>" . htmlspecialchars ($this->supportedCountingMethods[$this->settings['countingMethod']]) . "</strong>. This system cannot run first-past-the-post ballots.</li>
 			<li>You must have <strong>a spreadsheet of all your voters</strong>, with at least University usernames.</li>
 			<li>All voters must have a Raven account.</li>
@@ -1740,7 +1740,7 @@ class bobguiAdminister extends frontControllerApplication
 		<h3>2. Voters should check the electoral roll</h3>
 		<ol type=\"a\">
 			<li>Publicise the <strong>Voting Page</strong>" . ($ballotUrl ? ": <a href=\"{$this->settings['liveServerUrl']}{$ballotUrl}\">{$this->settings['liveServerUrl']}{$ballotUrl}</a>" : '') . ", making sure it starts with http<u>s</u>.</li>
-			<li>Ask voters to go that webpage to check if they are on the electoral roll. If someone is missing, " . ($ballotUrl ? "<a href=\"{$this->baseUrl}{$ballotUrl}voters.html\">update the voter list</a>" : 'update the voter list') . ".</li>
+			<li>Ask voters to go to that webpage to check if they are on the electoral roll. If someone is missing, " . ($ballotUrl ? "<a href=\"{$this->baseUrl}{$ballotUrl}voters.html\">update the voter list</a>" : 'update the voter list') . ".</li>
 		</ol>
 		<h3>3. Voting takes place</h3>
 		<ol type=\"a\">
