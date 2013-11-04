@@ -593,7 +593,7 @@ class bobguiListing extends frontControllerApplication
 		$html  = "\n<h1>Ballots for " . htmlspecialchars ($organisation['organisationName']) . ($date ? $date['yearString'] : '') . '</h1>';
 		$linkStart = ($organisation['organisationUrl'] ? "<a href=\"{$organisation['organisationUrl']}\">" : false);
 		$html .= "\n" . ($organisation['organisationLogoUrl'] ? "{$linkStart}<img src=\"{$organisation['organisationLogoUrl']}\" alt=\"" . htmlspecialchars ($organisation['organisationName']) . "\" height=\"80\" class=\"right\" border=\"0\" />" . ($linkStart ? '</a>' : '') : '');
-		$html .= "\n<ul>\n\t<li>More info: {$linkStart}" . htmlspecialchars ($organisation['organisationName']) . ($linkStart ? '</a>' : '') . "</li>\n</ul>";
+		$html .= "\n<ul>\n\t<li>More information: {$linkStart}" . htmlspecialchars ($organisation['organisationName']) . ($linkStart ? '</a>' : '') . "</li>\n</ul>";
 		$html .= "\n<hr class=\"clear\" />";
 		
 		# Current ballots (show if there is no date limitation, or there is date limitation and it is the current year)
