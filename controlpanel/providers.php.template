@@ -32,7 +32,7 @@ class providers
 	);
 	
 	# Protected provider names, which the Provider API should not be presenting
-	private $protectedProviderNames = array ('bob', 'bobgui', 'images', 'openstv', 'style', );
+	private $protectedProviderNames = array ('bob', 'bobgui', 'images', 'openstv', 'style', 'controlpanel', );
 	
 	
 	
