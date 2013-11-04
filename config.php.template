@@ -55,6 +55,9 @@ $config['instanceDataApiKey'] = 'your_api_key_here';
 $config['databaseStaging'] = 'votesstaging';
 $config['databaseLive'] = 'votes';
 
+# Listing UI settings
+$config['listingWelcomeMessageHtml'] = false;
+
 # Ingest SMS notifications
 $config['smsRecipient'] = '441234567890';
 $config['smsApiKey'] = false;

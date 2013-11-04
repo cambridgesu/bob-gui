@@ -17,6 +17,7 @@ $configListing['mailDomain'] = $config['mailDomain'];
 $configListing['controlPanelUrl'] = $config['controlPanelUrl'];
 $configListing['controlPanelOnlyUsers'] = $config['controlPanelOnlyUsers'];
 $configListing['controlPanelLinkDirectly'] = $config['controlPanelLinkDirectly'];
+$configListing['welcomeMessageHtml'] = $config['listingWelcomeMessageHtml'];
 
 # Load and run the BOB GUI with the specified settings
 require_once (dirname (__FILE__) . '/bobguiListing.php');
