@@ -56,6 +56,7 @@ class bobguiListing extends frontControllerApplication
 			
 			# Labelling changes
 			'welcomeMessageHtml' => false,
+			'assumeSingleOrganisation' => false,
 		);
 		
 		return $defaults;
@@ -672,7 +673,9 @@ class bobguiListing extends frontControllerApplication
 			
 			# Compile the HTML
 			$html  = "\n<p>The following ballots are currently taking place.<br />The closing time of online voting for each ballot is also shown.</p>";
-			$html .= "\n<p>(This list shows <strong>all</strong> ballots taking place, <strong>not</strong> merely those that you can vote in.)</p>";
+			if (!$this->settings['assumeSingleOrganisation']) {
+				$html .= "\n<p>(This list shows <strong>all</strong> ballots taking place, <strong>not</strong> merely those that you can vote in.)</p>";
+			}
 			$html .= $this->ballotsToListing ($currentBallots, 'ballotEndFormatted', 'Closes ');
 		}
 		
