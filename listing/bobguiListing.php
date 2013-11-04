@@ -252,7 +252,7 @@ class bobguiListing extends frontControllerApplication
 		$html .= "\n" . '<p>Welcome to the ' . ($this->settings['organisationName'] ? htmlspecialchars ($this->settings['organisationName']) . ' ' : '') . 'voting portal. Here you can submit a vote on existing ballots that you have voting rights for, or create a new ballot if you run a University-based group.</p>';
 		$html .= "\n<h2>Current ballots - submit your vote</h2>";
 		$html .= $this->currentBallotsListing ();
-		$html .= "\n<h2>Forthcoming ballots - check the electoral roll</h2>";
+		$html .= "\n<h2>Forthcoming ballots</h2>";
 		$html .= $this->forthcomingBallotsListing ();
 		$html .= "\n<h2>Closed ballots</h2>";
 		$html .= "\n<ul class=\"actions left\">";
