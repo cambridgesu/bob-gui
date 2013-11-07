@@ -134,7 +134,7 @@ class bobguiListing extends frontControllerApplication
 		  `referendumThresholdPercent` int(2) default '10' COMMENT 'Percentage of voters who must cast a vote in a referendum for the referendum to be countable',
 		  `ballotStart` datetime NOT NULL COMMENT 'Start date/time of the ballot',
 		  `ballotEnd` datetime NOT NULL COMMENT 'End date/time of the ballot',
-		  `ballotViewable` datetime NOT NULL COMMENT 'Date/time when the cast votes can be viewed',
+		  `paperVotingEnd` datetime NULL COMMENT 'End time of paper voting, if paper voting is also taking place',
 		  `instanceCompleteTimestamp` datetime default NULL COMMENT 'Timestamp for when the instance (configuration and voters list) is complete',
 		  PRIMARY KEY  (`id`)
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
@@ -331,6 +331,7 @@ class bobguiListing extends frontControllerApplication
 		}
 		
 		# Add additional ordering requirements
+		#!# NB Ordering by a computed column (ballotViewable) would become inefficient if the number of rows were very large
 		$orderByAdditional = ', ballotViewable DESC, title ASC, ballotEnd DESC, ballotStart DESC';	// Default view is most-recent-first
 		if ($forthcomingBallotsOnly && $specificOrganisation) {$orderByAdditional = ', ballotStart';}
 		if ($currentBallotsOnly && $specificOrganisation) {$orderByAdditional = ', ballotEnd';}
@@ -365,18 +366,18 @@ class bobguiListing extends frontControllerApplication
 					*,
 					{$academicYearSql} AS academicYear,
 			  /* Computed date statuses - using same logic as BOB itself */
-					IF((ballotViewable > ballotEnd), 1, 0) AS splitElection,
+					IF(paperVotingEnd IS NULL, 0, 1) AS splitElection,
 					IF((NOW() < ballotStart), 1, 0) AS beforeElection,
 					IF(((NOW() >= ballotStart) && (ballotEnd >= NOW())), 1, 0) AS duringElection,
+					GREATEST(ballotEnd, IFNULL(paperVotingEnd,0)) AS ballotViewable,
 					IF((ballotEnd < NOW()), 1, 0) AS afterElection,
-					IF((ballotViewable < NOW()), 1, 0) AS afterBallotView,
 			  /* Other computed statuses */
 					IF((NOW() < DATE_SUB(ballotStart, INTERVAL 1 HOUR)), 1, 0) AS isInEditabilityPeriod,		/* Nothing is editable or deleteable from an hour before opening */
 					CONCAT(LOWER(DATE_FORMAT(DATE_SUB(ballotStart, INTERVAL 1 HOUR), '%H:%i%p, ')), DATE_FORMAT(DATE_SUB(ballotStart, INTERVAL 1 HOUR), '%W, %D %M %Y')) AS editabilityPeriodEndDateTimeFormatted,
 					IF(((ballotEnd < NOW()) && (TO_DAYS(NOW()) - TO_DAYS(ballotEnd) <= {$this->settings['recentDays']})), 1, 0) as recentlyFinished,
 					CONCAT(LOWER(DATE_FORMAT(ballotStart, '%H:%i%p, ')), DATE_FORMAT(ballotStart, '%W, %D %M %Y')) as ballotStartFormatted,
 					CONCAT(LOWER(DATE_FORMAT(ballotEnd, '%H:%i%p, ')), DATE_FORMAT(ballotEnd, '%W, %D %M %Y')) as ballotEndFormatted,
-					CONCAT(LOWER(DATE_FORMAT(ballotViewable, '%H:%i%p, ')), DATE_FORMAT(ballotViewable, '%W, %D %M %Y')) as ballotViewableFormatted,
+					CONCAT(LOWER(DATE_FORMAT(GREATEST(ballotEnd, IFNULL(paperVotingEnd,0)), '%H:%i%p, ')), DATE_FORMAT(GREATEST(ballotEnd, IFNULL(paperVotingEnd,0)), '%W, %D %M %Y')) as ballotViewableFormatted,
 					CONCAT(DATE_FORMAT(ballotStart, '%M %Y')) as ballotStartMonthYear,
 			/* Flags used for special ordering */
 					IF(((organisationUrl REGEXP '/cusu') && (organisationName REGEXP 'CUSU')), 1, 0) AS isCusu,	/* This check is not ideal but will do - it is for listing ordering only */

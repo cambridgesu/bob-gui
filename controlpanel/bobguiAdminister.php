@@ -258,7 +258,7 @@ class bobguiAdminister extends frontControllerApplication
 		  `referendumThresholdPercent` int(2) default '10' COMMENT 'Percentage of voters who must cast a vote in a referendum for the referendum to be countable',
 		  `ballotStart` datetime NOT NULL COMMENT 'Start date/time of the ballot',
 		  `ballotEnd` datetime NOT NULL COMMENT 'End date/time of the ballot',
-		  `ballotViewable` datetime NOT NULL COMMENT 'Date/time when the cast votes can be viewed',
+		  `paperVotingEnd` datetime NULL COMMENT 'End time of paper voting, if paper voting is also taking place',
 		  `instanceCompleteTimestamp` datetime default NULL COMMENT 'Timestamp for when the instance (configuration and voters list) is complete',
 		  PRIMARY KEY  (`id`)
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
@@ -472,8 +472,8 @@ class bobguiAdminister extends frontControllerApplication
 			#controlpanel form p.submit input {font-size: 1.2em; font-weight: bold; min-width: 15em;}
 			#controlpanel form h3 {margin-top: 2em; border-bottom: 1px solid #ccc;}
 			#controlpanel span.formprepend, span.formappend {color: #603;}
-			#controlpanel p.row.ballotStart_time, #controlpanel p.row.ballotEnd_time, #controlpanel p.row.ballotViewable_time {margin-bottom: 0;}
-			#controlpanel form p.row.ballotStart_date, #controlpanel form p.row.ballotEnd_date, #controlpanel form p.row.ballotViewable_date {margin-top: 0; position: relative; top: -0.8em;}
+			#controlpanel p.row.ballotStart_time, #controlpanel p.row.ballotEnd_time, #controlpanel p.row.paperVotingEnd_time {margin-bottom: 0;}
+			#controlpanel form p.row.ballotStart_date, #controlpanel form p.row.ballotEnd_date, #controlpanel form p.row.paperVotingEnd_date {margin-top: 0; position: relative; top: -0.8em;}
 			#controlpanel * html #pagemenu ul li.page_item a, #pagemenu ul li.cat-item a {padding: 5px 20px;} /* IE6 layout hack */
 			#controlpanel p.winner {color: #603; font-weight: bold; background-image: url(/images/icons/bullet_go.png); background-position: 5px 1px;}
 			#controlpanel table.lines td.transferexplanation {padding-bottom: 1.25em;}
@@ -737,6 +737,7 @@ class bobguiAdminister extends frontControllerApplication
 	private function getBallotInstances ($limitToUser = false, $specificOrganisation = false, $dateLimitation = false, $regroupByOrganisation = true, $currentBallotsOnly = false, $recentBallotsOnly = false, $closedBallotsOnly = false, $forthcomingAndOpenBallotsOnly = false)
 	{
 		# Add additional ordering requirements
+		#!# NB Ordering by a computed column (ballotViewable) would become inefficient if the number of rows were very large
 		$orderByAdditional = false;
 		if ($currentBallotsOnly) {$orderByAdditional = ', ballotEnd';}
 		if ($recentBallotsOnly) {$orderByAdditional = ', ballotEnd, ballotViewable';}
@@ -754,18 +755,19 @@ class bobguiAdminister extends frontControllerApplication
 				*,
 				{$academicYearSql} AS academicYear,
 		  /* Computed date statuses - using same logic as BOB itself */
-				IF((ballotViewable > ballotEnd), 1, 0) AS splitElection,
+				IF(paperVotingEnd IS NULL, 0, 1) AS splitElection,
 				IF((NOW() < ballotStart), 1, 0) AS beforeElection,
 				IF(((NOW() >= ballotStart) && (ballotEnd >= NOW())), 1, 0) AS duringElection,
+				GREATEST(ballotEnd, IFNULL(paperVotingEnd,0)) AS ballotViewable,
 				IF((ballotEnd < NOW()), 1, 0) AS afterElection,
-				IF((ballotViewable < NOW()), 1, 0) AS afterBallotView,
+				IF((GREATEST(ballotEnd, IFNULL(paperVotingEnd,0)) < NOW()), 1, 0) AS afterBallotView,
 		  /* Other computed statuses */
 				IF((NOW() < DATE_SUB(ballotStart, INTERVAL {$this->settings['ballotFixedHoursFromOpening']} HOUR)), 1, 0) AS isInEditabilityPeriod,		/* Nothing is editable or deleteable from an hour before opening */
 				CONCAT(LOWER(DATE_FORMAT(DATE_SUB(ballotStart, INTERVAL {$this->settings['ballotFixedHoursFromOpening']} HOUR), '%H:%i%p, ')), DATE_FORMAT(DATE_SUB(ballotStart, INTERVAL {$this->settings['ballotFixedHoursFromOpening']} HOUR), '%W, %D %M %Y')) AS editabilityPeriodEndDateTimeFormatted,
 				IF(((ballotEnd < NOW()) && (TO_DAYS(NOW()) - TO_DAYS(ballotEnd) <= {$this->settings['recentDays']})), 1, 0) AS recentlyFinished,
 				CONCAT(LOWER(DATE_FORMAT(ballotStart, '%H:%i%p, ')), DATE_FORMAT(ballotStart, '%W, %D %M %Y')) AS ballotStartFormatted,
 				CONCAT(LOWER(DATE_FORMAT(ballotEnd, '%H:%i%p, ')), DATE_FORMAT(ballotEnd, '%W, %D %M %Y')) AS ballotEndFormatted,
-				CONCAT(LOWER(DATE_FORMAT(ballotViewable, '%H:%i%p, ')), DATE_FORMAT(ballotViewable, '%W, %D %M %Y')) AS ballotViewableFormatted,
+				CONCAT(LOWER(DATE_FORMAT(GREATEST(ballotEnd, IFNULL(paperVotingEnd,0)), '%H:%i%p, ')), DATE_FORMAT(GREATEST(ballotEnd, IFNULL(paperVotingEnd,0)), '%W, %D %M %Y')) AS ballotViewableFormatted,
 				CONCAT(DATE_FORMAT(ballotStart, '%M %Y')) AS ballotStartMonthYear,
 				LOWER(DATE_FORMAT( FROM_UNIXTIME( FLOOR((UNIX_TIMESTAMP(instanceCompleteTimestamp)+(30*60))/(60*60))*(60*60) + (30*60) ) , '%H:%i%p')) AS copyToLiveTime, 	/* See: http://stackoverflow.com/questions/1639583 */
 				IF(NOW() > FROM_UNIXTIME( FLOOR((UNIX_TIMESTAMP(instanceCompleteTimestamp)+(30*60))/(60*60))*(60*60) + (30*60) ), 1, '') AS copiedToLive,
@@ -1022,7 +1024,7 @@ class bobguiAdminister extends frontControllerApplication
 		if ($isEditMode) {
 			$form->heading ('', "<p>(If you don't want to make changes after all, return to the <a href=\"{$this->baseUrl}{$data['url']}\">Ballot editing options page</a>.)</p>");
 		}
-		$exclude = array ('id', 'url', 'academicYear', 'provider', 'organisation', 'emailTech', 'emailReturningOfficer', 'organisationLogoUrl', 'electionInfo', 'ballotStart', 'ballotEnd', 'ballotViewable', 'instanceCompleteTimestamp', );
+		$exclude = array ('id', 'url', 'academicYear', 'provider', 'organisation', 'emailTech', 'emailReturningOfficer', 'organisationLogoUrl', 'electionInfo', 'ballotStart', 'ballotEnd', 'paperVotingEnd', 'instanceCompleteTimestamp', );
 		if ($this->settings['disableRonAvailability']) {
 			$exclude[] = 'addRon';
 		}
@@ -1052,7 +1054,7 @@ class bobguiAdminister extends frontControllerApplication
 		));
 		$form->heading (3, '<img src="/images/icons/clock_red.png" alt="" class="icon" /> Times and dates');
 		$form->heading ('p', 'Ballots can be created starting ' . ($this->settings['ballotFixedHoursFromOpening'] == 1 ? 'one hour' : $this->settings['ballotFixedHoursFromOpening'] . ' hours') . ' from now, up to ' . $this->settings['daysAhead'] . ' days ahead, to run for a maximum period of ' . ($this->settings['maximumOpeningDays'] == 1 ? 'one day' : "{$this->settings['maximumOpeningDays']} days") . '.');
-		$fields = array ('ballotStart' => '<strong>Start</strong> time/date of the ballot', 'ballotEnd' => '<strong>Closing</strong> time/date of the ballot', 'ballotViewable' => '<strong>If</strong> you need to have paper voting (opening after the online vote), enter the time/date when the paper voting closes.<br /><strong>A better solution</strong> is usually to have a laptop/PC available in college for in-person voting, as this avoids spreadsheet-based counts.', );
+		$fields = array ('ballotStart' => '<strong>Start</strong> time/date of the ballot', 'ballotEnd' => '<strong>Closing</strong> time/date of the ballot', 'paperVotingEnd' => '<strong>If</strong> you need to have paper voting, enter the time/date when the paper voting closes.<br /><strong>Bear in mind</strong> that this will require the need for voters to be added manually to a spreadsheet.', );
 		$preformattedTimes = $this->preformattedTimes ();
 		foreach ($fields as $field => $label) {
 			$daysToShow = $this->settings['daysAhead'] + ($field == 'ballotStart' ? 0 : $this->settings['maximumOpeningDays']);
@@ -1062,7 +1064,7 @@ class bobguiAdminister extends frontControllerApplication
 				'title'					=> $label,
 				'values'				=> $preformattedTimes,
 				'prepend'				=> 'Time: ',
-				'required'				=> ($field != 'ballotViewable'),
+				'required'				=> ($field != 'paperVotingEnd'),
 				'default'				=> ($isEditMode && isSet ($data[$field . '_time']) ? $data[$field . '_time'] : ''),
 			));
 			$form->select (array (
@@ -1070,11 +1072,11 @@ class bobguiAdminister extends frontControllerApplication
 				'title'					=> false,
 				'values'				=> $preformattedDates,
 				'prepend'				=> 'Date: ',
-				'required'				=> ($field != 'ballotViewable'),
+				'required'				=> ($field != 'paperVotingEnd'),
 				'default'				=> ($isEditMode && isSet ($data[$field . '_date']) ? $data[$field . '_date'] : ''),
 			));
 		}
-		$form->validation ('all', array ('ballotViewable_date', 'ballotViewable_time'));	// Ensure that, if either are filled in, both are filled in
+		$form->validation ('all', array ('paperVotingEnd_date', 'paperVotingEnd_time'));	// Ensure that, if either are filled in, both are filled in
 		$form->heading (3, '<img src="/images/icons/script.png" alt="" class="icon" /> Electoral roll (list of voters)');
 		$form->heading ('p', 'The list of voters will be added on the next page of this form.');
 		
@@ -1166,8 +1168,8 @@ class bobguiAdminister extends frontControllerApplication
 		# Compile the ballot times, and remove their component parts
 		$result['ballotStart'] = $result['ballotStart_date'] . ' ' . $result['ballotStart_time'];
 		$result['ballotEnd'] = $result['ballotEnd_date'] . ' ' . $result['ballotEnd_time'];
-		$result['ballotViewable'] = ($result['ballotViewable_date'] ? $result['ballotViewable_date'] . ' ' . $result['ballotViewable_time'] : $result['ballotEnd']);	// ballotViewable defaults to ballotEnd if unspecified
-		unset ($result['ballotStart_date'], $result['ballotStart_time'], $result['ballotEnd_date'], $result['ballotEnd_time'], $result['ballotViewable_date'], $result['ballotViewable_time']);
+		$result['paperVotingEnd'] = ($result['paperVotingEnd_date'] ? $result['paperVotingEnd_date'] . ' ' . $result['paperVotingEnd_time'] : NULL);	//  Set as NULL if no paper voting
+		unset ($result['ballotStart_date'], $result['ballotStart_time'], $result['ballotEnd_date'], $result['ballotEnd_time'], $result['paperVotingEnd_date'], $result['paperVotingEnd_time']);
 		
 		# Separate usernames by comma/space
 		$result['officialsUsernames'] = implode (' ', preg_split ("/[\s,]+/", $result['officialsUsernames']));
@@ -1424,15 +1426,14 @@ class bobguiAdminister extends frontControllerApplication
 		# Start the HTML
 		$html  = '';
 		
-		# Convert ballot start/end/viewable to the uncompiled date/time pairs
+		# Convert ballot start/end and paperVotingEnd to the uncompiled date/time pairs
 		list ($ballot['ballotStart_date'], $ballot['ballotStart_time']) = explode (' ', $ballot['ballotStart']);
 		list ($ballot['ballotEnd_date'], $ballot['ballotEnd_time']) = explode (' ', $ballot['ballotEnd']);
-		list ($ballot['ballotViewable_date'], $ballot['ballotViewable_time']) = explode (' ', $ballot['ballotViewable']);	// NB Won't ever be empty
-		
-		# Wipe the ballot viewable date/time if they are the same, purely for UI consistency purposes
-		if ($ballot['ballotViewable'] == $ballot['ballotEnd']) {
-			$ballot['ballotViewable_date'] = '';
-			$ballot['ballotViewable_time'] = '';
+		if ($ballot['paperVotingEnd']) {
+			list ($ballot['paperVotingEnd_date'], $ballot['paperVotingEnd_time']) = explode (' ', $ballot['paperVotingEnd']);
+		} else {
+			$ballot['paperVotingEnd_date'] = '';
+			$ballot['paperVotingEnd_time'] = '';
 		}
 		
 		# Other changes to the data
@@ -1635,9 +1636,10 @@ class bobguiAdminister extends frontControllerApplication
 	private function requiredFields ($ballot)
 	{
 		# If online-only, either College-only or University-wide, then only usernames are ever used
-		if ($ballot['ballotEnd'] == $ballot['ballotViewable']) {return 1;}
+		if (!$ballot['paperVotingEnd']) {return 1;}
 		
 		# College ballot with paper vote
+		#!# Nasty hard-coding
 		if ($ballot['provider'] == 'bwp') {return 3;}
 		
 		# University-wide ballot with paper vote
@@ -2067,7 +2069,7 @@ class bobguiAdminister extends frontControllerApplication
 	private function deleteVotersIfInsufficientFields ($ballot)
 	{
 		# End if the ballot is not a split (online + paper) vote
-		if ($ballot['ballotEnd'] == $ballot['ballotViewable']) {return true;}
+		if (!$ballot['paperVotingEnd']) {return true;}
 		
 		# Get one voter and check if the surname is present (which indicates three/four fields rather than one)
 		$voterTable = $ballot['id'] . '_voter';
@@ -2314,7 +2316,7 @@ class bobguiAdminister extends frontControllerApplication
 		# Convert the times into unixtime for easy comparison
 		$ballotStart = ((strlen ($data['ballotStart_time']) && strlen ($data['ballotStart_date'])) ? strtotime ($data['ballotStart_date'] . ' ' . $data['ballotStart_time']) : false);
 		$ballotEnd = ((strlen ($data['ballotEnd_time']) && strlen ($data['ballotEnd_date'])) ? strtotime ($data['ballotEnd_date'] . ' ' . $data['ballotEnd_time']) : false);
-		$ballotViewable = ((strlen ($data['ballotViewable_time']) && strlen ($data['ballotViewable_date'])) ? strtotime ($data['ballotViewable_date'] . ' ' . $data['ballotViewable_time']) : false);
+		$paperVotingEnd = ((strlen ($data['paperVotingEnd_time']) && strlen ($data['paperVotingEnd_date'])) ? strtotime ($data['paperVotingEnd_date'] . ' ' . $data['paperVotingEnd_time']) : false);
 		
 		# Do not run if start and end are not both completed (the form will catch this in another error)
 		if (!$ballotStart || !$ballotEnd) {return true;}	// return true means "no problems here", so ends execution of the current checks (the form will catch the problem at the per-widget left)
@@ -2351,11 +2353,12 @@ class bobguiAdminister extends frontControllerApplication
 			return false;
 		}
 		
-		# If a ballotViewable date has been specified, it must be after (or equal to) the ballotEnd
-		if ($ballotViewable) {
-			if ($ballotViewable < $ballotEnd) {
-				$fieldname = 'ballotViewable_time';
-				$error = 'The time specified for close of paper voting must be after (or the same as) the online closing time';
+		# If a paperVote has been specified, it must be after (or equal to) the ballotStart
+		#!# Need to consider whether this restriction is actually necessary
+		if ($paperVotingEnd) {
+			if ($paperVotingEnd <= $ballotStart) {
+				$fieldname = 'paperVotingEnd_time';
+				$error = 'The time specified for close of paper voting must be after the online start time';
 				return false;
 			}
 		}
