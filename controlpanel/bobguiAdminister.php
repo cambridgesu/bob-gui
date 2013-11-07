@@ -1641,6 +1641,7 @@ class bobguiAdminister extends frontControllerApplication
 		# College ballot with paper vote
 		#!# Nasty hard-coding
 		if ($ballot['provider'] == 'bwp') {return 3;}
+		if ($ballot['provider'] == 'university') {return 1;}
 		
 		# University-wide ballot with paper vote
 		return 4;
