@@ -1011,7 +1011,6 @@ class bobguiAdminister extends frontControllerApplication
 		
 		# Create a databinded form
 		$form = new form (array (
-			'developmentEnvironment' => ini_get ('display_errors'),
 			'databaseConnection' => $this->databaseConnection,
 			'displayRestrictions' => false,
 			'formCompleteText' => false,
@@ -1474,7 +1473,6 @@ class bobguiAdminister extends frontControllerApplication
 		
 		# Start the form
 		$form = new form (array (
-			'developmentEnvironment' => ini_get ('display_errors'),
 			'databaseConnection' => $this->databaseConnection,
 			'displayRestrictions' => false,
 			'formCompleteText' => false,
@@ -1802,7 +1800,6 @@ class bobguiAdminister extends frontControllerApplication
 		
 		# Confirmation form
 		$form = new form (array (
-			'developmentEnvironment' => ini_get ('display_errors'),
 			'databaseConnection' => $this->databaseConnection,
 			'formCompleteText' => false,
 			'display'	=> 'paragraphs',
@@ -2046,7 +2043,7 @@ class bobguiAdminister extends frontControllerApplication
 		$electionInfo = $this->parseElectionInfo ($ballot['electionInfo']);
 		
 		# Define the fields for the vote table, used below either for checking or table creation
-		$votesTableFields = array ();	// Explicit creation of an array; not necessary in the PHP language
+		$votesTableFields = array ();	// Initialise
 		$votesTableFields['token'] = 'VARCHAR(32) collate utf8_unicode_ci NOT NULL PRIMARY KEY';		// The token that the voter receives
 		foreach ($electionInfo as $index => $election) {
 			$vote = $index + 1;	// Field names start at 1, not 0
