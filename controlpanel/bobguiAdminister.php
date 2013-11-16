@@ -980,9 +980,9 @@ class bobguiAdminister extends frontControllerApplication
 		# Detect whether we are editing (rather than adding) - is editing mode if there is no organisation
 		$isEditMode = ($organisation ? false : true);
 		
-		# Provide only specific fixed data from the organisation, not the whole lot
-		if ($organisation) {
-			$organisation = array (
+		# If creating a new entry, map the organisation into the fixed data, then discard the organisation information
+		if (!$isEditMode) {
+			$data = array (
 				'organisation' => $organisation['id'],
 				'provider' => $organisation['provider'],
 				'organisationName' => $organisation['organisationName'],
@@ -991,14 +991,12 @@ class bobguiAdminister extends frontControllerApplication
 				'officialsUsernames' => $this->user,
 				'organisationUrl' => $organisation['profileBaseUrl'] . '/',
 			);
+			unset ($organisation);
 		}
 		
 		# Get the current ballot list (this is used in a checking function)
 		#!# Needs to have failure checking, to differentiate from an empty list
 		$ballots = $this->getBallotInstances (false, false, false, $regroupByOrganisation = false);
-		
-		# Assign the organisation ID
-		$organisationId = ($isEditMode ? $data['organisation'] : $organisation['organisation']);
 		
 		# Define the help text for the randomisation section
 		$randomisationHelp = '
@@ -1029,7 +1027,7 @@ class bobguiAdminister extends frontControllerApplication
 		$form->dataBinding (array (
 			'database' => $this->settings['database'],
 			'table' => $this->settings['table'],
-			'data' => ($isEditMode ? $data : $organisation),
+			'data' => $data,
 			'ordering' => array ('organisationName', 'organisationUrl', 'title', 'urlSlug', ),
 			#!# May be best soon to convert this to an includeOnly list instead
 			'exclude' => $exclude,
@@ -1037,7 +1035,7 @@ class bobguiAdminister extends frontControllerApplication
 			'attributes' => array (
 				'organisationName' => array ('editable' => false, 'heading' => array (3 => '<img src="/images/icons/application_view_list.png" alt="" class="icon" /> Organisation info'), ),
 				'organisationUrl' => array ('editable' => false, ),
-				'urlSlug' => array ('editable' => (!$isEditMode), 'maxlength' => 20, 'size' => 20, 'regexp' => $this->settings['uniqueIdRegexp'], 'title' => 'Unique identifier for this ballot (a-z only, no numbers)', 'description' => "This is a identifier for this election, e.g. 'mainelection', 'committee', which must be unique for the current academic year.<br />It must be 3-20 characters, all lower-case a-z, with no numbers.<br />It will appear at the end of the URL, and cannot be changed later.", 'prepend' => "<span class=\"formprepend\">/{$organisationId}/&lt;academic-year&gt;/</span>", 'append' => "<span class=\"formappend\">/</span>", ),
+				'urlSlug' => array ('editable' => (!$isEditMode), 'maxlength' => 20, 'size' => 20, 'regexp' => $this->settings['uniqueIdRegexp'], 'title' => 'Unique identifier for this ballot (a-z only, no numbers)', 'description' => "This is a identifier for this election, e.g. 'mainelection', 'committee', which must be unique for the current academic year.<br />It must be 3-20 characters, all lower-case a-z, with no numbers.<br />It will appear at the end of the URL, and cannot be changed later.", 'prepend' => "<span class=\"formprepend\">/{$data['organisation']}/&lt;academic-year&gt;/</span>", 'append' => "<span class=\"formappend\">/</span>", ),
 				'title' => array ('title' => 'Title (e.g. Committee elections ' . date ('Y') . ')', 'description' => "The title that appears in listings, e.g. 'Committee elections " . date ('Y') . "'.", 'heading' => array (3 => '<img src="/images/icons/box.png" alt="" class="icon" /> Main ballot details')),
 				'urlMoreInfo' => array ('regexp' => '^(http|https)://', 'title' => 'URL of page on your website giving more info about the ballot, starting http:// &nbsp;', 'description' => 'If you have a webpage giving more info about candidates, etc., enter the address starting http:// (or https://) here.', 'size' => 70, ),
 				#!# size=80 being ignored
@@ -1085,7 +1083,7 @@ class bobguiAdminister extends frontControllerApplication
 			# Ensure the election id is unique
 			if (!$isEditMode) {
 				$currentIds = array_keys ($ballots);
-				if (!$this->uniqueIdValid ($unfinalisedData, $organisation, $currentIds, $error['urlSlug'])) {
+				if (!$this->uniqueIdValid ($unfinalisedData, $data['organisation'], $currentIds, $error['urlSlug'])) {
 					$form->registerProblem ('urlSlug', $error['urlSlug']);
 				}
 			}
@@ -1122,7 +1120,7 @@ class bobguiAdminister extends frontControllerApplication
 						foreach ($electionInfo as $index => $election) {
 							if (preg_match ($lgbtRegexp, strtolower ($election['title'])) || preg_match ($lgbtRegexp, strtolower ($unfinalisedData['title']))) {
 								$lgbtCodeAcademicYear = $this->academicYearFromStartDate (($unfinalisedData['ballotStart_date']) ? $unfinalisedData['ballotStart_date'] : date ('Y-m-d'));
-								$lgbtCode = htmlspecialchars ("{$organisationId}-" . $lgbtCodeAcademicYear . "-{$unfinalisedData['urlSlug']}");
+								$lgbtCode = htmlspecialchars ("{$data['organisation']}-" . $lgbtCodeAcademicYear . "-{$unfinalisedData['urlSlug']}");
 								if (!in_array ($lgbtCode, $this->settings['lgbtWhitelist'])) {
 									$form->registerProblem ('electionInfoAsEntered', "It appears that you are attempting to create a ballot where only an LGBT officer is being elected. The system does not normally allow this, because the voter list is revealed after the election (thereby forcing people to reveal their sexuality, or creating a potential implication, if they wish to vote). If your Committee has discussed the implications of this and you wish to go ahead, please <strong>e-mail {$this->settings['administratorEmail']} to request that this ballot be whitelisted</strong>, quoting this code: <strong>&lt;{$lgbtCode}&gt;</strong> .");
 								}
@@ -1133,7 +1131,7 @@ class bobguiAdminister extends frontControllerApplication
 			}
 			
 			# Ensure the election info is validly formatted
-			if (!$this->timesDatesValid ($unfinalisedData, $organisationId, $timesDatesValidError, $fieldname)) {
+			if (!$this->timesDatesValid ($unfinalisedData, $data['organisation'], $timesDatesValidError, $fieldname)) {
 				$error[$fieldname] = $timesDatesValidError;
 				$form->registerProblem ('timesDatesValidError', $error[$fieldname], $fieldname);
 			}
@@ -1144,7 +1142,7 @@ class bobguiAdminister extends frontControllerApplication
 		
 		# Compile the data further, starting with merging the pre-supplied data in
 		if (!$isEditMode) {
-			$result = array_merge ($result, $organisation);		// Pre-supplied data ($organisation) will overwrite the submitted form data ($result), effectively ignoring the 'hidden' fields
+			$result = array_merge ($result, $data);		// Pre-supplied data ($data) will overwrite the submitted form data ($result), effectively ignoring the 'hidden' fields
 		}
 		
 		# Make links clickable
@@ -1160,8 +1158,8 @@ class bobguiAdminister extends frontControllerApplication
 		
 		# Pre-compute the academic year, id, and url; this is better than having SQL statements continually re-computing these as generated fields
 		$result['academicYear'] = $academicYearString;
-		$result['id'] = $organisationId . '-' . $academicYearString . '-' . $result['urlSlug'];
-		$result['url'] = '/' . $organisationId . '/' . $academicYearString . '/' . $result['urlSlug'] . '/';
+		$result['id'] = $data['organisation'] . '-' . $academicYearString . '-' . $result['urlSlug'];
+		$result['url'] = '/' . $data['organisation'] . '/' . $academicYearString . '/' . $result['urlSlug'] . '/';
 		
 		# Compile the ballot times, and remove their component parts
 		$result['ballotStart'] = $result['ballotStart_date'] . ' ' . $result['ballotStart_time'];
@@ -1169,7 +1167,7 @@ class bobguiAdminister extends frontControllerApplication
 		$result['paperVotingEnd'] = ($result['paperVotingEnd_date'] ? $result['paperVotingEnd_date'] . ' ' . $result['paperVotingEnd_time'] : NULL);	//  Set as NULL if no paper voting
 		unset ($result['ballotStart_date'], $result['ballotStart_time'], $result['ballotEnd_date'], $result['ballotEnd_time'], $result['paperVotingEnd_date'], $result['paperVotingEnd_time']);
 		
-		# Separate usernames by comma/space
+		# Separate usernames by space
 		$result['officialsUsernames'] = implode (' ', preg_split ("/[\s,]+/", $result['officialsUsernames']));
 		
 		# Add in the master Returning Officer e-mail
@@ -2110,7 +2108,7 @@ class bobguiAdminister extends frontControllerApplication
 	
 	
 	# Function to validate the election info text block
-	private function uniqueIdValid ($data, $organisationData, $currentIds, &$error)
+	private function uniqueIdValid ($data, $organisationId, $currentIds, &$error)
 	{
 		# End if no value submitted for the urlSlug (the form will catch this in another error)
 		if (!strlen ($data['urlSlug'])) {return true;}
@@ -2123,7 +2121,7 @@ class bobguiAdminister extends frontControllerApplication
 		if (!$ballotStart) {return true;}	// ditto: end checking
 		
 		# Assemble the complete unique ID from the URL slug proposed by the user, namely organisation + year [from opening date] + URL slug
-		$uniqueId = $organisationData['organisation'] . '-' . $this->academicYearFromStartDate ($data['ballotStart_date']) . '-' . $data['urlSlug'];
+		$uniqueId = $organisationId . '-' . $this->academicYearFromStartDate ($data['ballotStart_date']) . '-' . $data['urlSlug'];
 		
 		# Check that it is not in the list already
 		if (in_array ($uniqueId, $currentIds)) {
