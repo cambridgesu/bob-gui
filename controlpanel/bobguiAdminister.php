@@ -1145,6 +1145,9 @@ class bobguiAdminister extends frontControllerApplication
 			$result = array_merge ($result, $data);		// Pre-supplied data ($data) will overwrite the submitted form data ($result), effectively ignoring the 'hidden' fields
 		}
 		
+		# Ensure the provider is in the output
+		$result['provider'] = $data['provider'];
+		
 		# Make links clickable
 		if (strlen ($result['frontPageMessageHtml'])) {
 			$result['frontPageMessageHtml'] = '<p>' . application::makeClickableLinks ($result['frontPageMessageHtml']) . '</p>';	// Convert to being a paragraph
@@ -2076,6 +2079,10 @@ class bobguiAdminister extends frontControllerApplication
 		
 		# If a surname field is present (which indicates three/four fields rather than one), there are no problems, since this is enough fields
 		if (strlen ($voter['surname'])) {return true;}
+		
+		# If only one field is required, then there are no problems, since the present data will be sufficient
+		$requiredFields = $this->requiredFields ($ballot);
+		if ($requiredFields == 1) {return true;}
 		
 		# Make clear to the user that they need to re-enter the voter list as there currently insufficient fields
 		echo "\n<p class=\"warning\"><img src=\"/images/icons/exclamation.png\" alt=\"!\" class=\"icon\" /><strong> You must now <a href=\"{$this->baseUrl}{$ballot['url']}voters.html\">add the voters list again</a>, this time with forenames &amp; surnames, now that you are also having a paper vote. The previous list you entered has been deleted.</strong></p>";
