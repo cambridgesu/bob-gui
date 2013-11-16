@@ -253,9 +253,10 @@ class bobguiListing extends frontControllerApplication
 	{
 		# Opening text
 		$html  = "\n" . '<h1>Welcome</h1>';
-		$html .= "\n" . '<p>Welcome to the ' . ($this->settings['organisationName'] ? htmlspecialchars ($this->settings['organisationName']) . ' ' : '') . 'voting portal. Here you can submit a vote on ballots for which you have voting rights' . ($this->controlPanelLinkEnabled ? ($this->settings['controlPanelOnlyUsers'] ? '.<br />As an Administrator, you can also create ballots' : ', or create a new ballot if you run a University-based group') : '') . '.</p>';
 		if ($this->settings['welcomeMessageHtml']) {
 			$html .= "\n" . $this->settings['welcomeMessageHtml'];
+		} else {
+			$html .= "\n" . '<p>Welcome to the ' . ($this->settings['organisationName'] ? htmlspecialchars ($this->settings['organisationName']) . ' ' : '') . 'voting portal. Here you can submit a vote on ballots for which you have voting rights' . ($this->controlPanelLinkEnabled ? ($this->settings['controlPanelOnlyUsers'] ? '.<br />As an Administrator, you can also create ballots' : ', or create a new ballot if you run a University-based group') : '') . '.</p>';
 		}
 		$html .= "\n<h2>Current ballots - submit your vote</h2>";
 		$html .= $this->currentBallotsListing ();
