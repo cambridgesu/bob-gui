@@ -702,7 +702,7 @@ class bobguiListing extends frontControllerApplication
 		} else {
 			
 			# Compile the HTML
-			$html  = "\n<p>The following online ballots will be taking place soon. If you should be on the electoral roll, follow the link to check.</p>";
+			$html  = "\n<p>The following ballots will soon be open for online voting. If you should be on the electoral roll, follow the link to check.</p>";
 			$html .= $this->ballotsToListing ($forthcomingBallots, 'ballotStartFormatted', 'Opens ');
 		}
 		
