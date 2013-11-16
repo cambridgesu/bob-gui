@@ -1637,7 +1637,7 @@ class bobguiAdminister extends frontControllerApplication
 		if (!$ballot['paperVotingEnd']) {return 1;}
 		
 		# College ballot with paper vote
-		#!# Nasty hard-coding
+		#!# Nasty hard-coding - need to move these into the provider definition structure
 		if ($ballot['provider'] == 'bwp') {return 3;}
 		if ($ballot['provider'] == 'university') {return 1;}
 		
@@ -1901,10 +1901,8 @@ class bobguiAdminister extends frontControllerApplication
 				# Create votes table
 				if (!$this->votesTable ($ballot)) {return false;}
 				
-				# Clear the list of voters if there are insufficient fields
-				# This will happen under the scenario: (1) Create ballot with no paper vote, then (2) Add one-field user list, then (3) Edit ballot to add paper vote
-				# This will not happen under the scenario: (1) Create ballot with paper vote, then (2) Add three/four-field user list, then (3) Edit ballot to remove paper vote, then (4) User list is not edited, then (5) Re-edit ballot to add paper ballot. This is because the three/four-field user list will remain; it is not problematic to have four fields as only one is used.
-				if (!$this->deleteVotersIfInsufficientFields ($ballot)) {return false;}
+				# Ensure the table of voters is correct, and correct it if not, which may involve clearing it
+				if (!$this->correctVoterListFields ($ballot)) {return false;}
 				
 				break;
 				
@@ -2063,13 +2061,10 @@ class bobguiAdminister extends frontControllerApplication
 	}
 	
 	
-	# Function to delete the list of voters if there are insufficient fields, i.e. if there is a paper vote and the surname field is not present
-	private function deleteVotersIfInsufficientFields ($ballot)
+	# Function to ensure the list of voters is correct, and correct it if not, which may involve clearing it (e.g. if there is a paper vote and the surname field is not present)
+	private function correctVoterListFields ($ballot)
 	{
-		# End if the ballot is not a split (online + paper) vote
-		if (!$ballot['paperVotingEnd']) {return true;}
-		
-		# Attempt to get one voter
+		# Attempt to get one voter; this voter is treated as being typical, in the sense that the number of fields containing data will be the same as other voters have (thanks to the validation routine when entering the data)
 		$voterTable = $ballot['id'] . '_voter';
 		$query = "SELECT * FROM `{$voterTable}` LIMIT 1;";
  		$voter = $this->databaseConnection->getOne ($query);
@@ -2077,18 +2072,43 @@ class bobguiAdminister extends frontControllerApplication
 		# If there is no data, there is nothing to delete, so end as there are no problems
 		if (!$voter) {return true;}
 		
-		# If a surname field is present (which indicates three/four fields rather than one), there are no problems, since this is enough fields
-		if (strlen ($voter['surname'])) {return true;}
+		# Determine the fieldnames required, based on the details of this ballot (principally, whether paper voting is being done)
+		$requiredFieldsNumber = $this->requiredFields ($ballot);
+		$requiredFields = $this->fieldsTypes[$requiredFieldsNumber]['fieldnames'];
 		
-		# If only one field is required, then there are no problems, since the present data will be sufficient
-		$requiredFields = $this->requiredFields ($ballot);
-		if ($requiredFields == 1) {return true;}
+		# Determine whether there is data in each required field
+		$missingData = false;
+		foreach ($requiredFields as $requiredField) {
+			if (!strlen ($voter[$requiredField])) {
+				$missingData = true;
+				break;
+			}
+		}
 		
-		# Make clear to the user that they need to re-enter the voter list as there currently insufficient fields
-		echo "\n<p class=\"warning\"><img src=\"/images/icons/exclamation.png\" alt=\"!\" class=\"icon\" /><strong> You must now <a href=\"{$this->baseUrl}{$ballot['url']}voters.html\">add the voters list again</a>, this time with forenames &amp; surnames, now that you are also having a paper vote. The previous list you entered has been deleted.</strong></p>";
+		# If any data is missing, drop the existing table of voters, forcing re-creation, making clear to the user they need to re-enter the voter list as there currently insufficient fields
+		if ($missingData) {
+			if (!$this->dropTable ($ballot['id'], 'voter')) {return false;}
+			echo "\n<p class=\"warning\"><img src=\"/images/icons/exclamation.png\" alt=\"!\" class=\"icon\" /><strong> You must now <a href=\"{$this->baseUrl}{$ballot['url']}voters.html\">add the voters list again</a>, this time with forenames &amp; surnames, now that you are also having a paper vote. The previous list you entered has been deleted.</strong></p>";
+			return true;
+		}
 		
-		# Drop the existing table of voters
-		if (!$this->dropTable ($ballot['id'], 'voter')) {return false;}
+		# Wipe data present in any non-needed fields; this means for example that moving from paper to non-paper vote avoids the need for the RO to re-enter the (now username-only) list
+		$allPossibleFields = array ('username', 'forename', 'surname', 'unit');
+		$wipeFields = array_diff ($allPossibleFields, $requiredFields);
+		if ($wipeFields) {
+			$extraneousData = false;
+			foreach ($wipeFields as $wipeField) {
+				if (strlen ($voter[$wipeField])) {
+					$extraneousData = true;
+					break;
+				}
+			}
+			if ($extraneousData) {
+				$newData = array_fill_keys ($wipeFields, NULL);
+				$this->databaseConnection->update ($this->settings['database'], $voterTable, $newData);	// Lack of conditions means this will apply to every record
+				echo "\n<p class=\"warning\"><img src=\"/images/icons/information.png\" alt=\"!\" class=\"icon\" /><strong> The <a href=\"{$this->baseUrl}{$ballot['url']}voters.html\">voters list</a> structure has been updated to remove fields that are no longer relevant. Each username, however, has been retained.</strong></p>";
+			}
+		}
 		
 		# Signal success
 		return true;
