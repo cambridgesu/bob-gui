@@ -2066,19 +2066,18 @@ class bobguiAdminister extends frontControllerApplication
 		# End if the ballot is not a split (online + paper) vote
 		if (!$ballot['paperVotingEnd']) {return true;}
 		
-		# Get one voter and check if the surname is present (which indicates three/four fields rather than one)
+		# Attempt to get one voter
 		$voterTable = $ballot['id'] . '_voter';
 		$query = "SELECT * FROM `{$voterTable}` LIMIT 1;";
-		if (!$voter = $this->databaseConnection->getOne ($query)) {
-			return true;	// End; no problems, as there is no data
-		}
+ 		$voter = $this->databaseConnection->getOne ($query);
 		
-		# Check for a surname
-		if (strlen ($voter['surname'])) {
-			return true;	// End; no problems, as there is a surname, so take no action, i.e. it is either three/four fields
-		}
+		# If there is no data, there is nothing to delete, so end as there are no problems
+		if (!$voter) {return true;}
 		
-		# Make clear to the user that they need to re-enter the voter list
+		# If a surname field is present (which indicates three/four fields rather than one), there are no problems, since this is enough fields
+		if (strlen ($voter['surname'])) {return true;}
+		
+		# Make clear to the user that they need to re-enter the voter list as there currently insufficient fields
 		echo "\n<p class=\"warning\"><img src=\"/images/icons/exclamation.png\" alt=\"!\" class=\"icon\" /><strong> You must now <a href=\"{$this->baseUrl}{$ballot['url']}voters.html\">add the voters list again</a>, this time with forenames &amp; surnames, now that you are also having a paper vote. The previous list you entered has been deleted.</strong></p>";
 		
 		# Drop the existing table of voters
