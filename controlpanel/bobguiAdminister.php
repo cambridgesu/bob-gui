@@ -125,6 +125,9 @@ class bobguiAdminister extends frontControllerApplication
 			
 			# API key for bestow endpoint
 			'apiKey' => NULL,
+			
+			# Single organisation mode (basically removes references to manager claim form infrastructure)
+			'singleOrganisationMode' => false,
 		);
 		
 		#!# Workaround to deal with lack of proper frontControllerApplication support for header/footer with exporting enabled, which is not yet easy to patch in
@@ -531,7 +534,7 @@ class bobguiAdminister extends frontControllerApplication
 		# Compile the HTML
 		$html  = "\n<ol" . ($spaced ? ' class="spaced"' : '') . ">
 			<li>Ballots should be created by the Returning Officer (or delegate).</li>
-			<li>You (the RO) must be <strong>registered as a manager</strong> of your group in the " . implode (' or ', $providerList) . ".</li>
+			<li>You (the RO) must be <strong>registered as a manager</strong>" . ($this->settings['singleOrganisationMode'] ? '' : ' of your group in the ' . implode (' or ', $providerList)) . ".</li>
 			<li>You must finalise the set up of the ballot <strong>at least 2 hours</strong> before it is due to open. (This is required by the security architecture.)</li>
 			<li>At <strong>2 hours</strong> before a ballot opens, it <strong>cannot</strong> then be deleted or edited in any way.</li>
 			<li>Your constitution must require votes to be counted using <strong>" . htmlspecialchars ($this->supportedCountingMethods[$this->settings['countingMethod']]) . "</strong>. This system cannot run first-past-the-post ballots.</li>
@@ -2494,9 +2497,11 @@ class bobguiAdminister extends frontControllerApplication
 		$links = array ();
 		foreach ($organisationsOfUser as $providerId => $organisations) {
 			
-			# Add the title for this type of provider
-			$html .= "\n<h3 class=\"selectlist\">" . htmlspecialchars ($providerMetadata[$providerId]['name']) . ':</h3>';
-			$html .= "\n<p>" . ($organisations ? "If you think you should be the manager for a {$providerMetadata[$providerId]['typeSingularUcfirst']} not listed here" : "You do not appear to be not registered as the manager for any {$providerMetadata[$providerId]['typeSingularUcfirst']}.<br />If you think you should be") . ", please " . ($providerMetadata[$providerId]['managerClaimFormLocation'] ? "use the <a href=\"{$providerMetadata[$providerId]['baseUrl']}{$providerMetadata[$providerId]['managerClaimFormLocation']}\">{$providerMetadata[$providerId]['typeSingularUcfirst']} manager claim form</a> elsewhere on the website.</p>" : 'contact the system administrator.');
+			# Add the title for this type of provider, if multiple organisations are expected
+			if (!$this->settings['singleOrganisationMode']) {
+				$html .= "\n<h3 class=\"selectlist\">" . htmlspecialchars ($providerMetadata[$providerId]['name']) . ':</h3>';
+				$html .= "\n<p>" . ($organisations ? "If you think you should be the manager for a {$providerMetadata[$providerId]['typeSingularUcfirst']} not listed here" : "You do not appear to be not registered as the manager for any {$providerMetadata[$providerId]['typeSingularUcfirst']}.<br />If you think you should be") . ", please " . ($providerMetadata[$providerId]['managerClaimFormLocation'] ? "use the <a href=\"{$providerMetadata[$providerId]['baseUrl']}{$providerMetadata[$providerId]['managerClaimFormLocation']}\">{$providerMetadata[$providerId]['typeSingularUcfirst']} manager claim form</a> elsewhere on the website.</p>" : 'contact the system administrator.');
+			}
 
 			# Add each organisation
 			$links = array ();
@@ -2768,15 +2773,20 @@ class bobguiAdminister extends frontControllerApplication
 	public function feedback ()
 	{
 		# Define FAQs
-		$queries['I want or should have rights to set ballots for an organisation but don\'t at the moment'] = "If so, please use the <a href=\"{$this->baseUrl}/organisation.html\">manager claim form links on this page</a> to request the current manager(s) to add you. The intention of the Directory is that organisations manage their own data, as only they know best who should have access to make changes.";
+		$queries = array ();
+		if (!$this->settings['singleOrganisationMode']) {
+			$queries['I want or should have rights to set ballots for an organisation but don\'t at the moment'] = "If so, please use the <a href=\"{$this->baseUrl}/organisation.html\">manager claim form links on this page</a> to request the current manager(s) to add you. The intention of the Directory is that organisations manage their own data, as only they know best who should have access to make changes.";
+		}
 		
-		# Create the list
-		#!# Dependency (non-essential) currently outside distribution
-		echo "\n" . '<script type="text/javascript" src="/sitetech/collapsable.js"></script>';
-		echo "\n<div class=\"graybox\">";
-		echo "\n<h3>Common queries:</h3>";
-		echo application::htmlDl ($queries, array (), false, 'collapsable faq', $allowHtml = true);
-		echo "\n</div>";
+		# Create the list, if any queries
+		if ($queries) {
+			#!# Dependency (non-essential) currently outside distribution
+			echo "\n" . '<script type="text/javascript" src="/sitetech/collapsable.js"></script>';
+			echo "\n<div class=\"graybox\">";
+			echo "\n<h3>Common queries:</h3>";
+			echo application::htmlDl ($queries, array (), false, 'collapsable faq', $allowHtml = true);
+			echo "\n</div>";
+		}
 		
 		# Use parent
 		parent::feedback ();

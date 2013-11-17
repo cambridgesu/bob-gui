@@ -24,6 +24,7 @@ $configControlpanel['countingMethod'] = $config['countingMethod'];
 $configControlpanel['maximumOpeningDays'] = $config['maximumOpeningDays'];
 $configControlpanel['disableSurnameForenameRequirement'] = $config['disableSurnameForenameRequirement'];
 $configControlpanel['disableRonAvailability'] = $config['disableRonAvailability'];
+$configControlpanel['singleOrganisationMode'] = $config['singleOrganisationMode'];
 
 # Load and run the BOB GUI with the specified settings
 require_once (dirname (__FILE__) . '/bobguiAdminister.php');
