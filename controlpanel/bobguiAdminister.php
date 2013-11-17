@@ -599,7 +599,7 @@ class bobguiAdminister extends frontControllerApplication
 			<li><a href=\"#split\">Paper voting ('split' voting)</a></li>
 			<li><a href=\"#architecture\">Security architecture</a></li>
 			<li><a href=\"#missingvoters\">Can voters who have been missed off be added mid-ballot?</a></li>
-			<li><a href=\"#transparency\">Can a vote's results be kept confidential until they are officially revealed?</a></li>
+			<li><a href=\"#transparency\">Can the list of votes cast (and, where relevant, count) be kept private until the result is officially declared?</a></li>
 			" . ($showTimeLimitFaq ? "<li><a href=\"#timelimit\">Why is the maximum ballot period {$this->settings['maximumOpeningDays']} days?</a></li>" : '') . "
 			<li><a href=\"#feedback\">Feedback</a></li>
 		</ul>
@@ -641,8 +641,8 @@ class bobguiAdminister extends frontControllerApplication
 		<p>Returning Officers should check the list of voters, and circulate the link to the ballot so that people can check they are on the electoral roll before the opening of the ballot.</p>
 		<p>The only workaround is to ask the missing voter(s) to cast a paper ballot, then not declare the automatic online count as valid, to combine the paper ballot with the electronic vote list that will appear after the ballot has closed, and run a manual STV count using a spreadsheet. However, this may not be acceptable given that it could identify the voter's vote to the Returning Officer if only one such ballot is submitted on paper.</p>
 		
-		<h3 id=\"transparency\">Can a vote's results be kept confidential until they are officially revealed?</h3>
-		<p>Results become visible to everyone immediately after the ballot is closed. A few people have asked us whether there is any way of overriding this and keeping a vote's results confidential until they are officially revealed.</p>
+		<h3 id=\"transparency\">Can the list of votes cast (and, where relevant, count) be kept private until the result is officially declared?</h3>
+		<p>The list of votes cast becomes visible to everyone immediately after the ballot is closed. Also, the result is also shown automatically, unless paper voting is also in use. A few people have asked us whether there is any way of overriding this and keeping the list of votes confidential until they are officially revealed.</p>
 		<p>This is not possible, as a direct result of the security design of the voting system. Such functionality was actively considered during the design phase of the system but it was explicitly rejected at that point.</p>
 		<p>Part of the security model of the system is that the list of votes cast (but obviously not the connection with who cast them) is revealed after the closure of the election. This is so that people can verify that their vote was saved correctly, alongside other checks and balances that seek to ensure this.</p>
 		<p>As a result, anyone who wants to put that same list of votes into OpenSTV (which is a free counting program) and do a calculation is fairly trivially able to do so themselves anyway. So it makes more sense to have an open result count which avoids any suspicion (however unwarranted) that the Returning Officer is doing any fiddling or trying to console a losing candidate.</p>
