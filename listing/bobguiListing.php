@@ -568,7 +568,7 @@ class bobguiListing extends frontControllerApplication
 			
 			# Check the year is valid, or end (as date mode has been requested)
 			if (!$year) {
-				$html  = "\n<h1>Ballots for " . htmlspecialchars ($organisationName) . ' for a specific year</h1>';
+				$html  = "\n<h1>" . htmlspecialchars ($organisationName) . ' ballots - for a specific year</h1>';
 				$html .= "\n<p>The specified year was invalid. Please check the URL and try again.</p>";
 				echo $html;
 				$this->page404 (false);
@@ -580,7 +580,7 @@ class bobguiListing extends frontControllerApplication
 			
 			# Check for instances in this (now validated) year
 			if (!$organisationBallots = $this->getBallotInstances (false, $organisationId, $year, $regroupByOrganisation = false)) {
-				$html  = "\n<h1>Ballots for " . htmlspecialchars ($organisationName) . $year['yearString'] . '</h1>';
+				$html  = "\n<h1>" . htmlspecialchars ($organisationName) . ' ballots ' . $year['yearString'] . '</h1>';
 				$html .= "\n<p>There " . ($date['isEarlierAcademicYear'] ? 'were' : 'are') . " no ballots for " . htmlspecialchars ($organisationName) . $year['yearString'] . '.</p>';
 				echo $html;
 				return false;
@@ -592,7 +592,7 @@ class bobguiListing extends frontControllerApplication
 		$organisation = array_pop ($ballotsForOrganisation);
 		
 		# Start the HTML with introductory information about the organisation, using the latest in the list
-		$html  = "\n<h1>Ballots for " . htmlspecialchars ($organisation['organisationName']) . ($date ? $date['yearString'] : '') . '</h1>';
+		$html  = "\n<h1>" . htmlspecialchars ($organisation['organisationName']) . ' ballots' . ($date ? $date['yearString'] : '') . '</h1>';
 		$linkStart = ($organisation['organisationUrl'] ? "<a href=\"{$organisation['organisationUrl']}\">" : false);
 		$html .= "\n" . ($organisation['organisationLogoUrl'] ? "{$linkStart}<img src=\"{$organisation['organisationLogoUrl']}\" alt=\"" . htmlspecialchars ($organisation['organisationName']) . "\" height=\"80\" class=\"right\" border=\"0\" />" . ($linkStart ? '</a>' : '') : '');
 		$html .= "\n<ul>\n\t<li>More information: {$linkStart}" . htmlspecialchars ($organisation['organisationName']) . ($linkStart ? '</a>' : '') . "</li>\n</ul>";
