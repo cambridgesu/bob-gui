@@ -1761,15 +1761,15 @@ class bobguiAdminister extends frontControllerApplication
 		<ol type=\"a\">
 			<li>As soon as the vote closes, the totals &amp; counts will appear as links on the Voting Page (unless you specified additional paper voting). Immediate appearance of these cannot be disabled.</li>
 			<li>It is the Returning Officer's responsibility to check these counts.</li>
-			<li>You should then declare the results, once you are satisfied as to their accuracy.</li>
+			<li>The Returning Officer should then review the results and declare them when satisfied as to their accuracy.</li>
 		</ol>
-		<h3>5. Additional paper voting (if you specified this)</h3>
+		<h3>5. Optional: Additional paper voting (if relevant)</h3>
 		<ol type=\"a\">
-			<li>If you specified additional paper voting, go to the " . ($ballotUrl ? "<a href=\"{$this->settings['liveServerUrl']}{$ballotUrl}?admin\">live vote admin page</a>" : 'live vote admin page') . " and print off the Electoral Roll and paper ballots.</li>
-			<li>Run the additional paper voting. Those who have voted online already will be marked as crossed off.</li>
+			<li>If you specified additional paper voting after online voting, and wish to obtain pre-formatted ballot sheets, go to the " . ($ballotUrl ? "<a href=\"{$this->settings['liveServerUrl']}{$ballotUrl}?admin\">live vote admin page</a>" : 'live vote admin page') . " and print off the Electoral Roll and paper ballots. Then run the additional paper voting. Those who have voted online already will be marked as crossed off.</li>
 			<li>At the time of close of paper voting you specified, the totals &amp; counts will appear as links on the Voting Page.</li>
-			<li>Take that count data, add the paper count data, and calculate the STV results. <a href=\"http://www.openstv.org/\" target=\"_blank\">OpenSTV</a> may be helpful for this.</li>
-			<li>You should then declare the results.</li>
+			<li>Enter the paper votes into the system using the " . ($ballotUrl ? "<a href=\"{$this->settings['liveServerUrl']}{$ballotUrl}?admin_additionalvotes\">'Enter additional votes (from paper voting)' page</a>" : "'Enter additional votes (from paper voting)' page") . " in the admin area, following the instructions there.</li>
+			<li>(Alternatively, if you wish to conduct the count on your computer, take that count data, add the paper count data, and calculate the STV results. <a href=\"http://www.openstv.org/\" target=\"_blank\">OpenSTV</a> may be helpful for this.)</li>
+			<li>The Returning Officer should then review the results and declare them when satisfied as to their accuracy.</li>
 		</ol>
 		";
 		
