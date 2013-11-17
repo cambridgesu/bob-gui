@@ -535,7 +535,7 @@ class bobguiAdminister extends frontControllerApplication
 			<li>You must finalise the set up of the ballot <strong>at least 2 hours</strong> before it is due to open. (This is required by the security architecture.)</li>
 			<li>At <strong>2 hours</strong> before a ballot opens, it <strong>cannot</strong> then be deleted or edited in any way.</li>
 			<li>Your constitution must require votes to be counted using <strong>" . htmlspecialchars ($this->supportedCountingMethods[$this->settings['countingMethod']]) . "</strong>. This system cannot run first-past-the-post ballots.</li>
-			<li>You must have <strong>a spreadsheet of all your voters</strong>, with at least University usernames.</li>
+			<li>You must have <strong>a spreadsheet of all your voters</strong>, containing their University usernames.</li>
 			<li>All voters must have a Raven account.</li>
 			" . ($this->cautionAboutSensitiveBallots ? "<li>Do not use this system for elections where the only ballot is for an LGBT officer, i.e. where making the list of those who have voted would not be acceptable. (Please contact {$this->settings['administratorEmail']} to discuss this.)</li>" : '') . "
 		</ol>";
