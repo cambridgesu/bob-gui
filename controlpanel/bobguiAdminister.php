@@ -1516,6 +1516,7 @@ class bobguiAdminister extends frontControllerApplication
 				" . ($requiredFields > 1 ? "<li>Column order must be <strong>in the order shown</strong>, i.e. {$this->fieldsTypes[$requiredFields]['description']}.</li>" : '') . "
 				<li>The usernames can be e-mails instead, but they must end <strong>exactly</strong> @{$this->settings['mailDomain']} .</li>
 				<li>The list of usernames/people does <strong>not</strong> have to be in alphabetical order.</li>
+				" . ($ballot['paperVotingEnd'] ? '<li>Include usernames of <strong>only those people eligible to vote online</strong> - do not include people who can only vote on paper.</li>' : '') . "
 			</ul>
 		");
 		if ($voterListCloned) {
@@ -1523,11 +1524,11 @@ class bobguiAdminister extends frontControllerApplication
 		}
 		$form->textarea (array (
 			'name'					=> 'voters',
-			'title'					=> 'List of voters',
+			'title'					=> ($ballot['paperVotingEnd'] ? 'List of online voters' : 'List of voters'),
 			'required'				=> true,
 			'cols'					=> 120,
 			'rows'					=> 30,
-			'default'				=>$votersListFormatted,
+			'default'				=> $votersListFormatted,
 		));
 		
 		# Do additional sanity checks on the data prior to validation
