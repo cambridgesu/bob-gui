@@ -2500,7 +2500,7 @@ class bobguiAdminister extends frontControllerApplication
 			# Add the title for this type of provider, if multiple organisations are expected
 			if (!$this->settings['singleOrganisationMode']) {
 				$html .= "\n<h3 class=\"selectlist\">" . htmlspecialchars ($providerMetadata[$providerId]['name']) . ':</h3>';
-				$html .= "\n<p>" . ($organisations ? "If you think you should be the manager for a {$providerMetadata[$providerId]['typeSingularUcfirst']} not listed here" : "You do not appear to be not registered as the manager for any {$providerMetadata[$providerId]['typeSingularUcfirst']}.<br />If you think you should be") . ", please " . ($providerMetadata[$providerId]['managerClaimFormLocation'] ? "use the <a href=\"{$providerMetadata[$providerId]['baseUrl']}{$providerMetadata[$providerId]['managerClaimFormLocation']}\">{$providerMetadata[$providerId]['typeSingularUcfirst']} manager claim form</a> elsewhere on the website.</p>" : 'contact the system administrator.');
+				$html .= "\n<p>" . ($organisations ? "If you think you should be the manager for a {$providerMetadata[$providerId]['typeSingularUcfirst']} not listed here" : "You do not appear to be not registered as the manager for any {$providerMetadata[$providerId]['typeSingularUcfirst']}.<br />If you think you should be") . ", please " . ($providerMetadata[$providerId]['managerClaimFormLocation'] ? "use the <a href=\"{$providerMetadata[$providerId]['baseUrl']}{$providerMetadata[$providerId]['managerClaimFormLocation']}\">{$providerMetadata[$providerId]['typeSingularUcfirst']} manager claim form</a> elsewhere on the website.</p>" : "<a href=\"{$this->baseUrl}/feedback.html\">contact the system administrator</a>.");
 			}
 
 			# Add each organisation
