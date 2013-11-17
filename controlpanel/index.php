@@ -20,6 +20,7 @@ $configControlpanel['emailReturningOfficerReceipts'] = $config['emailReturningOf
 $configControlpanel['liveServerUrl'] = $config['liveServerUrl'];
 $configControlpanel['apiKey'] = $config['apiKey'];
 $configControlpanel['disableListWhoVoted'] = $config['disableListWhoVoted'];
+$configControlpanel['voterReceiptDisableable'] = $config['voterReceiptDisableable'];
 $configControlpanel['countingMethod'] = $config['countingMethod'];
 $configControlpanel['maximumOpeningDays'] = $config['maximumOpeningDays'];
 $configControlpanel['disableSurnameForenameRequirement'] = $config['disableSurnameForenameRequirement'];

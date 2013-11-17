@@ -128,6 +128,10 @@ class bobguiAdminister extends frontControllerApplication
 			
 			# Single organisation mode (basically removes references to manager claim form infrastructure)
 			'singleOrganisationMode' => false,
+			
+			# Whether users can choose to disable the e-mail vote receipt in the live instance
+			'voterReceiptDisableable' => false,
+			
 		);
 		
 		#!# Workaround to deal with lack of proper frontControllerApplication support for header/footer with exporting enabled, which is not yet easy to patch in
@@ -1721,13 +1725,15 @@ class bobguiAdminister extends frontControllerApplication
 		$electionInfo = $this->parseElectionInfo ($ballot['electionInfo']);
 		
 		# Compile into the format expected by BOB
+		$ballot['electionInfo'] = array ();
 		foreach ($electionInfo as $index => $election) {
-			$data[$index] = array_merge (array ($election['title']), $election['candidates']);
+			$ballot['electionInfo'][$index] = array_merge (array ($election['title']), $election['candidates']);
 		}
 		
 		# Show the ballot page in BOB statically
 		require_once ($this->settings['bobDirectory'] . 'BOB.php');
-		BOB::viewBallotPageExternal ($data, $submitTo = 'view.html');
+		$ballot['voterReceiptDisableable'] = $this->settings['voterReceiptDisableable'];
+		BOB::viewBallotPageExternal ($ballot, $submitTo = 'view.html');
 	}
 	
 	
