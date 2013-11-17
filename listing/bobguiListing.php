@@ -74,7 +74,7 @@ class bobguiListing extends frontControllerApplication
 				'description' => false,
 			),
 			'open' => array (
-				'description' => 'Currently-open ballots',
+				'description' => 'Ballots open for voting',
 			),
 			'forthcoming' => array (
 				'description' => 'Forthcoming ballots',
