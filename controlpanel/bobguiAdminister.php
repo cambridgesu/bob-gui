@@ -586,7 +586,7 @@ class bobguiAdminister extends frontControllerApplication
 	function about ()
 	{
 		$html  = "<h2>How it works</h2>
-		<p>We hope to answer all your questions here about how to set up votes, and what is and is not possible.<br />If you have any questions, please do not hesitate to <a href=\"{$this->baseUrl}/feedback.html\">contact us</a>.</p>
+		<p>We hope to answer all your questions here about how to set up votes, and what is and is not possible.<br />If you have any questions, please do not hesitate to <a href=\"{$this->baseUrl}/feedback.html\">contact the System Administrator</a>.</p>
 		<p>Jump below to:</p>
 		<ul>
 			<li><a href=\"#overview\">Overview</a></li>
