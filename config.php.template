@@ -57,7 +57,9 @@ $config['databaseLive'] = 'votes';
 
 # Listing UI settings
 $config['listingWelcomeMessageHtml'] = false;
-$config['listingAssumeSingleOrganisation'] = false;
+
+# Other settings
+$config['singleOrganisationMode'] = false;
 
 # Ingest SMS notifications
 $config['smsRecipient'] = '441234567890';

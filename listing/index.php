@@ -18,7 +18,7 @@ $configListing['controlPanelUrl'] = $config['controlPanelUrl'];
 $configListing['controlPanelOnlyUsers'] = $config['controlPanelOnlyUsers'];
 $configListing['controlPanelLinkDirectly'] = $config['controlPanelLinkDirectly'];
 $configListing['welcomeMessageHtml'] = $config['listingWelcomeMessageHtml'];
-$configListing['assumeSingleOrganisation'] = $config['listingAssumeSingleOrganisation'];
+$configListing['singleOrganisationMode'] = $config['singleOrganisationMode'];
 
 # Load and run the BOB GUI with the specified settings
 require_once (dirname (__FILE__) . '/bobguiListing.php');
