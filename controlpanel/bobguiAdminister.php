@@ -530,7 +530,7 @@ class bobguiAdminister extends frontControllerApplication
 		
 		# Compile the HTML
 		$html  = "\n<ol" . ($spaced ? ' class="spaced"' : '') . ">
-			<li>Ballots should be created <strong>by the Returning Officer</strong>.</li>
+			<li>Ballots should be created by the Returning Officer (or delegate).</li>
 			<li>You (the RO) must be <strong>registered as a manager</strong> of your group in the " . implode (' or ', $providerList) . ".</li>
 			<li>You must finalise the set up of the ballot <strong>at least 2 hours</strong> before it is due to open. (This is required by the security architecture.)</li>
 			<li>At <strong>2 hours</strong> before a ballot opens, it <strong>cannot</strong> then be deleted or edited in any way.</li>
