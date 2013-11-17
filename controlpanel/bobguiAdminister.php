@@ -585,6 +585,10 @@ class bobguiAdminister extends frontControllerApplication
 	# Help/about page
 	function about ()
 	{
+		# Determine whether the time limit FAQ should be shown
+		$showTimeLimitFaq = ($this->settings['maximumOpeningDays'] <= 7);
+		
+		# Assemble the HTML
 		$html  = "<h2>How it works</h2>
 		<p>We hope to answer all your questions here about how to set up votes, and what is and is not possible.<br />If you have any questions, please do not hesitate to <a href=\"{$this->baseUrl}/feedback.html\">contact the System Administrator</a>.</p>
 		<p>Jump below to:</p>
@@ -596,7 +600,7 @@ class bobguiAdminister extends frontControllerApplication
 			<li><a href=\"#architecture\">Security architecture</a></li>
 			<li><a href=\"#missingvoters\">Can voters who have been missed off be added mid-ballot?</a></li>
 			<li><a href=\"#transparency\">Can a vote's results be kept confidential until they are officially revealed?</a></li>
-			<li><a href=\"#timelimit\">Why is the maximum ballot period 3 days?</a></li>
+			" . ($showTimeLimitFaq ? "<li><a href=\"#timelimit\">Why is the maximum ballot period {$this->settings['maximumOpeningDays']} days?</a></li>" : '') . "
 			<li><a href=\"#feedback\">Feedback</a></li>
 		</ul>
 		
@@ -645,8 +649,8 @@ class bobguiAdminister extends frontControllerApplication
 		<p>Effectively this almost mirrors the same situation with a paper vote where voters should, under a democratically-run system, be able to watch a manual count themselves, and often can determine by watching the votes go past who the winner is (admittedly without the same level of accuracy), prior to the official announcement of the result.</p>
 		<p>The ability to check the vote is therefore a fundamental part of the security design of the voting algorithm, so this cannot be changed.</p>
 		
-		<h3 id=\"timelimit\">Why is the maximum ballot period 3 days?</h3>
-		<p>The normal limit is currently set to 3 days, for these reasons:</p>
+		" . ($showTimeLimitFaq ? "<h3 id=\"timelimit\">Why is the maximum ballot period {$this->settings['maximumOpeningDays']} days?</h3>
+		<p>The normal limit is currently set to {$this->settings['maximumOpeningDays']} days, for these reasons:</p>
 		<ol class=\"spaced\">
 			<li>Security patches and upgrades to the system can be applied more easily - long ballots make it hard for us to schedule these without having to interrupt voting.</li>
 			<li>Shorter voting periods (e.g. 2 days) tend to incentivise better those in charge of issuing publicity and ensuring a good turnout.</li>
@@ -655,6 +659,7 @@ class bobguiAdminister extends frontControllerApplication
 		</ol>
 		<p>Three days seems to have been received as about the right limit (hundreds of ballots have taken place successfully within it), and seems to be within the scope of what most JCRs/MCRs have historically done with paper votes.</p>
 		<p>If you think you have a case for extending this limit, do get in touch.</p>
+		" : '') . "
 		
 		<h3 id=\"feedback\">Feedback</h3>
 		<p>We welcome any <a href=\"{$this->baseUrl}/feedback.html\">feedback</a> on this system or this documentation, including any suggestions for improvement.</p>";
