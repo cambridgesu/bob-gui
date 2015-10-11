@@ -1,5 +1,6 @@
 # Ignore the instantiated copy of the bootstrap files
 config.php
+controlpanel/logfile.txt
 controlpanel/providers.php
 
 # Ignore favicon if it exists
