@@ -27,6 +27,9 @@ $configControlpanel['disableSurnameForenameRequirement'] = $config['disableSurna
 $configControlpanel['disableRonAvailability'] = $config['disableRonAvailability'];
 $configControlpanel['singleOrganisationMode'] = $config['singleOrganisationMode'];
 
+# Add libraries to path
+ini_set ('include_path', dirname (__FILE__) . '/../lib/');
+
 # Load and run the BOB GUI with the specified settings
 require_once (dirname (__FILE__) . '/bobguiAdminister.php');
 new bobguiAdminister ($configControlpanel);

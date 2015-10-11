@@ -23,7 +23,6 @@
 
 
 # Class to create a GUI for BOB
-ini_set ('include_path', dirname (__FILE__) . '/../lib/');
 require_once ('frontControllerApplication.php');
 class bobguiAdminister extends frontControllerApplication
 {
