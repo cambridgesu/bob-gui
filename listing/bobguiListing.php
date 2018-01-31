@@ -1132,7 +1132,8 @@ class pureContent {
 	
 	# Function to clean and standardise server-generated globals
 #!# Could be cut down further
-	function cleanServerGlobals ($directoryIndex = 'index.html')
+	# Function to clean and standardise server-generated globals
+	public static function cleanServerGlobals ($directoryIndex = 'index.html')
 	{
 		# Assign the server root path, non-slash terminated
 		$_SERVER['DOCUMENT_ROOT'] = ((substr ($_SERVER['DOCUMENT_ROOT'], -1) == '/') ? substr ($_SERVER['DOCUMENT_ROOT'], 0, -1) : $_SERVER['DOCUMENT_ROOT']);
@@ -1144,14 +1145,16 @@ class pureContent {
 		if (!isSet ($_SERVER['SERVER_NAME'])) {$_SERVER['SERVER_NAME'] = 'localhost';}	// Emulation for CGI/CLI mode
 		
 		# Assign the page location (i.e. the actual script opened), with index.html removed if it exists, starting from root
-		$_SERVER['PHP_SELF'] = ereg_replace ("/$directoryIndex\$", '/', $_SERVER['PHP_SELF']);
-		$_SERVER['SCRIPT_NAME'] = ereg_replace ("/$directoryIndex\$", '/', $_SERVER['SCRIPT_NAME']);
+		$_SERVER['PHP_SELF'] = preg_replace ('~' . '/' . preg_quote ($directoryIndex) . '$' . '~', '/', $_SERVER['PHP_SELF']);
+		$_SERVER['SCRIPT_NAME'] = preg_replace ('~' . '/' . preg_quote ($directoryIndex) . '$' . '~', '/', $_SERVER['SCRIPT_NAME']);
 		
 		# Assign the page location (i.e. the page address requested) with query, removing double-slashes and the directory index
-		if (!isSet ($_SERVER['REQUEST_URI'])) {$_SERVER['REQUEST_URI'] = ereg_replace ('^' . $_SERVER['DOCUMENT_ROOT'], '', $_SERVER['SCRIPT_FILENAME']);}	// Emulation for CGI/CLI mode
-		$currentPath = ereg_replace ("/$directoryIndex\$", '/', $_SERVER['REQUEST_URI']);
+		if (!isSet ($_SERVER['REQUEST_URI'])) {$_SERVER['REQUEST_URI'] = preg_replace ('/^' . preg_quote ($_SERVER['DOCUMENT_ROOT'], '/') . '/', '', $_SERVER['SCRIPT_FILENAME']);}	// Emulation for CGI/CLI mode
+		$parts = explode ('?', $_SERVER['REQUEST_URI'], 2);	// Break off the query string so that we can make double-slash replacements safely, before reassembling
+		$currentPath = preg_replace ('~' . '/' . preg_quote ($directoryIndex) . '$' . '~', '/', $parts[0]);
 		while (strpos ($currentPath, '//') !== false) {$currentPath = str_replace ('//', '/', $currentPath);}
 		$_SERVER['REQUEST_URI'] = $currentPath;
+		if (isSet ($parts[1])) {$_SERVER['REQUEST_URI'] .= '?' . $parts[1];}	// Reinstate the query string
 		
 		# Assign the current server protocol type and version
 		if (!isSet ($_SERVER['SERVER_PROTOCOL'])) {$_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.1';}	// Emulation for CGI-CLI mode
@@ -1162,10 +1165,13 @@ class pureContent {
 		$_SERVER['_SITE_URL'] = $_SERVER['_SERVER_PROTOCOL_TYPE'] . '://' . $_SERVER['SERVER_NAME'];
 		
 		# Assign the complete page URL (i.e. the full page address requested), with index.html removed if it exists, starting from root
-		$_SERVER['_PAGE_URL'] = $_SERVER['_SITE_URL'] . $_SERVER['REQUEST_URI'];
+		if (!isSet ($_SERVER['SERVER_PORT'])) {$_SERVER['SERVER_PORT'] = 80;}	// Emulation for CGI/CLI mode
+		$_SERVER['_PAGE_URL'] = $_SERVER['_SITE_URL'] . (($_SERVER['SERVER_PORT'] != 80 && $_SERVER['SERVER_PORT'] != 443) ? ':' . $_SERVER['SERVER_PORT'] : '') . $_SERVER['REQUEST_URI'];
 		
-		#!# Needs further work
-		// $_SERVER['SCRIPT_URL'];
+		# Ensure SCRIPT_URL is present
+		if (!isSet ($_SERVER['SCRIPT_URL'])) {
+			$_SERVER['SCRIPT_URL'] = $parts[0];
+		}
 		
 		# Assign the query string (for the few cases, e.g. a 404, where a REDIRECT_QUERY_STRING is generated instead
 		$_SERVER['QUERY_STRING'] = (isSet ($_SERVER['REDIRECT_QUERY_STRING']) ? $_SERVER['REDIRECT_QUERY_STRING'] : (isSet ($_SERVER['QUERY_STRING']) ? $_SERVER['QUERY_STRING'] : ''));
