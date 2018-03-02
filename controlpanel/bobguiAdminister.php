@@ -131,6 +131,11 @@ class bobguiAdminister extends frontControllerApplication
 			# Whether users can choose to disable the e-mail vote receipt in the live instance
 			'voterReceiptDisableable' => false,
 			
+			# Additional entry in new ballot checklist, which will appear as the second item
+			'checklistAdditionalEntry' => false,
+			
+			# Additional entry in FAQ list, specified as an array of two items - title and content of a paragraph; both should be entity-safe
+			'faqAdditionalEntry' => array (),
 		);
 		
 		#!# Workaround to deal with lack of proper frontControllerApplication support for header/footer with exporting enabled, which is not yet easy to patch in
@@ -537,6 +542,7 @@ class bobguiAdminister extends frontControllerApplication
 		# Compile the HTML
 		$html  = "\n<ol" . ($spaced ? ' class="spaced"' : '') . ">
 			<li>Ballots should be created by the Returning Officer (or delegate).</li>
+			" . ($this->settings['checklistAdditionalEntry'] ? "<li>{$this->settings['checklistAdditionalEntry']}</li>" : '') . "
 			<li>You (the RO) must be <strong>registered as a manager</strong>" . ($this->settings['singleOrganisationMode'] ? '' : ' of your group in the ' . implode (' or ', $providerList)) . ".</li>
 			<li>You must finalise the set up of the ballot <strong>at least 2 hours</strong> before it is due to open. (This is required by the security architecture.)</li>
 			<li>At <strong>2 hours</strong> before a ballot opens, it <strong>cannot</strong> then be deleted or edited in any way.</li>
@@ -607,6 +613,7 @@ class bobguiAdminister extends frontControllerApplication
 			<li><a href=\"#missingvoters\">Can voters who have been missed off be added mid-ballot?</a></li>
 			<li><a href=\"#transparency\">Can the list of votes cast (and, where relevant, count) be kept private until the result is officially declared?</a></li>
 			" . ($showTimeLimitFaq ? "<li><a href=\"#timelimit\">Why is the maximum ballot period {$this->settings['maximumOpeningDays']} days?</a></li>" : '') . "
+			" . ($this->settings['faqAdditionalEntry'] ? "<li><a href=\"#additional\">{$this->settings['faqAdditionalEntry'][0]}</a></li>" : '') . "
 			<li><a href=\"#feedback\">Feedback</a></li>
 		</ul>
 		
@@ -666,6 +673,8 @@ class bobguiAdminister extends frontControllerApplication
 		<p>Three days seems to have been received as about the right limit (hundreds of ballots have taken place successfully within it), and seems to be within the scope of what most JCRs/MCRs have historically done with paper votes.</p>
 		<p>If you think you have a case for extending this limit, do get in touch.</p>
 		" : '') . "
+		
+		" . ($this->settings['faqAdditionalEntry'] ? "\n\n<h3 id=\"additional\">{$this->settings['faqAdditionalEntry'][0]}</h3>\n<p>{$this->settings['faqAdditionalEntry'][1]}</p>" : '') . "
 		
 		<h3 id=\"feedback\">Feedback</h3>
 		<p>We welcome any <a href=\"{$this->baseUrl}/feedback.html\">feedback</a> on this system or this documentation, including any suggestions for improvement.</p>";
@@ -1748,6 +1757,7 @@ class bobguiAdminister extends frontControllerApplication
 		<h3>1. Setup</h3>
 		<ol type=\"a\">
 			<li>You should start by clicking on the 'add a new ballot' link.</li>
+			" . ($this->settings['checklistAdditionalEntry'] ? "<li>{$this->settings['checklistAdditionalEntry']}</li>" : '') . "
 			<li>You should set things up in good time - do not leave things till the last minute (see next point also).</li>
 			<li>Two hours before the vote is due to open, the vote configuration and voter list will be locked and cannot be edited/deleted.</li>
 			<li>Note that, if you make any changes to the " . ($ballotUrl ? "<a href=\"{$this->baseUrl}{$ballotUrl}edit.html\">vote configuration</a>" : 'vote configuration') . ' or ' . ($ballotUrl ? "<a href=\"{$this->baseUrl}{$ballotUrl}voters.html\">voter list</a>" : 'voter list') . ", these changes will be copied to the live server at the next half-past-the-hour (i.e. <strong>not</strong> immediately).</li>
