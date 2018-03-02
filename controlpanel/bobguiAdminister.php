@@ -1597,7 +1597,7 @@ class bobguiAdminister extends frontControllerApplication
 				
 				# If there are duplicate usernames, register the problem
 				if ($duplicateUsernames = application::array_duplicate_values ($usernames)) {
-					if (count ($duplicateUsernames) <= 5) {
+					if (count ($duplicateUsernames) <= 50) {
 						$description = (count ($duplicateUsernames) == 1 ? 'The username ' : 'Usernames ') . htmlspecialchars (implode (', ', $duplicateUsernames)) . ' in the list of voters ' . (count ($duplicateUsernames) == 1 ? 'has been' : 'have been') . ' duplicated.';
 					} else {
 						$description = count ($duplicateUsernames) . ' of the usernames in the list of voters have been duplicated.';
