@@ -1,11 +1,11 @@
 <?php
 
 /*
- * Coding copyright Martin Lucas-Smith, University of Cambridge, 2003-13
- * Version 1.7.1
+ * Coding copyright Martin Lucas-Smith, University of Cambridge, 2003-17
+ * Version 1.9.9
  * Distributed under the terms of the GNU Public Licence - www.gnu.org/copyleft/gpl.html
  * Requires PHP 4.1+ with register_globals set to 'off'
- * Download latest from: http://download.geog.cam.ac.uk/projects/purecontent/
+ * Download latest from: https://download.geog.cam.ac.uk/projects/purecontent/
  */
 
 
@@ -50,7 +50,7 @@ class pureContent {
 		
 		# Assign the complete page URL (i.e. the full page address requested), with index.html removed if it exists, starting from root
 		if (!isSet ($_SERVER['SERVER_PORT'])) {$_SERVER['SERVER_PORT'] = 80;}	// Emulation for CGI/CLI mode
-		$_SERVER['_PAGE_URL'] = $_SERVER['_SITE_URL'] . ($_SERVER['SERVER_PORT'] != 80 ? ':' . $_SERVER['SERVER_PORT'] : '') . $_SERVER['REQUEST_URI'];
+		$_SERVER['_PAGE_URL'] = $_SERVER['_SITE_URL'] . (($_SERVER['SERVER_PORT'] != 80 && $_SERVER['SERVER_PORT'] != 443) ? ':' . $_SERVER['SERVER_PORT'] : '') . $_SERVER['REQUEST_URI'];
 		
 		# Ensure SCRIPT_URL is present
 		if (!isSet ($_SERVER['SCRIPT_URL'])) {
@@ -89,6 +89,9 @@ class pureContent {
 	 */
 	public static function assignNavigation ($dividingTextOnPage = ' &#187; ', $dividingTextInBrowserLine = ' &#187; ', $introductoryText = 'You are in:  ', $homeText = 'Home', $enforceStrictBehaviour = false, $browserlineFullHierarchy = false, $homeLocation = '/', $sectionTitleFile = '.title.txt', $menuTitleFile = '.menu.html', $tildeRoot = '/home/', $behaviouralHackFile = '/sitetech/assignNavigationHack.html', $linkToCurrent = false)
 	{
+		# Start an array of the navigation hierarchy
+		$navigationHierarchy = array ();
+		
 		# Ensure the home location and tilde root ends with a trailing slash
 		if (substr ($homeLocation, -1) != '/') {$homeLocation .= '/';}
 		if (substr ($tildeRoot, -1) != '/') {$tildeRoot .= '/';}
@@ -118,6 +121,7 @@ class pureContent {
 			
 			# Start the location line and browserline
 			$locationline = str_replace ('  ', '&nbsp; ', $introductoryText) . "<a href=\"$homeLocation\">$homeText</a>";
+			$navigationHierarchy[$homeLocation] = $homeText;
 			$browserline = '';
 			
 			# Assign the starting point for the links
@@ -154,6 +158,9 @@ class pureContent {
 					if ($behaviouralHackFile && file_exists ($_SERVER['DOCUMENT_ROOT'] . $behaviouralHackFile)) {
 						include ($_SERVER['DOCUMENT_ROOT'] . $behaviouralHackFile);
 					}
+					
+					# Add navigation hierarchy item
+					$navigationHierarchy[$link] = $contents;
 				}
 			}
 			
@@ -162,13 +169,13 @@ class pureContent {
 			$menufile = $serverRoot . $homeLocation . $menusection . '/' . $menuTitleFile;
 		}
 		
-		# Return the result
-		return array ($browserline, $locationline, $menusection, $menufile);
+		# Return the properties
+		return array ($browserline, $locationline, $menusection, $menufile, $navigationHierarchy);
 	}
 	
 	
 	# Define a function to generate the menu
-	public static function generateMenu ($menu, $cssSelected = 'selected', $parentTabLevel = 2, $orphanedDirectories = array (), $menufile = '', $id = NULL, $class = NULL, $returnNotEcho = false)
+	public static function generateMenu ($menu, $cssSelected = 'selected', $parentTabLevel = 2, $orphanedDirectories = array (), $menufile = '', $id = NULL, $class = NULL, $returnNotEcho = false, $addSubmenuClass = false, $submenuDuplicateFirstLink = false)
 	{
 		# Start the HTML
 		$html  = '';
@@ -179,17 +186,25 @@ class pureContent {
 		# Loop through each menu item to match the starting location but take account of lower-level subdirectories override higher-level directories
 		$match = '';
 		foreach ($menu as $location => $description) {
+			if ($location == '/') {continue;}	// Do not permit matching of / at this stage
 			if (($location == (substr ($_SERVER['REQUEST_URI'], 0, strlen ($location)))) && (strlen ($location) > strlen ($match))) {
 				$match = $location;
 			}
 		}
 		
 		# If no match has been found, check whether the requested page is an orphaned directory (i.e. has no menu item)
-		if ($match == '') {
+		if (!$match) {
 			foreach ($orphanedDirectories as $orphanedDirectory => $orphanAssignment) {
 				if (($orphanedDirectory == (substr ($_SERVER['REQUEST_URI'], 0, strlen ($orphanedDirectory)))) && (strlen ($orphanedDirectory) > strlen ($match))) {
 					$match = $orphanAssignment;
 				}
+			}
+		}
+		
+		# If still no match, and / is present, permit that
+		if (!$match) {
+			if (isSet ($menu['/'])) {
+				$match = '/';
 			}
 		}
 		
@@ -217,12 +232,23 @@ class pureContent {
 			$spaced = false;
 			
 			# Include the menu file
-			if ($match == $location) {
-				if (!empty ($menufile)) {
+			if (!empty ($menufile)) {
+				if ($match == $location || $menufile == '*') {
 					#!# Hacked in 060222 - deals with non-top level sections like /foo/bar/ but hard-codes .menu.html ... ; arguably this is a more sensible system though, and avoids passing menu file along a chain
-					$menufile = $_SERVER['DOCUMENT_ROOT'] . $location . '/.menu.html';
-					if (file_exists ($menufile)) {
-						include ($menufile);
+					$menufileFilename = $_SERVER['DOCUMENT_ROOT'] . $location . '/.menu.html';
+					if (file_exists ($menufileFilename)) {
+						if ($returnNotEcho) {
+							$menuFileHtml = file_get_contents ($menufileFilename);
+							if ($submenuDuplicateFirstLink) {
+								$menuFileHtml = str_replace ('<ul>', '<ul>' . "\n\t<li><a href=\"{$location}\">" . $description . (is_string ($submenuDuplicateFirstLink) ? ' ' . $submenuDuplicateFirstLink : '') . '</a></li>', $menuFileHtml);
+							}
+							if ($addSubmenuClass) {
+								$menuFileHtml = str_replace ('<ul>', "<ul class=\"{$addSubmenuClass}\">", $menuFileHtml);
+							}
+							$html .= $menuFileHtml;
+						} else {
+							include ($menufileFilename);
+						}
 					}
 				}
 			}
@@ -246,6 +272,9 @@ class pureContent {
 	{
 		# Read the contents of the file
 		$html = file_get_contents ($menufile);
+		
+		# Strip out comments first, so that commented-out items do not reappear
+		$html = preg_replace ('/<!--(.*)-->/Uis', '', $html);
 		
 		# Parse the contents
 		if (preg_match ('@^(.*)(<ul[^>]+>)(.+)(</ul>)(.*)$@s', $html, $matches)) {
@@ -330,19 +359,119 @@ class pureContent {
 	
 	
 	# Function to provide an edit link if using pureContentEditor
-	public static function editLink ($internalHostRegexp, $port = 8080, $class = 'editlink')
+	public static function editLink ($internalHostRegexp, $port = 8080, $class = 'editlink', $tag = 'p')
 	{
 		# If the host matches and the port is not the edit port, give a link
-		if (preg_match ('/' . addcslashes ($internalHostRegexp, '/') . '/', gethostbyaddr ($_SERVER['REMOTE_ADDR']))) {
+		if (preg_match ('/' . addcslashes ($internalHostRegexp, '/') . '/', gethostbyaddr ($_SERVER['REMOTE_ADDR'])) || isSet ($_COOKIE['purecontenteditorlink'])) {
 			if ($_SERVER['SERVER_PORT'] != $port) {
-				return "<p class=\"{$class}\"><a href=\"http://{$_SERVER['SERVER_NAME']}:{$port}" . htmlspecialchars ($_SERVER['REQUEST_URI']) . "\">[Editing&nbsp;mode]</a></p>";
+				return "<{$tag} class=\"" . ($class ? "{$class} " : '') . "noprint\"><a href=\"https://{$_SERVER['SERVER_NAME']}:{$port}" . htmlspecialchars ($_SERVER['REQUEST_URI']) . '"><img src="/images/icons/page_edit.png" class="icon" /> Editing&nbsp;mode</a>' . "</{$tag}>";
 			} else {
-				return "<p class=\"{$class}\"><a href=\"http://{$_SERVER['SERVER_NAME']}" . htmlspecialchars ($_SERVER['REQUEST_URI']) . "\">[Return to live]</a></p>";
+				return "<{$tag} class=\"" . ($class ? "{$class} " : '') . "noprint\"><a href=\"https://{$_SERVER['SERVER_NAME']}" . htmlspecialchars ($_SERVER['REQUEST_URI']) . "\">[Return to live]</a></{$tag}>";
 			}
 		}
 		
 		# Otherwise return an empty string
 		return '';
+	}
+	
+	
+	# Function to provide an SSO link area
+	public static function ssoLinks ($ssoBrandName = false, $profileUrl = false, $profileName = 'My profile', $superusersSwitching = array (), $internalHostRegexp = false)
+	{
+		# End if not to be shown for the user's host
+		if ($internalHostRegexp) {
+			if (!preg_match ('/' . addcslashes ($internalHostRegexp, '/') . '/', gethostbyaddr ($_SERVER['REMOTE_ADDR']))) {
+				return false;
+			}
+		}
+		
+		# End if SSO not installed
+		if (!isSet ($_SERVER['SINGLE_SIGN_ON_ENABLED'])) {return false;}
+		
+		# Start the HTML by opening a list
+		$html  = "\n\t<ul>";
+		
+		# Determine any return-to appended reference
+		$returnTo = ($_SERVER['REQUEST_URI'] && ($_SERVER['REQUEST_URI'] != '/') ? '?' . htmlspecialchars ($_SERVER['REQUEST_URI']) : '');
+		
+		# Enable superusers to switch to another user
+		$userSwitchingEnabled = (isSet ($_SERVER['REMOTE_USER']) && strlen ($_SERVER['REMOTE_USER']) && in_array ($_SERVER['REMOTE_USER'], $superusersSwitching, true));
+		$userSwitching = self::userSwitching ($userSwitchingEnabled);
+		
+		# Show the links
+		if (preg_match ('|^/logout|', $_SERVER['REQUEST_URI'])) {
+			$html .= "\n\t\t<li><span>Logging out&hellip;</span></li>";	// NB the user will actually have been logged out already
+		} else if ($_SERVER['REMOTE_USER']) {
+			$html .= "\n\t\t<li class=\"submenu\">";
+			$html .= ($userSwitching ? '<span class="impersonation">Impersonating' : '<span>Logged in as') . ' <strong>' . htmlspecialchars ($_SERVER['REMOTE_USER']) . "</strong> &#9660;</span>";
+			$html .= "\n\t\t<ul>";
+			if ($profileUrl) {
+				$html .= "\n\t\t\t<li><a href=\"{$profileUrl}\">{$profileName}</a></li>";
+			}
+			if ($userSwitchingEnabled) {
+				$html .= "\n\t\t\t<li>";
+				$html .= '<form name="switchuser" action="" method="post"><input type="search" name="switchuser[username]" value="' . htmlspecialchars ($userSwitching) . '" placeholder="Switch user" size="10" /> <input type="submit" value="Go!"></form>';
+				$html .= '</li>';
+			}
+			$html .= "\n\t\t\t<li><a href=\"/logout/{$returnTo}\">Logout</a></li>";	// Note that this will not maintain any #anchor, because the server doesn't see any hash: https://stackoverflow.com/questions/940905
+			$html .= "\n\t\t</ul>";
+			$html .= "</li>";
+		} else {
+			$html .= "\n\t\t<li><a href=\"/login/{$returnTo}\"><strong>Login</strong>" . ($ssoBrandName ? " with {$ssoBrandName}" : '') . "</a></li>";
+		}
+		
+		# Complete the list
+		$html .= "\n\t</ul>";
+		
+		# Surround with a div
+		$html = "\n<div id=\"ssologin\">" . $html . "\n</div>";
+		
+		# Disable the standard link
+		$html .= "\n" . '<style type="text/css">p.loggedinas {display: none;}</style>';
+		
+		# Return the HTML
+		return $html;
+	}
+	
+	
+	# Helper function to implement user switching
+	private static function userSwitching ($userSwitchingEnabled, $usernameRegexp = '/^([a-z0-9]+)$/')
+	{
+		# End if not enabled
+		if (!$userSwitchingEnabled) {return false;}
+		
+		# Assume disabled by default
+		$userSwitching = false;
+		
+		# If logged in, get the real username and ensure they have superuser rights
+		if ($userSwitchingEnabled) {
+			session_start ();
+			
+			# Maintain an existing session
+			if (isSet ($_SESSION['switchuser']) && isSet ($_SESSION['switchuser']['username']) && preg_match ($usernameRegexp, $_SESSION['switchuser']['username'])) {
+				$userSwitching = $_SESSION['switchuser']['username'];
+			}
+			
+			# If the form is posted, select or clear the user
+			if (isSet ($_POST['switchuser']) && isSet ($_POST['switchuser']['username'])) {
+				if (strlen ($_POST['switchuser']['username']) && preg_match ($usernameRegexp, $_POST['switchuser']['username']) && ($_POST['switchuser']['username'] != $_SERVER['REMOTE_USER'])) {
+					$userSwitching = trim ($_POST['switchuser']['username']);
+					$_SESSION['switchuser']['username'] = $userSwitching;
+				} else {
+					unset ($_SESSION['switchuser']);
+					$userSwitching = false;
+				}
+				header ("Location: {$_SERVER['_PAGE_URL']}");	// 302 Redirect (temporary)
+			}
+			
+			# Switch the user, and refresh the page to avoid POST warnings
+			if ($userSwitching) {
+				$_SERVER['REMOTE_USER'] = $userSwitching;
+			}
+		}
+		
+		# Return the user switching status (false or username)
+		return $userSwitching;
 	}
 	
 	
@@ -514,6 +643,8 @@ class pureContent {
 	
 	
 	# Function to create a jumplist form
+	#!# Need to move this to the application library
+	#!# Needs support for nested lists
 	public static function htmlJumplist ($values /* will have htmlspecialchars applied to both keys and values */, $selected = '', $action = '', $name = 'jumplist', $parentTabLevel = 0, $class = 'jumplist', $introductoryText = 'Go to:', $valueSubstitution = false, $onchangeJavascript = true)
 	{
 		# Return an empty string if no items
@@ -522,7 +653,7 @@ class pureContent {
 		# Prepare the tab string
 		$tabs = str_repeat ("\t", ($parentTabLevel));
 		
-		# Build the list; note that the visible value can never have tags within (e.g. <span>): http://stackoverflow.com/questions/5678760
+		# Build the list; note that the visible value can never have tags within (e.g. <span>): https://stackoverflow.com/questions/5678760
 		foreach ($values as $value => $visible) {
 			$fragments[] = '<option value="' . ($valueSubstitution ? str_replace ('%value', htmlspecialchars ($value), $valueSubstitution) : htmlspecialchars ($value)) . '"' . ($value == $selected ? ' selected="selected"' : '') . '>' . htmlspecialchars ($visible) . '</option>';
 		}
@@ -534,7 +665,7 @@ class pureContent {
 		$html .= "\n$tabs\t\t" . "<select name=\"$name\"" . ($onchangeJavascript ? ' onchange="window.location.href/*stopBots*/=this[selectedIndex].value"' : '') . '>';	// The inline 'stopBots' javascript comment is an attempt to stop rogue bots picking up the "href=" text
 		$html .= "\n$tabs\t\t\t" . implode ("\n$tabs\t\t\t", $fragments);
 		$html .= "\n$tabs\t\t" . '</select>';
-		$html .= "\n$tabs\t\t" . '<input type="submit" value="Go!" class="button" />';
+		$html .= "\n$tabs\t\t" . '<noscript><input type="submit" value="Go!" class="button" /></noscript>';
 		$html .= "\n$tabs\t" . '</form>';
 		$html .= "\n$tabs" . '</div>' . "\n";
 		
@@ -562,14 +693,70 @@ class pureContent {
 	# Function to add social networking links
 	public static function socialNetworkingLinks ($twitterName = false, $prefixText = false)
 	{
+		# End if server port doesn't match, as this can cause JS warnings on modern browser
+		if (($_SERVER['SERVER_PORT'] != '80') && ($_SERVER['SERVER_PORT'] != '443')) {return false;}
+		
 		# Build the HTML
 		$html  = "\n<p id=\"socialnetworkinglinks\">";
 		if ($prefixText) {$html .= $prefixText;}
-		$html .= "\n\t" . '<a class="twitter" href="http://twitter.com/home?status=Loving+' . rawurlencode ($_SERVER['_PAGE_URL']) . ($twitterName ? rawurlencode (" from @{$twitterName}!") : '') . '" title="Follow us on Twitter"><img src="/images/general/twitter.png" alt="Icon" title="Twitter" width="55" height="20" /></a>';
-		$html .= "\n\t" . '<iframe src="http://www.facebook.com/plugins/like.php?href=' . rawurlencode ($_SERVER['_PAGE_URL']) . '&amp;send=false&amp;layout=button_count&amp;show_faces=true&amp;action=like&amp;colorscheme=light&amp;font&amp;height=21" scrolling="no" frameborder="0" style="border:none; overflow:hidden; height:20px;"></iframe>';
+		$html .= "\n\t" . '<a class="twitter" href="//twitter.com/home?status=Loving+' . rawurlencode ($_SERVER['_PAGE_URL']) . ($twitterName ? rawurlencode (" from @{$twitterName}!") : '') . '" title="Follow us on Twitter"><img src="/images/general/twitter.png" alt="Icon" title="Twitter" width="55" height="20" /></a>';
+		$html .= "\n\t" . '<iframe src="//www.facebook.com/plugins/like.php?href=' . rawurlencode ($_SERVER['_PAGE_URL']) . '&amp;send=false&amp;layout=button_count&amp;show_faces=true&amp;action=like&amp;colorscheme=light&amp;font&amp;height=21" scrolling="no" frameborder="0" style="border:none; overflow:hidden; height:20px;"></iframe>';
 		$html .= "\n</p>";
 		
 		# Return the HTML
+		return $html;
+	}
+	
+	
+	# Social networking metadata
+	public static function socialNetworkingMetadata ($siteName, $twitterHandle = false, $imageLocation /* Starting / */, $description, $title = false, $imageWidth = false, $imageHeight = false, $pageUrl = false)
+	{
+		# Start the HTML
+		$html = '';
+		
+		# Ensure there is an imageLocation
+		if (!$imageLocation) {return false;}
+		
+		# Start an array of meta attributes
+		$attributes = array ();
+		
+		# Type
+		$attributes['og:type'] = 'website';
+		if ($twitterHandle) {
+			$attributes['twitter:card'] = 'photo';
+		}
+		
+		# Site name
+		$attributes['og:site_name'] = $siteName;
+		if ($twitterHandle) {
+			$attributes['twitter:site'] = $twitterHandle;
+		}
+		
+		# Image
+		$attributes['og:image'] = $_SERVER['_SITE_URL'] . $imageLocation;
+		if ($imageWidth) {$attributes['og:image:width'] = $imageWidth;}
+		if ($imageHeight) {$attributes['og:image:height'] = $imageHeight;}
+		
+		# Text
+		if ($title) {$attributes['og:title'] = (strlen ($title) > 80 ? substr ($title, 0, 80) . '&hellip' : $title);}
+		// $attributes['og:description'] = substr ($description, 0, 220);	// Twitter will then truncate this to 201
+		
+		# Page URL
+		$attributes['og:url'] = ($pageUrl ? $pageUrl : $_SERVER['_PAGE_URL']);
+		
+		# Compile the HTML
+		$metaEntries = array ();
+		foreach ($attributes as $key => $value) {
+			$value = htmlspecialchars ($value, ENT_NOQUOTES);
+			if (preg_match ('/^twitter:/', $key)) {
+				$metaEntries[] = '<meta name="' . $key . '" content="' . $value . '" />';
+			} else {
+				$metaEntries[] = '<meta property="' . $key . '" content="' . $value . '" />';
+			}
+		}
+		$html = "\n\t\t" . implode ("\n\t\t", $metaEntries);
+		
+		# Return the HTML, to put in the <head>
 		return $html;
 	}
 	
@@ -677,7 +864,8 @@ class highlightSearchTerms
 		# Buffer the output
 		if (isSet ($referer['host'])) {
 			if ($referer['host'] != $_SERVER['HTTP_HOST']) {
-				ob_start (array ('highlightSearchTerms', 'outsideWrapper')); 
+				ob_start (array ('highlightSearchTerms', 'outsideWrapper'));
+				ob_get_clean ();
 			}
 		}
 	}

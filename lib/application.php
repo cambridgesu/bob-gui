@@ -1,8 +1,8 @@
 <?php
 
 /*
- * Coding copyright Martin Lucas-Smith, University of Cambridge, 2003-13
- * Version 1.5.2
+ * Coding copyright Martin Lucas-Smith, University of Cambridge, 2003-17
+ * Version 1.5.36
  * Distributed under the terms of the GNU Public Licence - www.gnu.org/copyleft/gpl.html
  * Requires PHP 4.1+ with register_globals set to 'off'
  * Download latest from: http://download.geog.cam.ac.uk/projects/application/
@@ -75,6 +75,7 @@ class application
 	
 	
 	# Function to deal with errors
+	#!# To be deleted after frontControllerApplication 1.10.0 release
 	public function throwError ($number, $diagnosisDetails = '')
 	{
 		# Define the default error message if the specified error number does not exist
@@ -95,7 +96,7 @@ class application
 	
 	
 	# Generalised support function to display errors
-	public static function showUserErrors ($errors, $parentTabLevel = 0, $heading = '', $nested = false)
+	public static function showUserErrors ($errors, $parentTabLevel = 0, $heading = '', $nested = false, $divClass = 'error')
 	{
 		# Convert the error(s) to an array if it is not already
 		$errors = self::ensureArray ($errors);
@@ -103,7 +104,7 @@ class application
 		# Build up a list of errors if there are any
 		$html = '';
 		if (count ($errors) > 0) {
-			if (!$nested) {$html .= "\n" . str_repeat ("\t", ($parentTabLevel)) . '<div class="error">';}
+			if (!$nested) {$html .= "\n" . str_repeat ("\t", ($parentTabLevel)) . "<div class=\"{$divClass}\">";}
 			if ($heading != '') {$html .= ((!$nested) ? "\n" . str_repeat ("\t", ($parentTabLevel + 1)) . '<p>' : '') . $heading . ((!$nested) ? '</p>' : '');}
 			$html .= "\n" . str_repeat ("\t", ($parentTabLevel + 1)) . '<ul>';
 			foreach ($errors as $error) {
@@ -163,8 +164,16 @@ class application
 				header ("Location: {$url}");
 				return $redirectMessage;
 				
+			case '400':
+				header ('HTTP/1.0 400 Bad Request');
+				break;
+				
 			case '401':
 				header ('HTTP/1.0 401 Authorization Required');
+				break;
+				
+			case '403':
+				header ('HTTP/1.0 403 Forbidden');
 				break;
 				
 			case '404':
@@ -175,6 +184,10 @@ class application
 				header ('HTTP/1.0 410 Gone');
 				break;
 				
+			case '422':
+				header ('HTTP/1.0 422 Unprocessable Entity');
+				break;
+				
 			case '500':
 				header ('HTTP/1.1 500 Internal Server Error');
 				break;
@@ -182,14 +195,41 @@ class application
 	}
 	
 	
+	# Function to serve cache headers (304 Not modified header) instead of a resource; based on: http://www.php.net/header#61903
+	public function preferClientCache ($path)
+	{
+		# The server file path must exist and be readable
+		if (!is_readable ($path)) {return;}
+		
+		# Currently only supported on Apache
+		if (!function_exists ('apache_request_headers')) {return;}
+		
+		# Get headers sent by the client
+		$headers = apache_request_headers ();
+		
+		# End if no cache request header specified
+		if (!isSet ($headers['If-Modified-Since'])) {return;}
+		
+		# Is the client's local cache current?
+		if (strtotime ($headers['If-Modified-Since']) != filemtime ($path)) {return;}
+		
+		# Client's cache is current, so just respond '304 Not Modified'
+		header ('Last-Modified: '. gmdate ('D, d M Y H:i:s', filemtime ($path)) . ' GMT', true, 304);
+		
+		# End all execution
+		exit (0);
+	}
+	
+	
 	# Function to set a flash message
-	public static function setFlashMessage ($name, $value, $redirectTo, $redirectMessage = false, $path = '/')
+	#!# Currently also does a redirect, which is probably best separated out, or the function renamed to setFlashRedirect
+	public static function setFlashMessage ($name, $value, $redirectToPath, $redirectMessage = false, $path = '/')
 	{
 		# Set the cookie
 		setcookie ("flashredirect_{$name}", $value, time () + (60*5), $path);
 		
 		# Redirect to the specified location
-		$html = self::sendHeader (301, $_SERVER['_SITE_URL'] . $redirectTo, $redirectMessage);
+		$html = self::sendHeader (302, $_SERVER['_SITE_URL'] . $redirectToPath, $redirectMessage);
 		
 		# Return the HTML which will be displayed as the fallback
 		return $html;
@@ -216,12 +256,15 @@ class application
 	# Generalised support function to allow quick dumping of form data to screen, for debugging purposes
 	public static function dumpData ($data, $hide = false, $return = false, $htmlspecialchars = true)
 	{
+		# End if debugging is supressed via a constant which is set to true
+		if (defined ('SUPPRESS_DEBUG') && (SUPPRESS_DEBUG)) {return false;}
+		
 		# Start the HTML
 		$html = '';
 		
 		# Show the data
 		if ($hide) {$html .= "\n<!--";}
-		$html .= "\n" . '<pre class="debug">DEBUG: ';
+		$html .= "\n" . '<pre class="debug"><strong>DEBUG:</strong> ';
 		if (is_array ($data)) {
 			$data = print_r ($data, true);
 		}
@@ -426,14 +469,14 @@ class application
 	*/
 	
 	
-	# Trucation algorithm
+	# Trucation algorithm; this is multibyte safe and uses mb_
 	public static function str_truncate ($string, $characters, $moreUrl, $override = '<!--more-->', $respectWordBoundaries = true)
 	{
 		# End false if $characters is non-numeric or zero
 		if (!$characters || !is_numeric ($characters)) {return false;}
 		
 		# Return the string without modification if it is under the character limit
-		if ($characters > strlen ($string)) {return $string;}
+		if ($characters > mb_strlen ($string)) {return $string;}
 		
 		# If the override string is there, break at that point
 		if ($override && substr_count ($string, $override)) {
@@ -451,19 +494,19 @@ class application
 				foreach ($pieces as $piece) {
 					$approvedPieces[] = $piece;
 					$newString = implode (' ', $approvedPieces);
-					if (strlen ($newString) >= $characters) {
+					if (mb_strlen ($newString) >= $characters) {
 						break;	// Stop adding more pieces
 					}
 				}
 				
 			# Simple character mode
 			} else {
-				$newString = substr ($string, 0, $characters);
+				$newString = mb_substr ($string, 0, $characters);
 			}
 		}
 		
 		# Add the more link (except if the word chunking is just over the boundary resulting in the string being the same)
-		if (strlen ($newString) != strlen ($string)) {
+		if (mb_strlen ($newString) != mb_strlen ($string)) {
 			$moreHtml = " <span class=\"comment\">...&nbsp;<a href=\"{$moreUrl}\">[more]</a></span>";
 			$newString .= $moreHtml;
 		}
@@ -619,6 +662,20 @@ class application
 	}
 	
 	
+	# Function to get the first value in an array, whether the array is associative or not
+	public static function array_first_value ($array)
+	{
+		return reset ($array);	// Safe to do as this function receives a copy of the array
+	}
+	
+	
+ 	# Function to get the last value in an array, whether the array is associative or not
+	public static function array_last_value ($array)
+	{
+		return end ($array);    // Safe to do as this function receives a copy of the array
+	}
+	
+	
 	# Function to trim all values in an array; recursive values are also handled
 	public static function arrayTrim ($array, $trimKeys = false)
 	{
@@ -644,7 +701,7 @@ class application
 	}
 	
 	
-	# Function to return only the specified fields of an existing array
+	# Function to return only the specified fields of an existing array, returning in the order of the specified fields
 	public static function arrayFields ($array, $fields)
 	{
 		# Return unamended if not an array
@@ -653,7 +710,7 @@ class application
 		# Ensure the fields are an array
 		$fields = self::ensureArray ($fields);
 		
-		# Loop through the array and extract only the wanted fields
+		# Loop through the array and extract only the wanted fields, returning in the order of the specified fields
 		$filteredArray = array ();
 		foreach ($fields as $field) {
 			if (array_key_exists ($field, $array)) {
@@ -697,6 +754,23 @@ class application
 	}
 	
 	
+	# Function to return an associative array of all values in an array that have duplicates; based on: http://stackoverflow.com/a/6461117
+	public static function array_duplicate_values_all_keyed ($array)
+	{
+		# Get the unique values, preserving keys; this effectively eliminates later items whose value was present earlier in the array
+		$unique = array_unique ($array);
+		
+		# Get the duplicate values; this effectively gives the later items whose value was present earlier in the array
+		$duplicates = array_diff_assoc ($array, $unique);
+		
+		# Filter out any value which is in the duplicates list; this fully clears the array of any values that exist more than once
+		$duplicates = array_intersect ($array, $duplicates);
+		
+		# Return the array of the items that have duplicates, with both (or more) present
+		return $duplicates;
+	}
+	
+	
 	# Function to get the name of the nth key in an array (first is 1, not 0)
 	public static function arrayKeyName ($array, $number = 1, $multidimensional = false)
 	{
@@ -727,9 +801,44 @@ class application
 	}
 	
 	
-	# Function to construct a string (from a simple array) as 'A, B, and C' rather than 'A, B, C'
-	public static function commaAndListing ($list)
+	# Function to clear empty rows
+	public static function clearEmptyRows ($data)
 	{
+		# Work through each row
+		foreach ($data as $id => $row) {
+			
+			# Determine if any column is empty
+			$allEmpty = true;
+			foreach ($row as $key => $value) {
+				if (strlen ($value)) {
+					$allEmpty = false;
+					break;	// Stop if value found
+				}
+			}
+			
+			# If all are empty, unset the row
+			if ($allEmpty) {
+				unset ($data[$id]);
+			}
+		}
+		
+		# Return the data
+		return $data;
+	}
+	
+	
+	# Function to construct a string (from a simple array) as 'A, B, and C' rather than 'A, B, C'
+	public static function commaAndListing ($list, $stripStartingWords = array ())
+	{
+		# If a starting word list is defined, strip these words from each entry
+		if ($stripStartingWords) {
+			foreach ($list as $index => $entry) {
+				foreach ($stripStartingWords as $stripStartingWord) {
+					$list[$index] = preg_replace ('/^' . preg_quote ($stripStartingWord . ' ', '/') . '/', '', $entry);
+				}
+			}
+		}
+		
 		# If there is more than one item, extract the last item
 		$totalItems = count ($list);
 		$moreThanOneItem = ($totalItems > 1);
@@ -945,7 +1054,7 @@ class application
 	
 	
 	# Function to e-mail changes between two arrays
-	public static function mailChanges ($administratorEmail, $changedBy, $before, $after, $databaseReference, $emailSubject, $applicationName = false, $replyTo = false)
+	public static function mailChanges ($administratorEmail, $changedBy, $before, $after, $databaseReference, $emailSubject, $applicationName = false, $replyTo = false, $extraText)
 	{
 		# End if no changes
 		if (!$changedFields = self::array_changed_values_fields ($before, $after)) {return;}
@@ -960,6 +1069,11 @@ class application
 		$message .= "\n\n" . print_r ($beforeChanged, true);
 		$message .= "\n\n\nAfter:";
 		$message .= "\n\n" . print_r ($afterChanged, true);
+		
+		# Add extra text if required
+		if ($extraText) {
+			$message .= "\n\n" . $extraText;
+		}
 		
 		# Send the e-mail
 		$mailheaders  = 'From: ' . ($applicationName ? $applicationName : __CLASS__) . ' <' . $administratorEmail . '>';
@@ -1111,6 +1225,42 @@ class application
 	}
 	
 	
+	# Function to get the common domain between two domain names; e.g. "www.example.com" and "foo.example.com" would return "example.com"
+	public static function commonDomain ($domain1, $domain2)
+	{
+		# Tokenise by .
+		$domain1 = explode ('.', $domain1);
+		$domain2 = explode ('.', $domain2);
+		
+		# Reverse order
+		$domain1 = array_reverse ($domain1);
+		$domain2 = array_reverse ($domain2);
+		
+		# Traverse through the two lists
+		$i = 0;
+		$commonDomainList = array ();	// Empty by default
+		while (true) {
+			
+			# Compile the domain to this point as a string
+			$commonDomain = implode ('.', array_reverse ($commonDomainList));
+			
+			# If either are not present, end at this point
+			if (!isSet ($domain1[$i]) || !isSet ($domain2[$i])) {
+				return $commonDomain;
+			}
+			
+			# If they do not match, end at this point
+			if ($domain1[$i] != $domain2[$i]) {
+				return $commonDomain;
+			}
+			
+			# Iterate to next, registering the path so far
+			$commonDomainList[] = $domain1[$i];
+			$i++;
+		}
+	}
+	
+	
 	# Function to check that an e-mail address (or all addresses) are valid
 	#!# Consider a more advanced solution like www.linuxjournal.com/article/9585 which is more RFC-compliant
 	public static function validEmail ($email, $domainPartOnly = false)
@@ -1187,15 +1337,15 @@ class application
 	public static function makeClickableLinks ($text, $addMailto = false, $replaceVisibleUrlWithText = false, $target = '_blank')
 	{
 		$delimiter = '!';
-		$text = preg_replace ($delimiter . '(((ftp|http|https)://)[-a-zA-Z0-9@:%_\+.~#?&//=;]+[-a-zA-Z0-9@:%_\+~#?&//=]+)' . "{$delimiter}i", '<a' . ($target ? " target=\"{$target}\"" : '') . ' href="$1">' . ($replaceVisibleUrlWithText ? $replaceVisibleUrlWithText : '$1') . '</a>', $text);
-		$text = preg_replace ($delimiter . '([\s()[{}])(www.[-a-zA-Z0-9@:%_\+.~#?&//=;]+[-a-zA-Z0-9@:%_\+~#?&//=]+)' . "{$delimiter}i", '$1<a' . ($target ? " target=\"{$target}\"" : '') . ' href="http://$2">' . ($replaceVisibleUrlWithText ? $replaceVisibleUrlWithText : '$2') . '</a>', $text);
+		$text = preg_replace ($delimiter . '(((ftp|http|https)://)[-a-zA-Z0-9@:%_\+.,~#?&//=;]+[-a-zA-Z0-9@:%_\+~#?&//=]+)' . "{$delimiter}i", '<a' . ($target ? " target=\"{$target}\"" : '') . ' href="$1">' . ($replaceVisibleUrlWithText ? $replaceVisibleUrlWithText : '$1') . '</a>', $text);
+		$text = preg_replace ($delimiter . '([\s()[{}])(www.[-a-zA-Z0-9@:%_\+.,~#?&//=;]+[-a-zA-Z0-9@:%_\+~#?&//=]+)' . "{$delimiter}i", '$1<a' . ($target ? " target=\"{$target}\"" : '') . ' href="http://$2">' . ($replaceVisibleUrlWithText ? $replaceVisibleUrlWithText : '$2') . '</a>', $text);
 		if ($addMailto) {$text = preg_replace ($delimiter . '([_\.0-9a-z-]+@([0-9a-z][0-9a-z-]+\.)+[a-z]{2,3})' . "{$delimiter}i", '<a href="mailto:$1">$1</a>', $text);}
 		return $text;
 	}
 	
 	
 	# Function to generate a password
-	public static function generatePassword ($length = 6, $numeric = false)
+	public static function generatePassword ($length = 6 /* For generating tokens, 24 is recommended instead */, $numeric = false)
 	{
 		# Generate a numeric password if that is what is required
 		if ($numeric) {
@@ -1205,14 +1355,29 @@ class application
 			for ($i = 0; $i < $length; $i++) {
 				$password .= rand (0, 9);
 			}
+			return $password;
+			
+		# Otherwise do an alphanumeric password; code from http://www.php.net/openssl-random-pseudo-bytes#96812
 		} else {
 			
-			# Otherwise do an alphanumeric password
-			$password = substr (md5 (time ()), 0, $length);
+			# Prefer OpenSSL implementation
+			if (function_exists ('openssl_random_pseudo_bytes')) {
+				$password = bin2hex (openssl_random_pseudo_bytes ($length, $strong));	// bin2hex used so that characters guaranteed to be 0-9a-f, easily usable in a URL
+				if ($strong == TRUE) {
+					return substr ($password, 0, $length);
+				}
+			}
+			
+			# Fallback to mt_rand if PHP <5.3 or no OpenSSL available
+			$characters = '0123456789';
+			$characters .= 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz/+'; 
+			$charactersLength = strlen ($characters) - 1;
+			$password = '';
+			for ($i = 0; $i < $length; $i++) {
+				$password .= $characters[mt_rand (0, $charactersLength)];
+			}
+			return $password;
 		}
-		
-		# Return the result
-		return $password;
 	}
 	
 	
@@ -1290,7 +1455,7 @@ class application
 	
 	
 	# Function to dump data from an associative array to a table
-	public static function htmlTable ($array, $tableHeadingSubstitutions = array (), $class = 'lines', $keyAsFirstColumn = true, $uppercaseHeadings = false, $allowHtml = false, $showColons = false, $addCellClasses = false, $addRowKeyClasses = false, $onlyFields = array (), $compress = false, $showHeadings = true, $encodeEmailAddress = true)
+	public static function htmlTable ($array, $tableHeadingSubstitutions = array (), $class = 'lines', $keyAsFirstColumn = true, $uppercaseHeadings = false, $allowHtml = false /* true/false/array(field1,field2,..) */, $showColons = false, $addCellClasses = false, $addRowKeyClasses = false, $onlyFields = array (), $compress = false, $showHeadings = true, $encodeEmailAddress = true)
 	{
 		# Check that the data is an array
 		if (!is_array ($array)) {return $html = "\n" . '<p class="warning">Error: the supplied data was not an array.</p>';}
@@ -1314,7 +1479,8 @@ class application
 				$i++;
 				$data = $array[$key][$valueKey];
 				$thisCellClass = ($addCellClasses ? htmlspecialchars ($valueKey) . ((is_array ($addCellClasses) && isSet ($addCellClasses[$valueKey])) ? ' ' . $addCellClasses[$valueKey] : '') : '') . ((($i == 1) && !$keyAsFirstColumn) ? ($addCellClasses ? ' ' : '') . 'key' : '');
-				$cellContents = (!$allowHtml ? htmlspecialchars ($data) : $data);
+				$htmlAllowed = (is_array ($allowHtml) ? (in_array ($valueKey, $allowHtml)) : $allowHtml);	// Either true/false or an array of permitted fields where HTML is allowed
+				$cellContents = ($htmlAllowed ? $data : htmlspecialchars ($data));
 				$dataHtml .= ($compress ? '' : "\n\t\t") . (strlen ($thisCellClass) ? "<td class=\"{$thisCellClass}\">" : '<td>') . ($encodeEmailAddress ? self::encodeEmailAddress ($cellContents) : $cellContents) . (($showColons && ($i == 1) && $data) ? ':' : '') . '</td>';
 			}
 			$dataHtml .= ($compress ? '' : "\n\t") . '</tr>';
@@ -1507,11 +1673,12 @@ class application
 	
 	
 	# Function to create a case-insensitive version of in_array
-	public static function iin_array ($needle, $haystack)
+	public static function iin_array ($needle, $haystack, $unsupportedArgument = NULL /* ignored for future implementation as $strict */, &$matchedValue = NULL)
 	{
 		# Return true if the needle is in the haystack
 		foreach ($haystack as $item) {
 			if (strtolower ($item) == strtolower ($needle)) {
+				$matchedValue = $item;
 				return true;
 			}
 		}
@@ -1553,8 +1720,117 @@ class application
 	}
 	
 	
+	# Function to insert a value before another in order; either afterField or beforeField must be specified
+	public function array_insert_value ($array, $newFieldKey, $newFieldValue, $afterField = false, $beforeField = false)
+	{
+		# Throw error if neither or both of after/before supplied
+		if (!$afterField && !$beforeField) {return false;}
+		if ($afterField && $beforeField) {return false;}
+		
+		# Insert the new value
+		$data = array ();
+		foreach ($array as $key => $value) {
+			
+			# Add field in 'before' mode
+			if ($beforeField) {
+				if ($key == $beforeField) {
+					$data[$newFieldKey] = $newFieldValue;
+				}
+			}
+			
+			# Carry across current data
+			$data[$key] = $value;
+			
+			# Add field in 'after' mode
+			if ($afterField) {
+				if ($key == $afterField) {
+					$data[$newFieldKey] = $newFieldValue;
+				}
+			}
+		}
+		
+		# Return the modified array
+		return $data;
+	}
+	
+	
+	# Function to add a value to the array if not already present, returning the new number of elements in the array
+	public function array_push_new (&$array, $value, $strict = false)
+	{
+		# Add if not already present
+		if (!in_array ($value, $array, $strict)) {
+			$array[] = $value;
+		}
+		
+		# Returns the new number of elements in the array
+		return count ($array);
+	}
+	
+	
+	# Iterative function to rewrite key names in an array iteratively
+	public static function array_key_str_replace ($search, $replace, $array)
+	{
+		# Work through each array element at the current level
+		foreach ($array as $key => $value) {
+			
+			# Perform substitution if needed
+			if (substr_count ($key, $search)) {
+				unset ($array[$key]);	// Remove current element
+				$key = str_replace ($search, $replace, $key);
+				$array[$key] = $value;
+			}
+			
+			# Iterate if required
+			if (is_array ($value)) {
+				$array[$key] = self::array_key_str_replace ($search, $replace, $value);
+			}
+		}
+		
+		# Return the modified array
+		return $array;
+	}
+	
+	
+	# Function to rename fields in a dataset
+	public static function array_rename_dataset_fields ($dataset, $substitutions)
+	{
+		# Work through each record
+		$datasetAmended = array ();
+		foreach ($dataset as $key => $record) {
+			foreach ($record as $field => $value) {
+				
+				# Determine the new field if available
+				if (array_key_exists ($field, $substitutions)) {
+					if (is_null ($substitutions[$field])) {continue;}	// Skip fields marked as NULL
+					$field = $substitutions[$field];
+				}
+				
+				# Register in the result array
+				$datasetAmended[$key][$field] = $value;
+			}
+		}
+		
+		# Return the amended dataset
+		return $datasetAmended;
+	}
+	
+	
+	# Function to extract a single field from a dataset, returning an array of the values
+	public static function array_extract_dataset_field ($dataset, $field)
+	{
+		# Extract the values
+		$data = array ();
+		foreach ($dataset as $key => $record) {
+			$data[$key] = (array_key_exists ($field, $record) ? $record[$field] : NULL);	// Return NULL for this key if the field is not found
+		}
+		
+		# Return the array
+		return $data;
+	}
+	
+	
 	# Function to check the fieldnames in an associative array are consistent, and to return a list of them
-	public static function arrayFieldsConsistent ($dataSet)
+	public static function arrayFieldsConsistent ($dataSet, &$failureAt = array ())
 	{
 		# Return an empty array if the dataset is empty
 		if (!$dataSet) {return array ();}
@@ -1566,6 +1842,7 @@ class application
 			# Check that the field list (including order) is consistent across every record
 			if (isSet ($cachedFieldList)) {
 				if ($fieldnames !== $cachedFieldList) {
+					$failureAt = $data;
 					return false;
 				}
 			}
@@ -1577,10 +1854,44 @@ class application
 	}
 	
 	
+	# Function to count the number of regexp matches in an array of values
+	public static function array_preg_match_total ($pattern, $subjectArray)
+	{
+		# Find matches
+		$matches = 0;
+		foreach ($subjectArray as $value) {
+			if (preg_match ($pattern, $value)) {
+				$matches++;
+			}
+		}
+		
+		# Return the total matches
+		return $matches;
+	}
+	
+	
+	# Function to find a regexp match in an array of values
+	public static function preg_match_array ($pattern, $subjectArray, $returnKey = false)
+	{
+		# Search for a match
+		foreach ($subjectArray as $key => $value) {
+			$delimiter = '@';
+			if (preg_match ($delimiter . addcslashes ($pattern, $delimiter) . $delimiter, $value)) {
+				return ($returnKey ? $key : $value);
+			}
+		}
+		
+		# No match
+		return false;
+	}
+	
 	
 	# Function to add an ordinal suffix to a number from 0-99 [from http://forums.devshed.com/t43304/s.html]
 	public static function ordinalSuffix ($number)
 	{
+		# Return the value unmodified if it is empty
+		if (!strlen ((string) $number)) {return $number;}
+		
 		# Obtain the last character in the number
 		$last = substr ($number, -1);
 		
@@ -1667,25 +1978,46 @@ class application
 	
 	
 	# Function to regroup a data set into separate groups
-	public static function regroup ($data, $regroupByColumn, $removeGroupColumn = true, $regroupedColumnKnownUnique = false)
+	public static function regroup ($dataSet, $regroupByField, $removeGroupField = true, $regroupedColumnKnownUnique = false)
 	{
 		# Return the data unmodified if not an array or empty
-		if (!is_array ($data) || empty ($data)) {return $data;}
+		if (!is_array ($dataSet) || empty ($dataSet)) {return $dataSet;}
 		
 		# Rearrange the data
 		$rearrangedData = array ();
-		foreach ($data as $key => $values) {
-			$grouping = $values[$regroupByColumn];
-			if ($removeGroupColumn) {
-				unset ($data[$key][$regroupByColumn]);
+		foreach ($dataSet as $recordId => $record) {
+			$grouping = $record[$regroupByField];
+			if ($removeGroupField) {
+				unset ($dataSet[$recordId][$regroupByField]);
 			}
 			
 			# Add the data; if the regroup-by column is known to be unique, then don't create a nested array
 			if ($regroupedColumnKnownUnique) {
-				$rearrangedData[$grouping] = $data[$key];
+				$rearrangedData[$grouping] = $dataSet[$recordId];
 			} else {
-				$rearrangedData[$grouping][$key] = $data[$key];
+				$rearrangedData[$grouping][$recordId] = $dataSet[$recordId];
 			}
+		}
+		
+		# Return the data
+		return $rearrangedData;
+	}
+	
+	
+	# Function to reindex a dataset by a specified key within each record
+	public static function reindex ($dataSet, $reindexByField, $removeIndexField = true)
+	{
+		# Return the data unmodified if not an array or empty
+		if (!is_array ($dataSet) || empty ($dataSet)) {return $dataSet;}
+		
+		# Rearrange the data
+		$rearrangedData = array ();
+		foreach ($dataSet as $recordId => $record) {
+			$newRecordId = $record[$reindexByField];
+			if ($removeIndexField) {
+				unset ($record[$reindexByField]);
+			}
+			$rearrangedData[$newRecordId] = $record;
 		}
 		
 		# Return the data
@@ -1759,7 +2091,7 @@ class application
 		foreach ($unit as $name => $contents) {
 			$last = $lastOnly && is_array ($contents) && (empty ($contents));
 			$queryText = ($last ? '' : ($carryOverQueryText ? ($level != 0 ? $carryOverQueryText . ':' : '') : ($level + 1) . ':')) . str_replace (' ', '+', strtolower ($name));
-			$link = ($last /*(substr ($name, 0, 1) != '<')*/ ? "<a href=\"{$baseUrl}/category/{$queryText}\">" : '');
+			$link = ($last /*(substr ($name, 0, 1) != '<')*/ ? "<a href=\"{$baseUrl}/{$queryText}/\">" : '');
 			$html .= "\n\t{$tabs}<li>{$link}" . htmlspecialchars ($name) . ($link ? '</a>' : '');
 			if (is_array ($contents) && (!empty ($contents))) {
 				$html .= self::htmlUlHierarchical ($contents, false, ($carryOverQueryText ? $queryText : false), $lastOnly, $lowercaseLinks, ($level + 1), $baseUrl);
@@ -1776,19 +2108,27 @@ class application
 	
 	
 	# Function to create a listing to the results page
-	public static function splitListItems ($listItems, $columns = 2, $class = 'splitlist', $byStrlen = false)
+	public static function splitListItems ($listItems, $columns = 2, $class = 'splitlist', $byStrlen = false, $firstColumnHtml = false)
 	{
 		# Work out the maximum number of items in a column
 		$maxPerColumn = ceil (count ($listItems) / $columns);
 		if ($byStrlen) {$maxPerColumn = ceil (strlen (implode ($listItems)) / $columns);}
 		
 		# Create the list
-		$html = "\n<table class=\"{$class}\"><tr><td>\n<ul>";
+		$html  = "\n<table class=\"{$class}\">";
+		$html .= "\n\t<tr>";
+		if ($firstColumnHtml) {
+			$html .= "\n\t\t<td>";
+			$html .= "\n\t\t\t" . $firstColumnHtml;
+			$html .= "\n\t\t</td>";
+		}
+		$html .= "\n\t\t<td>";
+		$html .= "\n\t\t\t<ul>";
 		$i = 0;
 		$strlen = 0;
 		$totalListItems = count ($listItems);
 		foreach ($listItems as $listItem) {
-			$html .= $listItem;
+			$html .= "\n\t\t\t\t" . $listItem;
 			
 			# Do not split if there are fewer items than columns
 			if ($totalListItems < $columns) {continue;}
@@ -1797,12 +2137,18 @@ class application
 			$i++;
 			$strlen += strlen ($listItem);
 			if (($byStrlen ? $strlen : $i) >= $maxPerColumn) {
-				$html .= "\n</ul>\n</td><td>\n<ul>";
+				$html .= "\n\t\t\t</ul>";
+				$html .= "\n\t\t</td>";
+				$html .= "\n\t\t<td>";
+				$html .= "\n\t\t\t<ul>";
 				$i = 0;
 				$strlen = 0;
 			}
 		}
-		$html .= "\n</ul>\n</td></tr></table>";
+		$html .= "\n\t\t\t</ul>";
+		$html .= "\n\t\t</td>";
+		$html .= "\n\t</tr>";
+		$html .= "\n</table>\n";
 		
 		# Return the constructed HTML
 		return $html;
@@ -2149,23 +2495,111 @@ class application
 	}
 	
 	
-	# Function to convert a text block to a list
-	public static function textareaToList ($string)
+	# Helper function to parse out blocks in a text file to an array
+	public static function parseBlocks ($string, $fieldnames /* to allocate, in order of appearance in each block */, $firstFieldIsId, &$error = false)
 	{
+		# Strip comments (hash then space)
+		$string = preg_replace ("/^#\s+(.*)$/m", '', $string);
+		
+		# Normalise to single line between each block
+		$string = str_replace ("\r\n", "\n", $string);
+		while (substr_count ($string, "\n\n\n")) {
+			$string = str_replace ("\n\n\n", "\n\n", trim ($string));
+		}
+		
+		# Parse out to blocks
+		$blocks = explode ("\n\n", $string);
+		
+		# Count fieldnames to enable a count that each block matches
+		$totalFieldnames = count ($fieldnames);
+		
+		# Parse out each test block
+		$results = array ();
+		foreach ($blocks as $index => $block) {
+			$result = array ();
+			$lines = explode ("\n", $block, count ($fieldnames));
+			if (count ($lines) != $totalFieldnames) {
+				$error = 'In block #' . ($index + 1) . ', the number of fields was incorrect.';
+				return false;
+			}
+			foreach ($fieldnames as $index => $fieldname) {
+				$result[$fieldname] = $lines[$index];
+			}
+			
+			# Index by IDs defined in data or index
+			$id = ($firstFieldIsId ? $lines[0] : $index);
+			
+			# Register the result
+			$results[$id] = $result;
+		}
+		
+		# Return the results
+		return $results;
+	}
+	
+	
+	# Function to convert a text block to a list
+	public static function textareaToList ($string, $isFile = false, $stripComments = false, $longerFirst = false)
+	{
+		# Load as a file instead of string if required
+		if ($isFile) {
+			$string = file_get_contents ($string);
+		}
+		
+		# Trim the value
+		$string = trim ($string);
+		
 		# End if none
 		if (!strlen ($string)) {return array ();}
 		
-		# Create a list of items
-		$list = array ();
-		$items = explode ("\n", $string);
-		foreach ($items as $item) {
-			$item = trim ($item);
-			if (!strlen ($item)) {continue;}	// Skip empty lines
-			$list[] = $item;
+		# Split by newline
+		$string = str_replace ("\r\n", "\n", $string);
+		$list = explode ("\n", $string);
+		
+		# Trim each line
+		foreach ($list as $index => $line) {
+			$list[$index] = trim ($line);
 		}
+		
+		# Strip empty lines
+		foreach ($list as $index => $line) {
+			if (!strlen ($line)) {unset ($list[$index]);}
+		}
+		
+		# Strip comments if required
+		if ($stripComments) {
+			foreach ($list as $index => $line) {
+				if (preg_match ('/^#/', $line)) {unset ($list[$index]);}
+			}
+		}
+		
+		# If required, order the values so that longer (string-length) values come first, making it safe for multiple replacements
+		if ($longerFirst) {
+			usort ($list, array ('self', 'lengthDescValueSort'));
+		}
+		
+		# Reindex to ensure starting from 0, following line stripping and possible longer-first operations
+		$list = array_values ($list);
 		
 		# Return the list
 		return $list;
+	}
+	
+	
+	# Helper function to sort by string length descending then by value, for use in a callback; see: https://stackoverflow.com/a/16311030/180733
+	private static function lengthDescValueSort ($a, $b)
+	{
+		# Obtain the lenghts
+		$la = mb_strlen ($a);
+		$lb = mb_strlen ($b);
+		
+		# If same length, compare by value; uses case-insensitive searching - not actually necessary, just nicer for debugging
+		if ($la == $lb) {
+			return strcasecmp ($a, $b);		// Is binary-safe
+		}
+		
+		# Otherwise compare by string length descending
+		return $lb - $la;
 	}
 	
 	
@@ -2638,6 +3072,68 @@ class application
 	}
 	
 	
+	# Function create a zip/gzip file on-the-fly; see: http://stackoverflow.com/questions/1061710/
+	public static function createZip ($inputFile /* Or, for zip format, an array of files, as array (asFilename => inputFile) */, $asFilename, $saveToDirectory = false /* or full directory path, slash-terminated */, $format = 'zip' /* or gz */)
+	{
+		# Prepare file, using a tempfile
+		$tmpFile = tempnam (sys_get_temp_dir(), 'temp' . self::generatePassword ($length = 6, true));
+		
+		# Create depending on format
+		switch ($format) {
+			
+			# Gzip; on Linux shell out as this is more memory efficient
+			case 'gz':
+				if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+					#!# Needs to be replaced with chunk-based implementation for memory efficiency; see: http://stackoverflow.com/questions/6073397/how-do-you-create-a-gz-file-using-php
+					$gzip = gzopen ($tmpFile, 'w9');	// w9 is highest compression
+					gzwrite ($gzip, file_get_contents ($inputFile));	// #!# Will fail if input file is >2GB as that is max byte size of a PHP string
+					gzclose ($gzip);
+				} else {
+					copy ($inputFile, $tmpFile);	// Clone file to temp area as gzipping will otherwise remove the original file
+					$command = "gzip {$tmpFile}";
+					exec ($command);
+					rename ($tmpFile . '.gz', $tmpFile);	// Rename back, as gzip will have added .gz, so that the tempfile is at a predictable location
+				}
+				$mimeType = 'application/gzip';
+				break;
+				
+			# Zip
+			case 'zip':
+				$zip = new ZipArchive ();
+				$zip->open ($tmpFile, ZipArchive::OVERWRITE);
+				if (is_array ($inputFile)) {
+					foreach ($inputFile as $asFilenameEntry => $inputFileEntry) {
+						$zip->addFile ($inputFileEntry, $asFilenameEntry);
+					}
+				} else {
+					$zip->addFile ($inputFile, $asFilename);
+				}
+				$zip->close ();
+				$mimeType = 'application/zip';
+				break;
+		}
+		
+		# If a directory path for save is specified, write the file to its final location, give it group writability and return its path, leaving it in place
+		if ($saveToDirectory) {
+			$filename = $saveToDirectory . $asFilename . '.' . $format;
+			rename ($tmpFile, $filename);
+			$originalUmask = umask (0000);
+			chmod ($filename, 0664);
+			umask ($originalUmask);
+			return $filename;
+		}
+		
+		# Serve the file
+		header ('Content-Type: ' . $mimeType);
+		header ('Content-Length: ' . filesize ($tmpFile));
+		header ("Content-Disposition: attachment; filename=\"{$asFilename}.{$format}\"");		// e.g. filename.ext.zip
+		readfile ($tmpFile);
+		
+		# Remove the tempfile
+		unlink ($tmpFile);
+	}
+	
+	
 	# Function to unzip a zip file
 	public static function unzip ($file, $directory, $deleteAfterUnzipping = true, $archiveOverwritableFiles = true, $expectTotal = false, $expectTotalForcedFilenames = array (), $directoryPermissions = 0775)
 	{
@@ -2778,6 +3274,332 @@ class application
 	}
 	
 	
+	# Equivalent of file_get_contents but for POST rather than GET
+	public static function file_post_contents ($url, $postData, $multipart = false, &$error = '', $userAgent = 'Proxy for: %HTTP_USER_AGENT')
+	{
+		# Define the user agent
+		$userAgent = str_replace ('%HTTP_USER_AGENT', $_SERVER['HTTP_USER_AGENT'], $userAgent);
+		
+		# If not requiring multipart, avoid requirement for cURL
+		if (!$multipart) {
+			
+			# Set the stream options
+			$streamOptions = array (
+				'http' => array (
+					'method'		=> 'POST',
+					'header'		=> 'Content-type: application/x-www-form-urlencoded',
+					'user_agent'	=> $userAgent,
+					'content'		=> http_build_query ($postData),
+				)
+			);
+			
+			# Post the data and return the result
+			return file_get_contents ($url, false, stream_context_create ($streamOptions));
+		}
+		
+		# Create a CURL instance
+		$handle = curl_init ();
+		curl_setopt ($handle, CURLOPT_URL, $url);
+		
+		# Set the user agent
+		curl_setopt ($handle, CURLOPT_USERAGENT, $userAgent);
+		
+		# Build the POST query
+		curl_setopt ($handle, CURLOPT_POST, 1);
+		curl_setopt ($handle, CURLOPT_POSTFIELDS, $postData);
+		
+		# Obtain the original page HTML
+		curl_setopt ($handle, CURLOPT_RETURNTRANSFER, true);
+		$output = curl_exec ($handle);
+		$error = curl_error ($handle);
+		curl_close ($handle);
+		
+		# Return the original page HTML
+		return $output;
+	}
+	
+	
+	# Function to convert an HTML extract to a PDF; uses http://wkhtmltopdf.org/
+	public static function html2pdf ($html, $filename /* Either a filename used for temp download, or a trusted full path where the file will be saved */)
+	{
+		# Create the HTML as a tempfile
+		$inputFile = tempnam (sys_get_temp_dir (), 'tmp') . '.html';	// wkhtmltopdf requires a .html extension for the input file
+		file_put_contents ($inputFile, $html);
+		
+		# Determine whether to output the file; if this is a filename without a directory name, output to browser; if there is a directory path, treat as a save
+		$save = ($filename != basename ($filename));	// Determine if there is a directory component
+		
+		# Determine location of the PDF output file (which may be a tempfile)
+		if ($save) {
+			$outputFile = $filename;
+		} else {
+			$outputFile = tempnam (sys_get_temp_dir (), 'tmp');		// Define a tempfile location for the created PDF
+		}
+		
+		# Convert to PDF; see options at http://wkhtmltopdf.org/usage/wkhtmltopdf.txt
+		$command = "wkhtmltopdf --print-media-type {$inputFile} {$outputFile}";
+		exec ($command, $output, $returnValue);
+		$result = (!$returnValue);
+		
+		# Remove the input HTML tempfile
+		unlink ($inputFile);
+		
+		# End if error
+		if (!$result) {
+			if (file_exists ($outputFile)) {
+				unlink ($outputFile);
+			}
+			echo "\n<p class=\"warning\">Sorry, an error occured creating the PDF file.</p>";
+			return false;
+		}
+		
+		# Deal with on-the-fly distribution scenario
+		if (!$save) {
+			
+			# Send browser headers
+			header ('Content-type: application/pdf');
+			//header ('Content-Transfer-Encoding: binary');
+			header ('Content-Disposition: inline; filename="' . $filename . '"');
+			header ('Content-Length: ' . filesize ($outputFile));
+			
+			# Emit the file, using output buffering to avoid any previous HTML output (e.g. from auto_prepend_file) being included
+			ob_clean ();
+			flush ();
+			readfile ($outputFile);
+			
+			# Remove the output PDF tempfile
+			unlink ($outputFile);
+		}
+		
+		# Return success
+		return true;
+	}
+	
+	
+	# Function to provide spell-checking of a dataset and provide alternatives
+	# Package dependencies: php5-enchant hunspell-ru
+	public static function spellcheck ($strings, $languageTag, $protectedSubstringsRegexp = false, $databaseConnection = false /* for caching */, $database = false, $enableSuggestions = true, $addToDictionary = array ())
+	{
+		# Prevent timeouts for large datasets
+		if (count ($strings) > 50) {
+			set_time_limit (0);
+		}
+		
+		# Initialise the spellchecker
+		$r = enchant_broker_init ();
+		// application::dumpData (enchant_broker_describe ($r));	// List available backends
+		// application::dumpData (enchant_broker_list_dicts ($r));	// List available dictionaries; should have "ru_RU": "Myspell Provider" present (which seems to be the same thing as hunspell)
+		if (!enchant_broker_dict_exists ($r, $languageTag)) {
+			echo "<p class=\"warning\">The spell-checker could not be initialised.</p>";
+			return $strings;
+		}
+		$d = enchant_broker_request_dict ($r, $languageTag);
+		
+		# If additional words to add to the dictionary are specified, add them to this session
+		if ($addToDictionary) {
+			foreach ($addToDictionary as $word) {
+				enchant_dict_add_to_session ($d, $word);
+			}
+		}
+		
+		# Use a database cache if required
+		$cache = array ();
+		if ($databaseConnection) {
+			
+			# Initialise a cache table; this can be persistent across imports
+			$sql = "
+				CREATE TABLE IF NOT EXISTS spellcheckcache (
+				`id` VARCHAR(255) COLLATE utf8_bin NOT NULL COMMENT 'Word',		/* utf8_bin needed to ensure case-sensitivity in a unique column */
+				`isCorrect` INT(1) NULL COMMENT 'Whether the word is correct',
+				`suggestions` VARCHAR(255) COLLATE utf8_unicode_ci NULL COMMENT 'Suggestions, pipe-separated',
+				  PRIMARY KEY (`id`)
+				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Spellcheck cache';";
+			$databaseConnection->execute ($sql);
+			
+			# Load the cache
+			require_once ('database.php');
+			$cache = $databaseConnection->select ($database, 'spellcheckcache');
+			$originalCacheSize = count ($cache);
+		}
+		
+		# Loop through each record
+		foreach ($strings as $id => $string) {
+			
+			# Branch
+			$relevantString = $string;
+			
+			# If substring protection is required, strip from consideration
+			if ($protectedSubstringsRegexp) {
+				$relevantString = preg_replace ('/' . addcslashes ($protectedSubstringsRegexp, '/') . '/', '', $relevantString);
+			}
+			
+			# Strip punctuation characters connected to word boundaries
+			$relevantString = preg_replace ("/(^)\p{P}/u", '\1', $relevantString);
+			$relevantString = preg_replace ("/(\s)\p{P}/u", '\1', $relevantString);
+			$relevantString = preg_replace ("/\p{P}(\s)/u", '\1', $relevantString);
+			$relevantString = preg_replace ("/\p{P}($)/u", '\1', $relevantString);
+			
+			# Extract words from the string words, splitting by whitespace
+			$words = preg_split ('/\s+/', trim ($relevantString), -1, PREG_SPLIT_NO_EMPTY);
+			
+			# Work through each word and attach to the main data
+			$substitutions = array ();
+			foreach ($words as $word) {
+				
+				# Skip where the 'word' is just a punctuation mark or number / number range
+				if (preg_match ('/^([-:;()0-9])+$/', $word)) {continue;}
+				
+				# Initialise the cache container for this entry if not already present; the cache is indexed by word, to avoid unnecessary calls to enchant_dict_check/enchant_dict_suggest
+				if (!isSet ($cache[$word])) {$cache[$word] = array ('id' => $word);}	// id passed through in structure field makes databasing the cache easier
+				
+				# Determine if the word is correct
+				if (isSet ($cache[$word]['isCorrect'])) {
+					$isCorrect = $cache[$word]['isCorrect'];	// Read from cache if present
+				} else {
+					$isCorrect = enchant_dict_check ($d, $word);
+					$cache[$word]['isCorrect'] = $isCorrect;	// Add to cache
+					if ($isCorrect) {
+						$cache[$word]['suggestions'] = NULL;	// Since the $enableSuggestions phase will not be reached, leaving holes in some array entries
+					}
+				}
+				
+				# Skip further processing if correct
+				if ($isCorrect) {continue;}
+				
+				# Find alternative suggestions
+				$suggestions = false;
+				if ($enableSuggestions) {
+					
+					# Determine suggestions
+					if (isSet ($cache[$word]['suggestions'])) {
+						$suggestions = $cache[$word]['suggestions'];	// Read from cache if present
+					} else {
+						$suggestions = enchant_dict_suggest ($d, $word);	// Returns either array of values or NULL if no values
+						if ($suggestions) {
+							$suggestions = implode ('|', $suggestions);		// Convert to string before any use; pipe-separator used for optimal database storage; later unpacked for presentation by $suggestionsImplodeString
+						}
+						$cache[$word]['suggestions'] = $suggestions;	// Add to cache, either string or NULL
+					}
+					
+					# Format
+					$suggestionsImplodeString = '&#10;';
+					$suggestions = ($suggestions ? 'Suggestions:' . $suggestionsImplodeString . implode ($suggestionsImplodeString, explode ('|', $suggestions)) : '[No suggestions]');
+				}
+				
+				# Highlight in HTML the present word and add suggestions
+				$substitutions[$word] = '<span class="spelling"' . ($suggestions ? " title=\"{$suggestions}\"" : '') . ">{$word}</span>";
+			}
+			
+			# Overwrite with the spellchecked HTML version
+			$strings[$id] = strtr ($string, $substitutions);	// 'The longest keys will be tried first.' - http://php.net/strtr ; also seems to be multibyte-safe
+		}
+		
+		# If database caching is enabled, replace the database's cache with the new cache dataset if it has grown
+		if ($databaseConnection) {
+			if (count ($cache) > $originalCacheSize) {
+				$databaseConnection->truncate ($database, 'spellcheckcache', true);
+				$databaseConnection->insertMany ($database, 'spellcheckcache', array_values ($cache), $chunking = 500);		// Use of array_values avoids bound parameter naming problems
+			}
+		}
+		
+		# Unload the dictionary
+		enchant_broker_free_dict ($d);
+		enchant_broker_free ($r);
+		
+		# Return the modified list of strings
+		return $strings;
+	}
+	
+	
+	
+	# Function to convert a number to a Roman numeral; see: http://php.net/base-convert#92960
+	public static function romanNumeral ($integer)
+	{
+		# Convert the number
+		$table = array ('M' => 1000, 'CM' => 900, 'D' => 500, 'CD' => 400, 'C' => 100, 'XC' => 90, 'L' => 50, 'XL' => 40, 'X' => 10, 'IX' => 9, 'V' => 5, 'IV' => 4, 'I' => 1);
+		$result = '';
+		while ($integer > 0) {
+			foreach ($table as $roman => $arabic) {
+				if ($integer >= $arabic) {
+					$result .= $roman;
+					$integer -= $arabic;
+					break;
+				}
+			}
+		}
+		
+		# Return the result
+		return $result;
+	}
+	
+	
+	# Function to convert a Roman numeral to an integer; see: https://stackoverflow.com/a/6266158/180733
+	public static function romanNumeralToInt ($romanNumeralString)
+	{
+		# Define roman numeral combinations, in precedence order
+		$romans = array(
+		    'M'		=> 1000,
+		    'CM'	=> 900,
+		    'D'		=> 500,
+		    'CD'	=> 400,
+		    'C'		=> 100,
+		    'XC'	=> 90,
+		    'L'		=> 50,
+		    'XL'	=> 40,
+		    'X'		=> 10,
+		    'IX'	=> 9,
+		    'V'		=> 5,
+		    'IV'	=> 4,
+		    'I'		=> 1,
+		);
+		
+		# Work from the left and increment the result
+		$result = 0;
+		foreach ($romans as $key => $value) {
+		    while (strpos ($romanNumeralString, $key) === 0) {
+		        $result += $value;
+		        $romanNumeralString = substr ($romanNumeralString, strlen ($key));
+		    }
+		}
+		
+		# Return the result
+		return $result;
+	}
+	
+	
+	# Function to handle running a python process securely without writing out any files
+	public static function createProcess ($command, $string)
+	{
+		# Set the descriptors
+		$descriptorspec = array (
+			0 => array ('pipe', 'r'),  // stdin is a pipe that the child will read from
+			1 => array ('pipe', 'w'),  // stdout is a pipe that the child will write to
+			// 2 => array ('file', '/tmp/error-output.txt', 'a') // stderr is a file to write to
+		);
+		
+		# Assume failure unless the command works
+		$returnStatus = 1;
+		
+		# Create the process
+		$command = str_replace ("\r\n", "\n", $command);	// Standardise to Unix newlines
+		$process = proc_open ($command, $descriptorspec, $pipes);
+		if (is_resource ($process)) {
+			fwrite ($pipes[0], $string);
+			fclose ($pipes[0]);
+			$output = stream_get_contents ($pipes[1]);
+			fclose ($pipes[1]);
+			$returnStatus = proc_close ($process);
+		}
+		
+		# Return false as the output if the return status is a failure
+		if ($returnStatus) {return false;}	// Unix return status >0 is failure
+		
+		# Return the output
+		return $output;
+	}
+	
+	
+	
 	# Function to convert ereg to preg
 	public static function pereg ($pattern, $string)
 	{
@@ -2874,6 +3696,37 @@ if (!function_exists ('mb_strtolower'))
 	function mb_strtolower ($string, $encoding)
 	{
 		return utf8_encode (strtolower (utf8_decode ($string)));
+	}
+}
+
+
+# Missing mb_ucfirst function; based on http://www.php.net/ucfirst#84122
+if (!function_exists ('mb_ucfirst')) {
+	if (function_exists ('mb_substr')) {
+		function mb_ucfirst ($string) {
+			return mb_strtoupper (mb_substr ($string, 0, 1)) . mb_substr ($string, 1);
+		}
+	}
+}
+
+# Missing mb_str_split function; based on http://php.net/str-split#117112
+if (!function_exists ('mb_str_split')) {
+    if (function_exists ('mb_substr')) {
+		function mb_str_split ($string, $split_length = 1)
+	    {
+	        if ($split_length == 1) {
+	            return preg_split ("//u", $string, -1, PREG_SPLIT_NO_EMPTY);
+	        } elseif ($split_length > 1) {
+	            $return_value = [];
+	            $string_length = mb_strlen ($string, 'UTF-8');
+	            for ($i = 0; $i < $string_length; $i += $split_length) {
+	                $return_value[] = mb_substr ($string, $i, $split_length, "UTF-8");
+	            }
+	            return $return_value;
+	        } else {
+	            return false;
+	        }
+	    }
 	}
 }
 

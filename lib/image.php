@@ -1,7 +1,7 @@
 <?php
 
 # Class to create various image manipulation -related static methods
-# Version 1.3.3
+# Version 1.3.5
 
 # Licence: GPL
 # (c) Martin Lucas-Smith, University of Cambridge
@@ -232,13 +232,13 @@ class image
 		
 		# Check that the file exists and is readable
 		if (!file_exists ($sourceFileName)) {
-			echo "<p>Error: the selected file ({$sourceFileName}) could not be found.</p>";
+			echo "<p>Error: the selected file could not be found.</p>";
 			return false;
 		}
 		
 		# Check that the file exists and is readable
 		if (!is_readable ($sourceFileName)) {
-			echo "<p>Error: the selected file ({$sourceFileName}) could not be read.</p>";
+			echo "<p>Error: the selected file could not be read.</p>";
 			return false;
 		}
 		
@@ -334,9 +334,12 @@ class image
 			$imagick = new Imagick ();
 			$imagick->readImage ($sourceFileName);
 			$colourspace = $imagick->getImageColorspace ();
+			/*
+			#!# Causes negative images; see: http://php.net/imagick.setimagecolorspace#107716 - however, commenting out (as here) seems to work fine still
 			if ($colourspace == imagick::COLORSPACE_CMYK) {
 				$imagick->setImageColorspace (imagick::COLORSPACE_RGB);
 			}
+			*/
 			$imagick->resizeImage ($newWidth, $newHeight, imagick::FILTER_LANCZOS, 1);
 			$imagick->setImageFormat ($outputFormat);
 			

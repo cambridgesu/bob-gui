@@ -31,7 +31,7 @@ print_r ($people);
 */
 
 
-# Version 1.2.1
+# Version 1.2.2
 
 # Class containing Cambridge University -specific data-orientated functions
 class camUniData
