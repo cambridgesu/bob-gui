@@ -234,6 +234,11 @@ class bobguiIngest
 		
 		# Decode the string of new data back into an array
 		$newInstances = json_decode ($data, true);
+		if ($newInstances === NULL) {
+			$this->errors[] = 'The received response could not be decoded as valid JSON.';
+			$this->reportErrors ();
+			return false;
+		}
 		
 		# Ensure the script is not taking too long
 		$now = time ();
