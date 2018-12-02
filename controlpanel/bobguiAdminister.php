@@ -1360,7 +1360,7 @@ class bobguiAdminister extends frontControllerApplication
 		$html .= "\n<ul class=\"actions left\">";
 		if ($ballot['isInEditabilityPeriod']) {
 			$html .= "\n\t<li><a href=\"{$this->baseUrl}{$ballot['url']}edit.html\"><img src=\"/images/icons/page_white_edit.png\" alt=\"\" class=\"icon\" /> Edit configuration</a></li>";
-			$html .= "\n\t<li><a href=\"{$this->baseUrl}{$ballot['url']}voters.html\"><img src=\"/images/icons/script.png\" alt=\"\" class=\"icon\" /> Voters (currently: " . ($totalVoters ? $totalVoters : 'NONE') . ")</a></li>";
+			$html .= "\n\t<li><a href=\"{$this->baseUrl}{$ballot['url']}voters.html\"><img src=\"/images/icons/script.png\" alt=\"\" class=\"icon\" /> Voters (currently: " . ($totalVoters ? number_format ($totalVoters) : 'NONE') . ")</a></li>";
 			$html .= "\n\t<li><a" . ($totalVoters ? '' : ' class="incomplete"') . " href=\"{$this->baseUrl}{$ballot['url']}view.html\"><img src=\"/images/icons/magnifier.png\" alt=\"\" class=\"icon\" /> Check the ballot form</a></li>";
 			$html .= $understandLink;
 			$html .= $liveVotingLink;
