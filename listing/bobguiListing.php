@@ -1031,7 +1031,9 @@ class frontControllerApplication
 		}
 		
 		# Explicitly close the database connection to prevent further execution (this is otherwise done implicitly by PHP anyway at script end)
-		$this->databaseConnection->close ();
+		if ($this->databaseConnection) {
+			$this->databaseConnection->close ();
+		}
 		
 		# Show the error if required
 		if ($display) {echo $html;}
