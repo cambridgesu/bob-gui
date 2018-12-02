@@ -495,6 +495,7 @@ class bobguiAdminister extends frontControllerApplication
 			#controlpanel table.vote td, table.vote th {border: 2px #ddd solid; padding: 3px;}
 			#controlpanel div.checklist {float: right; width: 40%; margin-left: 15px;}
 			#controlpanel div.checklist ol li {margin-bottom: 6px;}
+			#controlpanel p#cloneable {float: right; padding: 10px; border: 1px solid #ddd; border-radius: 5px; background-color: #eee;}
 		';
 	}
 	
@@ -1403,7 +1404,7 @@ class bobguiAdminister extends frontControllerApplication
 	
 	
 	# Function to get a cloned list of voters from the last ballot the user completed setting up for this organisation
-	private function cloneVotersListFromLast ($ballot, &$voterListCloned = false)
+	private function getVotersListFromLast ($ballot, &$lastBallotMetadata = false)
 	{
 		# Determine the required number of fields the current ballot requires, i.e. what structure of data to paste in
 		$requiredFields = $this->requiredFields ($ballot);
@@ -1424,7 +1425,7 @@ class bobguiAdminister extends frontControllerApplication
 		if (!$voters = $this->databaseConnection->select ($this->settings['database'], $voterTable, array (), $fieldnames, true, $orderBy = 'username')) {return false;}
 		
 		# Pass back by reference the metadata of the chosen ballot, so that the interface can show the user details of that ballot
-		$voterListCloned = $lastBallot;
+		$lastBallotMetadata = $lastBallot;
 		
 		# Return the list of voters
 		return $voters;
@@ -1490,6 +1491,9 @@ class bobguiAdminister extends frontControllerApplication
 		# End if there is no such ballot or the user has no rights to it
 		if (!$ballot = $this->editableBallotExistsHere ()) {return false;}
 		
+		# Determine whether to enable cloning from a previous ballot
+		$cloneFromLast = (array_key_exists ('clone', $_GET));
+		
 		# Determine the voters table
 		$voterTable = $ballot['id'] . '_voter';
 		
@@ -1503,6 +1507,7 @@ class bobguiAdminister extends frontControllerApplication
 			'formCompleteText' => false,
 			'display' => 'paragraphs',
 			'div' => 'ultimateform',
+			'submitTo' => $_SERVER['SCRIPT_URL'],
 		));
 		
 		# Give a link back to the menu
@@ -1515,10 +1520,18 @@ class bobguiAdminister extends frontControllerApplication
 		#!# Consider whether a flag is needed for when a present list has been wiped because it is unsufficient for this type of ballot
 		$currentVoters = $this->getVotersList ($ballot);
 		
-		# If there are no current voters, clone from the last ballot the user set up
+		# Obtain votes from the last ballot the user set up in the current academic year, if present
+		$lastBallotVoterList = $this->getVotersListFromLast ($ballot, $lastBallotMetadata /* returned by reference */);
+		
+		# If there are no current voters, and cloning is required, and there is a previous ballot voter list, clone
 		$voterListCloned = false;
 		if (!$currentVoters) {
-			$currentVoters = $this->cloneVotersListFromLast ($ballot, $voterListCloned);
+			if ($cloneFromLast) {
+				if ($lastBallotVoterList) {
+					$currentVoters = $lastBallotVoterList;
+					$voterListCloned = true;
+				}
+			}
 		}
 		
 		# Format the list of voters if any
@@ -1544,8 +1557,13 @@ class bobguiAdminister extends frontControllerApplication
 				" . ($ballot['paperVotingEnd'] ? '<li>Include usernames of <strong>only those people eligible to vote online</strong> - do not include people who can only vote on paper.</li>' : '') . "
 			</ul>
 		");
+		if (!$currentVoters) {
+			if ($lastBallotVoterList) {
+				$form->heading ('', "<p id=\"cloneable\"><a href=\"?clone#cloned\"><img src=\"/images/icons/page_copy.png\" class=\"icon\" /> Copy voters from previous<br />ballot this academic year?</a></p>");
+			}
+		}
 		if ($voterListCloned) {
-			$form->heading ('', "<p class=\"warning\">A suggested list of " . number_format (count ($currentVoters)) . " voters has been pre-filled, as a starting point, copied from the <a target=\"_blank\" title=\"[Link opens in a new tab/window]\" href=\"{$this->settings['liveServerUrl']}{$voterListCloned['url']}\">last ballot ('" . htmlspecialchars ($voterListCloned['title']) . "')</a> that was set up (completely) for this organisation in the current academic year.</p>\n<p class=\"warning\"><strong>The list below has not yet been saved.</strong>");
+			$form->heading ('', "<p id=\"cloned\" class=\"warning\">The list of " . number_format (count ($currentVoters)) . " voters has been pre-filled, as a starting point, copied from the <a target=\"_blank\" title=\"[Link opens in a new tab/window]\" href=\"{$this->settings['liveServerUrl']}{$lastBallotMetadata['url']}\">last ballot ('" . htmlspecialchars ($lastBallotMetadata['title']) . "')</a> that was set up (completely) for this organisation in the current academic year.</p>\n<p class=\"warning\"><strong>The list below has not yet been saved.</strong>");
 		}
 		$form->textarea (array (
 			'name'					=> 'voters',
