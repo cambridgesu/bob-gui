@@ -2809,7 +2809,7 @@ class bobguiAdminister extends frontControllerApplication
 	
 	
 	# Feedback form
-	public function feedback ()
+	public function feedback ($id_ignored = NULL, $error_ignored = NULL, $echoHtml = true)
 	{
 		# Define FAQs
 		$queries = array ();
