@@ -1585,7 +1585,6 @@ class bobguiAdminister extends frontControllerApplication
 				$faultyRows = array ();
 				$usernames = array ();
 				$invalidUsernames = array ();
-				$mailDomainQuoted = preg_quote ('@' . $this->settings['mailDomain']);
 				foreach ($voters as $index => $voter) {
 					$voter = trim ($voter);
 					
@@ -1597,7 +1596,7 @@ class bobguiAdminister extends frontControllerApplication
 					
 					# Add the username (first column) to a list of usernames for uniqueness-checking later
 					$voter = explode ("\t", $voter);
-					$username = $this->cleanUsername ($voter[0], $mailDomainQuoted);
+					$username = $this->cleanUsername ($voter[0]);
 					$usernames[] = $username;
 					
 					# Validate usernames, which also ensures they are not empty
@@ -1693,9 +1692,6 @@ class bobguiAdminister extends frontControllerApplication
 	# Function to convert a text block of voters into an associative array
 	private function votersFromText ($votersTextBlock, $fields)
 	{
-		# Define the mail domain regexp
-		$mailDomainQuoted = preg_quote ('@' . $this->settings['mailDomain']);
-		
 		# Split the list by newline then by tab, trimming surrounding whitespace at each stage
 		$voters = explode ("\n", $votersTextBlock);
 		foreach ($voters as $index => $voter) {
@@ -1703,7 +1699,7 @@ class bobguiAdminister extends frontControllerApplication
 			$voter = explode ("\t", $voter, $fields);
 			
 			# Add the fields, starting with the most verbose format
-			$username = $this->cleanUsername ($voter[0], $mailDomainQuoted);
+			$username = $this->cleanUsername ($voter[0]);
 			switch ($fields) {
 				case 4:
 					$voterDetails[$username]['unit']  = trim ($voter[3]);	// then fall-through to add the following ones
@@ -1721,10 +1717,22 @@ class bobguiAdminister extends frontControllerApplication
 	
 	
 	# Function to clean a username
-	private function cleanUsername ($username, $mailDomainQuoted)
+	private function cleanUsername ($username)
 	{
-		# Remove the mail domain if present, trimming before and after and lower-casing
-		return strtolower (trim (preg_replace ("/^(.+){$mailDomainQuoted}$/iD", '\\1', trim ($username))));
+		# Trim the username
+		$username = trim ($username);
+		
+		# Define the mail domain regexp
+		$mailDomainQuoted = preg_quote ('@' . $this->settings['mailDomain']);
+		
+		# Remove the mail domain if present, trimming afterwards
+		$username = trim (preg_replace ("/^(.+){$mailDomainQuoted}$/iD", '\1', $username));
+		
+		# Ensure usernames are lower-cased
+		$username = strtolower ($username);
+		
+		# Return the result
+		return $username;
 	}
 	
 	
