@@ -296,12 +296,12 @@ class bobguiAdminister extends frontControllerApplication
 		3 => array (
 			'type'			=> 'a College-based vote with a paper vote following',
 			'description'	=> 'Username/e-mail, forename, surname (3 columns)',
-			'fieldnames'	=> array ('username', 'forename', 'surname', ), 
+			'fieldnames'	=> array ('username', 'forename', 'surname', ),
 		),
 		4 => array (
 			'type'			=> 'a vote with voters who may be in different colleges, with a paper vote following',
 			'description'	=> 'Username/e-mail, forename, surname, college (4 columns)',
-			'fieldnames'	=> array ('username', 'forename', 'surname', 'unit', ), 
+			'fieldnames'	=> array ('username', 'forename', 'surname', 'unit', ),
 		),
 	);
 	
@@ -1552,9 +1552,15 @@ class bobguiAdminister extends frontControllerApplication
 			<ul>
 				<li><strong>Do not include headings</strong> at the top of the columns when pasting in.</li>
 				" . ($requiredFields > 1 ? "<li>Column order must be <strong>in the order shown</strong>, i.e. {$this->fieldsTypes[$requiredFields]['description']}.</li>" : '') . "
-				<li>The usernames can be e-mails instead, but they must end <strong>exactly</strong> @{$this->settings['mailDomain']} .</li>
 				<li>The list of usernames/people does <strong>not</strong> have to be in alphabetical order.</li>
 				" . ($ballot['paperVotingEnd'] ? '<li>Include usernames of <strong>only those people eligible to vote online</strong> - do not include people who can only vote on paper.</li>' : '') . "
+			</ul>
+			<p>You can specify the usernames in any of the following formats - the username will be automatically extracted:</p>
+			<ul>
+				<li>spqr1</li>
+				<li>spqr1@{$this->settings['mailDomain']}</li>
+				<li>Name &lt;spqr1@{$this->settings['mailDomain']}&gt;</li>
+				<li>\"Name\" &lt;spqr1@{$this->settings['mailDomain']}&gt;</li>
 			</ul>
 		");
 		if (!$currentVoters) {
@@ -1725,7 +1731,13 @@ class bobguiAdminister extends frontControllerApplication
 		# Define the mail domain regexp
 		$mailDomainQuoted = preg_quote ('@' . $this->settings['mailDomain']);
 		
-		# Remove the mail domain if present, trimming afterwards
+		# Support variants including the name, discarding the name part and extracting the e-mail address only, i.e.:
+		#  Name <username@maildomain>
+		#  "Name" <username@maildomain>
+		$username = trim (preg_replace ("/^.+\s+<(.+){$mailDomainQuoted}>$/iD", '\1', $username));
+		
+		# Support variant with the mail domain, i.e.:
+		#  username@maildomain
 		$username = trim (preg_replace ("/^(.+){$mailDomainQuoted}$/iD", '\1', $username));
 		
 		# Ensure usernames are lower-cased
