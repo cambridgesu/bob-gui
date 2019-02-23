@@ -1566,6 +1566,7 @@ class bobguiAdminister extends frontControllerApplication
 			<ul>
 				<li>spqr1</li>
 				<li>spqr1@{$this->settings['mailDomain']}</li>
+				<li>spqr1 at {$this->settings['mailDomain']}</li>
 				<li>Name &lt;spqr1@{$this->settings['mailDomain']}&gt;</li>
 				<li>\"Name\" &lt;spqr1@{$this->settings['mailDomain']}&gt;</li>
 			</ul>
@@ -1736,16 +1737,19 @@ class bobguiAdminister extends frontControllerApplication
 		$username = trim ($username);
 		
 		# Define the mail domain regexp
-		$mailDomainQuoted = preg_quote ('@' . $this->settings['mailDomain']);
+		$mailDomainQuoted = preg_quote ($this->settings['mailDomain']);
+		
+		# Support variant: username at maildomain
+		$username = trim (preg_replace ("/^(.+) at {$mailDomainQuoted}$/iD", '\1', $username));
 		
 		# Support variants including the name, discarding the name part and extracting the e-mail address only, i.e.:
 		#  Name <username@maildomain>
 		#  "Name" <username@maildomain>
-		$username = trim (preg_replace ("/^.+\s+<(.+){$mailDomainQuoted}>$/iD", '\1', $username));
+		$username = trim (preg_replace ("/^.+\s+<(.+)@{$mailDomainQuoted}>$/iD", '\1', $username));
 		
 		# Support variant with the mail domain, i.e.:
 		#  username@maildomain
-		$username = trim (preg_replace ("/^(.+){$mailDomainQuoted}$/iD", '\1', $username));
+		$username = trim (preg_replace ("/^(.+)@{$mailDomainQuoted}$/iD", '\1', $username));
 		
 		# Ensure usernames are lower-cased
 		$username = strtolower ($username);
