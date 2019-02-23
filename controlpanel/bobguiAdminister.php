@@ -154,12 +154,14 @@ class bobguiAdminister extends frontControllerApplication
 	{
 		$actions = array (
 			'understand' => array (
-				'tab' => '<img src="/images/icons/lightbulb.png" alt="" class="icon" /> How-to',
+				'tab' => 'How-to',
+				'icon' => 'lightbulb',
 				'description' => 'How to set up and run ballots: understand the process',
 			),
 			'add' => array (
 				'url' => 'add.html',
-				'tab' => '<img src="/images/icons/add.png" alt="" class="icon" /> Add a new ballot',
+				'tab' => 'Add a new ballot',
+				'icon' => 'add',
 				'description' => 'Add a new ballot',
 				'authentication' => true,
 			),
@@ -171,25 +173,30 @@ class bobguiAdminister extends frontControllerApplication
 			),
 			'administer' => array (
 				'url' => 'administer.html',
-				'tab' => '<img src="/images/icons/cog.png" alt="" class="icon" /> Administer ballots',
+				'tab' => 'Administer ballots',
+				'icon' => 'cog',
 				'description' => 'Edit/remove/view forthcoming/current ballots',
 				'authentication' => true,
 			),
 			'about' => array (
-				'tab' => '<img src="/images/icons/help.png" alt="" class="icon" /> FAQ',
+				'tab' => 'FAQ',
+				'icon' => 'help',
 				'description' => false,
 			),
 			'security' => array (
-				'tab' => '<img src="/images/icons/shield.png" alt="" class="icon" /> Security',
+				'tab' => 'Security',
+				'icon' => 'shield',
 				'description' => false,
 			),
 			'submit' => array (
-				'tab' => '<img src="/images/icons/comments.png" alt="" class="icon" /> Submit / view votes',
+				'tab' => 'Submit / view votes',
+				'icon' => 'comments',
 				'description' => 'Submit / view votes',
 				'authentication' => false,
 			),
 			'feedback' => array (
-			'tab' => '<img src="/images/icons/email.png" alt="" class="icon" />',
+				'tab' => '',
+				'icon' => 'email',
 				'description' => 'Feedback',
 				'authentication' => false,
 			),
