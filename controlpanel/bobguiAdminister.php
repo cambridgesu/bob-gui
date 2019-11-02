@@ -122,6 +122,9 @@ class bobguiAdminister extends frontControllerApplication
 				'Candidates have been entered by the Returning Officer in the order shown' => 'Leave: The candidate order should remain in the order entered / Referendum only',
 			),
 			
+			# Group IDs that are permitted to set ballotViewableDelayed; generally this should be limited to organisations that have a formal electoral committee with formal oversight
+			'ballotViewableDelayedGroups' => array (),
+			
 			# API key for bestow endpoint
 			'apiKey' => NULL,
 			
@@ -277,6 +280,7 @@ class bobguiAdminister extends frontControllerApplication
 		  `ballotStart` datetime NOT NULL COMMENT 'Start date/time of the ballot',
 		  `ballotEnd` datetime NOT NULL COMMENT 'End date/time of the ballot',
 		  `paperVotingEnd` datetime NULL COMMENT 'End time of paper voting, if paper voting is also taking place',
+		  `ballotViewableDelayed` datetime DEFAULT NULL COMMENT 'End date/time for delayed viewing of results by voters',
 		  `instanceCompleteTimestamp` datetime default NULL COMMENT 'Timestamp for when the instance (configuration and voters list) is complete',
 		  PRIMARY KEY  (`id`)
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
@@ -490,8 +494,8 @@ class bobguiAdminister extends frontControllerApplication
 			#controlpanel form p.submit input {font-size: 1.2em; font-weight: bold; min-width: 15em;}
 			#controlpanel form h3 {margin-top: 2em; border-bottom: 1px solid #ccc;}
 			#controlpanel span.formprepend, span.formappend {color: #603;}
-			#controlpanel p.row.ballotStart_time, #controlpanel p.row.ballotEnd_time, #controlpanel p.row.paperVotingEnd_time {margin-bottom: 0;}
-			#controlpanel form p.row.ballotStart_date, #controlpanel form p.row.ballotEnd_date, #controlpanel form p.row.paperVotingEnd_date {margin-top: 0; position: relative; top: -0.8em;}
+			#controlpanel p.row.ballotStart_time, #controlpanel p.row.ballotEnd_time, #controlpanel p.row.paperVotingEnd_time, #controlpanel p.row.ballotViewableDelayed_time {margin-bottom: 0;}
+			#controlpanel form p.row.ballotStart_date, #controlpanel form p.row.ballotEnd_date, #controlpanel form p.row.paperVotingEnd_date, #controlpanel form p.row.ballotViewableDelayed_date {margin-top: 0; position: relative; top: -0.8em;}
 			#controlpanel * html #pagemenu ul li.page_item a, #pagemenu ul li.cat-item a {padding: 5px 20px;} /* IE6 layout hack */
 			#controlpanel p.winner {color: #603; font-weight: bold; background-image: url(/images/icons/bullet_go.png); background-position: 5px 1px;}
 			#controlpanel table.lines td.transferexplanation {padding-bottom: 1.25em;}
@@ -981,7 +985,7 @@ class bobguiAdminister extends frontControllerApplication
 		$html  = "\n<h3>Create a new ballot for " . htmlspecialchars ($organisation['organisationName']) . '</h3>';
 		
 		# Create the ballot form
-		if ($ballot = $this->ballotConfigurationForm ($data = array (), $html, $organisation)) {
+		if ($ballot = $this->ballotConfigurationForm ($data = array (), $organisation['id'], $html, $organisation)) {
 			
 			# Implement the changes
 			$organisationId = $organisation['id'];
@@ -1003,7 +1007,7 @@ class bobguiAdminister extends frontControllerApplication
 	
 	
 	# Function to create the ballot form
-	private function ballotConfigurationForm ($data, &$html, $organisation = array ())
+	private function ballotConfigurationForm ($data, $organisationId, &$html, $organisation = array ())
 	{
 		# Detect whether we are editing (rather than adding) - is editing mode if there is no organisation
 		$isEditMode = ($organisation ? false : true);
@@ -1021,6 +1025,9 @@ class bobguiAdminister extends frontControllerApplication
 			);
 			unset ($organisation);
 		}
+		
+		# Determine whether to enable the ballotViewableDelayed option
+		$enableBallotViewableDelayed = (in_array ($organisationId, $this->settings['ballotViewableDelayedGroups']));
 		
 		# Get the current ballot list (this is used in a checking function)
 		#!# Needs to have failure checking, to differentiate from an empty list
@@ -1048,7 +1055,7 @@ class bobguiAdminister extends frontControllerApplication
 		if ($isEditMode) {
 			$form->heading ('', "<p>(If you don't want to make changes after all, return to the <a href=\"{$this->baseUrl}{$data['url']}\">Ballot editing options page</a>.)</p>");
 		}
-		$exclude = array ('id', 'url', 'academicYear', 'provider', 'organisation', 'emailTech', 'emailReturningOfficer', 'organisationLogoUrl', 'electionInfo', 'ballotStart', 'ballotEnd', 'paperVotingEnd', 'instanceCompleteTimestamp', );
+		$exclude = array ('id', 'url', 'academicYear', 'provider', 'organisation', 'emailTech', 'emailReturningOfficer', 'organisationLogoUrl', 'electionInfo', 'ballotStart', 'ballotEnd', 'paperVotingEnd', 'ballotViewableDelayed', 'instanceCompleteTimestamp', );
 		if ($this->settings['disableRonAvailability']) {
 			$exclude[] = 'addRon';
 		}
@@ -1078,7 +1085,14 @@ class bobguiAdminister extends frontControllerApplication
 		));
 		$form->heading (3, '<img src="/images/icons/clock_red.png" alt="" class="icon" /> Times and dates');
 		$form->heading ('p', 'Ballots can be created starting ' . ($this->settings['ballotFixedHoursFromOpening'] == 1 ? 'one hour' : $this->settings['ballotFixedHoursFromOpening'] . ' hours') . ' from now, up to ' . $this->settings['daysAhead'] . ' days ahead, to run for a maximum period of ' . ($this->settings['maximumOpeningDays'] == 1 ? 'one day' : "{$this->settings['maximumOpeningDays']} days") . '.');
-		$fields = array ('ballotStart' => '<strong>Start</strong> time/date of the ballot', 'ballotEnd' => '<strong>Closing</strong> time/date of the ballot', 'paperVotingEnd' => '<strong>If</strong> you need to have paper voting, enter the time/date when the paper voting closes.<br /><strong>Bear in mind</strong> that this will require the need for voters to be added manually to a spreadsheet.', );
+		$fields = array (
+			'ballotStart' => '<strong>Start</strong> time/date of the ballot',
+			'ballotEnd' => '<strong>Closing</strong> time/date of the ballot',
+			'paperVotingEnd' => '<strong>If</strong> you need to have paper voting, enter the time/date when the paper voting closes.<br /><strong>Bear in mind</strong> that this will require the need for voters to be added manually to a spreadsheet.',
+		);
+		if ($enableBallotViewableDelayed) {
+			$fields['ballotViewableDelayed'] = 'End date/time for delayed viewing of results by voters';
+		}
 		$preformattedTimes = $this->preformattedTimes ();
 		foreach ($fields as $field => $label) {
 			$daysToShow = $this->settings['daysAhead'] + ($field == 'ballotStart' ? 0 : $this->settings['maximumOpeningDays']);
@@ -1088,7 +1102,7 @@ class bobguiAdminister extends frontControllerApplication
 				'title'					=> $label,
 				'values'				=> $preformattedTimes,
 				'prepend'				=> 'Time: ',
-				'required'				=> ($field != 'paperVotingEnd'),
+				'required'				=> (in_array ($field, array ('ballotStart', 'ballotEnd'))),
 				'default'				=> ($isEditMode && isSet ($data[$field . '_time']) ? $data[$field . '_time'] : ''),
 			));
 			$form->select (array (
@@ -1096,11 +1110,14 @@ class bobguiAdminister extends frontControllerApplication
 				'title'					=> false,
 				'values'				=> $preformattedDates,
 				'prepend'				=> 'Date: ',
-				'required'				=> ($field != 'paperVotingEnd'),
+				'required'				=> (in_array ($field, array ('ballotStart', 'ballotEnd'))),
 				'default'				=> ($isEditMode && isSet ($data[$field . '_date']) ? $data[$field . '_date'] : ''),
 			));
 		}
 		$form->validation ('all', array ('paperVotingEnd_date', 'paperVotingEnd_time'));	// Ensure that, if either are filled in, both are filled in
+		if ($enableBallotViewableDelayed) {
+			$form->validation ('all', array ('ballotViewableDelayed_date', 'ballotViewableDelayed_time'));	// Ensure that, if either are filled in, both are filled in
+		}
 		$form->heading (3, '<img src="/images/icons/script.png" alt="" class="icon" /> Electoral roll (list of voters)');
 		$form->heading ('p', 'The list of voters will be added on the next page of this form.');
 		
@@ -1196,7 +1213,13 @@ class bobguiAdminister extends frontControllerApplication
 		$result['ballotStart'] = $result['ballotStart_date'] . ' ' . $result['ballotStart_time'];
 		$result['ballotEnd'] = $result['ballotEnd_date'] . ' ' . $result['ballotEnd_time'];
 		$result['paperVotingEnd'] = ($result['paperVotingEnd_date'] ? $result['paperVotingEnd_date'] . ' ' . $result['paperVotingEnd_time'] : NULL);	//  Set as NULL if no paper voting
-		unset ($result['ballotStart_date'], $result['ballotStart_time'], $result['ballotEnd_date'], $result['ballotEnd_time'], $result['paperVotingEnd_date'], $result['paperVotingEnd_time']);
+		$result['ballotViewableDelayed'] = ($result['ballotViewableDelayed_date'] ? $result['ballotViewableDelayed_date'] . ' ' . $result['ballotViewableDelayed_time'] : NULL);	//  Set as NULL if not enabled
+		unset (
+			$result['ballotStart_date'], $result['ballotStart_time'],
+			$result['ballotEnd_date'], $result['ballotEnd_time'],
+			$result['paperVotingEnd_date'], $result['paperVotingEnd_time'],
+			$result['ballotViewableDelayed_date'], $result['ballotViewableDelayed_time']
+		);
 		
 		# Separate usernames by space
 		$result['officialsUsernames'] = implode (' ', preg_split ("/[\s,]+/", $result['officialsUsernames']));
@@ -1458,7 +1481,7 @@ class bobguiAdminister extends frontControllerApplication
 		# Start the HTML
 		$html  = '';
 		
-		# Convert ballot start/end and paperVotingEnd to the uncompiled date/time pairs
+		# Convert ballot start/end, paperVotingEnd and ballotViewableDelayed to the uncompiled date/time pairs
 		list ($ballot['ballotStart_date'], $ballot['ballotStart_time']) = explode (' ', $ballot['ballotStart']);
 		list ($ballot['ballotEnd_date'], $ballot['ballotEnd_time']) = explode (' ', $ballot['ballotEnd']);
 		if ($ballot['paperVotingEnd']) {
@@ -1467,13 +1490,19 @@ class bobguiAdminister extends frontControllerApplication
 			$ballot['paperVotingEnd_date'] = '';
 			$ballot['paperVotingEnd_time'] = '';
 		}
+		if ($ballot['ballotViewableDelayed']) {
+			list ($ballot['ballotViewableDelayed_date'], $ballot['ballotViewableDelayed_time']) = explode (' ', $ballot['ballotViewableDelayed']);
+		} else {
+			$ballot['ballotViewableDelayed_date'] = '';
+			$ballot['ballotViewableDelayed_time'] = '';
+		}
 		
 		# Other changes to the data
 		$ballot['frontPageMessageHtml'] = strip_tags ($ballot['frontPageMessageHtml']);
 		$ballot['afterVoteMessageHtml'] = strip_tags ($ballot['afterVoteMessageHtml']);
 		
 		# Hand off to the data manipulation function
-		if ($ballot = $this->ballotConfigurationForm ($ballot, $html)) {
+		if ($ballot = $this->ballotConfigurationForm ($ballot, $organisationId, $html)) {
 			
 			# Implement the changes
 			if (!$this->implementBallot (__FUNCTION__, $organisationId, $ballot)) {
@@ -2417,6 +2446,7 @@ class bobguiAdminister extends frontControllerApplication
 		$ballotStart = ((strlen ($data['ballotStart_time']) && strlen ($data['ballotStart_date'])) ? strtotime ($data['ballotStart_date'] . ' ' . $data['ballotStart_time']) : false);
 		$ballotEnd = ((strlen ($data['ballotEnd_time']) && strlen ($data['ballotEnd_date'])) ? strtotime ($data['ballotEnd_date'] . ' ' . $data['ballotEnd_time']) : false);
 		$paperVotingEnd = ((strlen ($data['paperVotingEnd_time']) && strlen ($data['paperVotingEnd_date'])) ? strtotime ($data['paperVotingEnd_date'] . ' ' . $data['paperVotingEnd_time']) : false);
+		$ballotViewableDelayed = ((strlen ($data['ballotViewableDelayed_time']) && strlen ($data['ballotViewableDelayed_date'])) ? strtotime ($data['ballotViewableDelayed_date'] . ' ' . $data['ballotViewableDelayed_time']) : false);
 		
 		# Do not run if start and end are not both completed (the form will catch this in another error)
 		if (!$ballotStart || !$ballotEnd) {return true;}	// return true means "no problems here", so ends execution of the current checks (the form will catch the problem at the per-widget left)
@@ -2459,6 +2489,16 @@ class bobguiAdminister extends frontControllerApplication
 			if ($paperVotingEnd <= $ballotStart) {
 				$fieldname = 'paperVotingEnd_time';
 				$error = 'The time specified for close of paper voting must be after the online start time';
+				return false;
+			}
+		}
+		
+		# If delayed viewing is enabled, Check that the start is before the end
+		if ($ballotViewableDelayed) {
+			$end = ($paperVotingEnd ? $paperVotingEnd : $ballotEnd);
+			if ($ballotViewableDelayed <= $end) {
+				$fieldname = 'ballotViewableDelayed_time';
+				$error = 'The delayed viewing date/time must be after the end time';
 				return false;
 			}
 		}
