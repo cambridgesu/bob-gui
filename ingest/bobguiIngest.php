@@ -99,13 +99,13 @@ class bobguiIngest
 			# The number of hours which the admin GUI side fixes the ballot from
 			'ballotFixedHoursFromOpening' => 2,
 			
-			# Set the number of seconds representing an acceptable timestamp mismatch between the bestow data and the local time
-			'timestampMismatch' => 120,	// 2 minutes drift
-			
 			# Expected launch time in minutes past the hour, and number of seconds either side of 30 minutes past the hour that this can run
 			'launchTimeMinutes' => 30,
 			'launchTimeMismatch' => 120,	// 2 minutes drift
 			'maximumAcceptableScriptExecutionTime' => 300,	// 5 minutes; allows for the bestow end to be slow in bestowing
+			
+			# Set the number of seconds representing an acceptable timestamp mismatch between the bestow data and the local time
+			'timestampMismatch' => 120,	// 2 minutes drift
 			
 			# Live server URL (for use in an e-mail only)
 			'liveServerUrl' => NULL,	// Not slash-terminated, e.g. 'https://www.example.com'
