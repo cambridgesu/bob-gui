@@ -305,17 +305,22 @@ class bobguiAdminister extends frontControllerApplication
 		1 => array (
 			'type'			=> 'a standard ballot without a paper vote',
 			'description'	=> 'Username/e-mail only (1 column)',
-			'fieldnames'	=> array ('username', ),
+			'fieldnames'	=> array ('username'),
 		),
 		3 => array (
 			'type'			=> 'a College-based vote with a paper vote following',
 			'description'	=> 'Username/e-mail, forename, surname (3 columns)',
-			'fieldnames'	=> array ('username', 'forename', 'surname', ),
+			'fieldnames'	=> array ('username', 'forename', 'surname'),
 		),
 		4 => array (
 			'type'			=> 'a vote with voters who may be in different colleges, with a paper vote following',
 			'description'	=> 'Username/e-mail, forename, surname, college (4 columns)',
-			'fieldnames'	=> array ('username', 'forename', 'surname', 'unit', ),
+			'fieldnames'	=> array ('username', 'forename', 'surname', 'unit'),
+		),
+		5 => array (
+			'type'			=> 'a vote with voters who may be in different colleges, with a status, possibly with a paper vote following',
+			'description'	=> 'Username/e-mail, forename, surname, college, status (5 columns)',
+			'fieldnames'	=> array ('username', 'forename', 'surname', 'unit', 'status'),
 		),
 	);
 	
@@ -1754,6 +1759,8 @@ class bobguiAdminister extends frontControllerApplication
 			# Add the fields, starting with the most verbose format
 			$username = $this->cleanUsername ($voter[0]);
 			switch ($fields) {
+				case 5:
+					$voterDetails[$username]['status']  = trim ($voter[4]);	// then fall-through to add the following ones
 				case 4:
 					$voterDetails[$username]['unit']  = trim ($voter[3]);	// then fall-through to add the following ones
 				case 3:
@@ -2110,7 +2117,8 @@ class bobguiAdminister extends frontControllerApplication
 			'voted'		=> 'TINYINT(4) DEFAULT 0',										// The flag for whether a voter has voted, defaulting to 0
 			'forename'	=> 'VARCHAR(255) collate utf8_unicode_ci',						// Forename (optional)
 			'surname'	=> 'VARCHAR(255) collate utf8_unicode_ci',						// Surname (optional)
-			'unit'		=> 'VARCHAR(255) collate utf8_unicode_ci',						// Organisational unit (optional), e.g. college
+			'unit'		=> 'VARCHAR(255) collate utf8_unicode_ci',						// Organisational unit (optional - may be NULL), e.g. college
+			'status'	=> 'VARCHAR(255) collate utf8_unicode_ci',						// Status (optional - may be NULL), e.g. undergraduate / graduate
 		);
 		if (!$this->createTable ($voterTable, $voterTableFields)) {
 			return false;
@@ -2138,7 +2146,7 @@ class bobguiAdminister extends frontControllerApplication
 		$query = "INSERT INTO `{$this->settings['database']}`.`{$voterTable}` (" . $fields . ') VALUES ' . implode (',', $votersSql) . ';';
 		
 		# Add the voters to the voters table by issuing the built query
-		if (false === $this->databaseConnection->execute ($query)) {	
+		if (false === $this->databaseConnection->execute ($query)) {
 			$this->errors[] = "There was a problem inserting the data into the {$voterTable} table." . "\n\n" . print_r ($this->databaseConnection->error (), true);
 			return false;
 		}
@@ -2211,7 +2219,7 @@ class bobguiAdminister extends frontControllerApplication
 		}
 		
 		# Wipe data present in any non-needed fields; this means for example that moving from paper to non-paper vote avoids the need for the RO to re-enter the (now username-only) list
-		$allPossibleFields = array ('username', 'forename', 'surname', 'unit');
+		$allPossibleFields = array ('username', 'forename', 'surname', 'unit', 'status');
 		$wipeFields = array_diff ($allPossibleFields, $requiredFields);
 		if ($wipeFields) {
 			$extraneousData = false;
@@ -2862,7 +2870,7 @@ class bobguiAdminister extends frontControllerApplication
 		foreach ($futureInstances as $instanceId => $settings) {
 			
 			# Get the voter lists for these instances
-			$query = "SELECT username,forename,surname,unit FROM `{$instanceId}_voter`;";	// Explicitly exclude the 'voted' field
+			$query = "SELECT username,forename,surname,unit,status FROM `{$instanceId}_voter`;";	// Explicitly exclude the 'voted' field
 			$voters = $this->databaseConnection->getData ($query);
 			
 			# If there are no voters (or the table does not exist, i.e. a failure case), skip this instance so that it does not get registered
