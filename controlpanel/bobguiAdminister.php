@@ -125,6 +125,9 @@ class bobguiAdminister extends frontControllerApplication
 			# Group IDs that are permitted to set ballotViewableDelayed; generally this should be limited to organisations that have a formal electoral committee with formal oversight
 			'ballotViewableDelayedGroups' => array (),
 			
+			# Groups which have rights to enable a leaderboard
+			'leaderboardTemplateGroups' => array (),
+			
 			# API key for bestow endpoint
 			'apiKey' => NULL,
 			
@@ -1029,6 +1032,9 @@ class bobguiAdminister extends frontControllerApplication
 		# Determine whether to enable the ballotViewableDelayed option
 		$enableBallotViewableDelayed = (in_array ($organisationId, $this->settings['ballotViewableDelayedGroups']));
 		
+		# Determine whether to enable the leaderboard template option
+		$enableLeaderboardTemplate = (in_array ($organisationId, $this->settings['leaderboardTemplateGroups']));
+		
 		# Get the current ballot list (this is used in a checking function)
 		#!# Needs to have failure checking, to differentiate from an empty list
 		$ballots = $this->getBallotInstances (false, false, false, $regroupByOrganisation = false);
@@ -1059,6 +1065,9 @@ class bobguiAdminister extends frontControllerApplication
 		if ($this->settings['disableRonAvailability']) {
 			$exclude[] = 'addRon';
 		}
+		if (!$enableLeaderboardTemplate) {
+			$exclude[] = 'leaderboardTemplate';
+		}
 		$form->dataBinding (array (
 			'database' => $this->settings['database'],
 			'table' => $this->settings['table'],
@@ -1081,6 +1090,7 @@ class bobguiAdminister extends frontControllerApplication
 				'randomisationInfo' => array ('required' => true, 'heading' => array (3 => '<img src="/images/icons/group.png" alt="" class="icon" /> Candidates', ), 'description' => 'What should happen with the ordering of the candidates you enter below. (This setting is ignored for referenda.)', 'values' => $this->settings['randomisationInfoLabels']),
 				'electionInfoAsEntered' => array ('heading' => array ('' => $randomisationHelp, ), 'cols' => 100, 'rows' => 20, 'title' => 'Election info (see example above, which shows how to enter this)', 'description' => 'See the diagram above. Precise checks will be done.', ),
 				'referendumThresholdPercent' => array ('title' => 'If you are including a referendum, percentage of voters who must cast any vote for the referendum to be countable', ),
+				'leaderboardTemplate' => array ('title' => 'Leaderboard', 'heading' => array (3 => '<img src="/images/icons/chart_bar.png" alt="" class="icon" /> Leaderboard'), 'type' => 'select', 'values' => array ('' => '[No leaderboard]', 'style/leaderboard2/leaderboard.html' => 'Enable leaderboard'), 'default' => 'style/leaderboard2/leaderboard.html'),
 			),
 		));
 		$form->heading (3, '<img src="/images/icons/clock_red.png" alt="" class="icon" /> Times and dates');
