@@ -2512,12 +2512,24 @@ class bobguiAdminister extends frontControllerApplication
 			}
 		}
 		
-		# If delayed viewing is enabled, Check that the start is before the end
+		# If delayed viewing is enabled, perform checks
 		if ($ballotViewableDelayed) {
 			$end = ($paperVotingEnd ? $paperVotingEnd : $ballotEnd);
+			
+			# Check that the start is before the end
 			if ($ballotViewableDelayed <= $end) {
 				$fieldname = 'ballotViewableDelayed_time';
 				$error = 'The delayed viewing date/time must be after the end time';
+				return false;
+			}
+			
+			# Avoid accidental excessive time period; max 24 hours
+			$maximumPermittedHours = 24;
+			$maximumPermitted = (60 * 60 * $maximumPermittedHours);
+			$difference = $ballotViewableDelayed - $end;
+			if ($difference > $maximumPermitted) {
+				$fieldname = 'ballotViewableDelayed_time';
+				$error = "The delayed viewing date/time must be no more than {$maximumPermittedHours} hours after the ballot end.";
 				return false;
 			}
 		}
