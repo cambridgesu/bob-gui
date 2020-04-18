@@ -1202,6 +1202,7 @@ class bobguiAdminister extends frontControllerApplication
 		
 		# Compile the data further, starting with merging the pre-supplied data in
 		if (!$isEditMode) {
+			unset ($data['officialsUsernames']);		// Allow this to have been changed (added to); officialsUsernamesValid will have ensured the current user is at the start
 			$result = array_merge ($result, $data);		// Pre-supplied data ($data) will overwrite the submitted form data ($result), effectively ignoring the 'hidden' fields
 		}
 		
