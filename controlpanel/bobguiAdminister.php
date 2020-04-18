@@ -1029,7 +1029,7 @@ class bobguiAdminister extends frontControllerApplication
 				'organisationLogoUrl' => ($organisation['logoLocation'] ? (preg_match ('|^https?://|', $organisation['logoLocation']) ? '' : 'https://' . $_SERVER['SERVER_NAME']) . $organisation['logoLocation'] : ''),
 				'emailTech'	=> $this->settings['emailTech'],
 				'officialsUsernames' => $this->user,
-				'organisationUrl' => $organisation['profileBaseUrl'] . '/',
+				'organisationUrl' => $_SERVER['_SITE_URL'] . $organisation['profileBaseUrl'] . '/',
 			);
 			unset ($organisation);
 		}
