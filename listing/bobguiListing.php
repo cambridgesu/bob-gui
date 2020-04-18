@@ -1046,8 +1046,12 @@ class frontControllerApplication
 		# If there is no REMOTE_USER from the webserver, explain that an .htaccess file is needed, and end
 		if (!isSet ($_SERVER['REMOTE_USER']) || empty ($_SERVER['REMOTE_USER'])) {
 			
-			# Generate a random string of length 10 characters
-			$this->errors[] = 'The server is not supplying a username, so this system will not run.';
+			# Report error
+			if ($_SERVER['REQUEST_URI'] != '/style/') {		// Except style directory, which is exempted, to permit logout style
+				$this->errors[] = 'The server is not supplying a username, so this system will not run.';
+			}
+			
+			# End
 			return false;
 		}
 		
