@@ -125,6 +125,9 @@ class bobguiAdminister extends frontControllerApplication
 			# Group IDs that are permitted to set ballotViewableDelayed; generally this should be limited to organisations that have a formal electoral committee with formal oversight
 			'ballotViewableDelayedGroups' => array (),
 			
+			# Groups which have rights to enable a leaderboard
+			'leaderboardTemplateGroups' => array (),
+			
 			# API key for bestow endpoint
 			'apiKey' => NULL,
 			
@@ -302,17 +305,22 @@ class bobguiAdminister extends frontControllerApplication
 		1 => array (
 			'type'			=> 'a standard ballot without a paper vote',
 			'description'	=> 'Username/e-mail only (1 column)',
-			'fieldnames'	=> array ('username', ),
+			'fieldnames'	=> array ('username'),
 		),
 		3 => array (
 			'type'			=> 'a College-based vote with a paper vote following',
 			'description'	=> 'Username/e-mail, forename, surname (3 columns)',
-			'fieldnames'	=> array ('username', 'forename', 'surname', ),
+			'fieldnames'	=> array ('username', 'forename', 'surname'),
 		),
 		4 => array (
 			'type'			=> 'a vote with voters who may be in different colleges, with a paper vote following',
 			'description'	=> 'Username/e-mail, forename, surname, college (4 columns)',
-			'fieldnames'	=> array ('username', 'forename', 'surname', 'unit', ),
+			'fieldnames'	=> array ('username', 'forename', 'surname', 'unit'),
+		),
+		5 => array (
+			'type'			=> 'a vote with voters who may be in different colleges, with a status, possibly with a paper vote following',
+			'description'	=> 'Username/e-mail, forename, surname, college, status (5 columns)',
+			'fieldnames'	=> array ('username', 'forename', 'surname', 'unit', 'status'),
 		),
 	);
 	
@@ -1029,6 +1037,9 @@ class bobguiAdminister extends frontControllerApplication
 		# Determine whether to enable the ballotViewableDelayed option
 		$enableBallotViewableDelayed = (in_array ($organisationId, $this->settings['ballotViewableDelayedGroups']));
 		
+		# Determine whether to enable the leaderboard template option
+		$enableLeaderboardTemplate = (in_array ($organisationId, $this->settings['leaderboardTemplateGroups']));
+		
 		# Get the current ballot list (this is used in a checking function)
 		#!# Needs to have failure checking, to differentiate from an empty list
 		$ballots = $this->getBallotInstances (false, false, false, $regroupByOrganisation = false);
@@ -1055,9 +1066,12 @@ class bobguiAdminister extends frontControllerApplication
 		if ($isEditMode) {
 			$form->heading ('', "<p>(If you don't want to make changes after all, return to the <a href=\"{$this->baseUrl}{$data['url']}\">Ballot editing options page</a>.)</p>");
 		}
-		$exclude = array ('id', 'url', 'academicYear', 'provider', 'organisation', 'emailTech', 'emailReturningOfficer', 'organisationLogoUrl', 'electionInfo', 'ballotStart', 'ballotEnd', 'paperVotingEnd', 'ballotViewableDelayed', 'instanceCompleteTimestamp', );
+		$exclude = array ('id', 'url', 'academicYear', 'provider', 'organisation', 'emailTech', 'emailReturningOfficer', 'organisationLogoUrl', 'electionInfo', 'referendumThresholdIsYesVoters', 'ballotStart', 'ballotEnd', 'paperVotingEnd', 'ballotViewableDelayed', 'instanceCompleteTimestamp');
 		if ($this->settings['disableRonAvailability']) {
 			$exclude[] = 'addRon';
+		}
+		if (!$enableLeaderboardTemplate) {
+			$exclude[] = 'leaderboardTemplate';
 		}
 		$form->dataBinding (array (
 			'database' => $this->settings['database'],
@@ -1081,6 +1095,7 @@ class bobguiAdminister extends frontControllerApplication
 				'randomisationInfo' => array ('required' => true, 'heading' => array (3 => '<img src="/images/icons/group.png" alt="" class="icon" /> Candidates', ), 'description' => 'What should happen with the ordering of the candidates you enter below. (This setting is ignored for referenda.)', 'values' => $this->settings['randomisationInfoLabels']),
 				'electionInfoAsEntered' => array ('heading' => array ('' => $randomisationHelp, ), 'cols' => 100, 'rows' => 20, 'title' => 'Election info (see example above, which shows how to enter this)', 'description' => 'See the diagram above. Precise checks will be done.', ),
 				'referendumThresholdPercent' => array ('title' => 'If you are including a referendum, percentage of voters who must cast any vote for the referendum to be countable', ),
+				'leaderboardTemplate' => array ('title' => 'Leaderboard', 'heading' => array (3 => '<img src="/images/icons/chart_bar.png" alt="" class="icon" /> Leaderboard'), 'type' => 'select', 'values' => array ('' => '[No leaderboard]', 'style/leaderboard2/leaderboard.html' => 'Enable leaderboard'), 'default' => 'style/leaderboard2/leaderboard.html'),
 			),
 		));
 		$form->heading (3, '<img src="/images/icons/clock_red.png" alt="" class="icon" /> Times and dates');
@@ -1744,6 +1759,8 @@ class bobguiAdminister extends frontControllerApplication
 			# Add the fields, starting with the most verbose format
 			$username = $this->cleanUsername ($voter[0]);
 			switch ($fields) {
+				case 5:
+					$voterDetails[$username]['status']  = trim ($voter[4]);	// then fall-through to add the following ones
 				case 4:
 					$voterDetails[$username]['unit']  = trim ($voter[3]);	// then fall-through to add the following ones
 				case 3:
@@ -2100,7 +2117,8 @@ class bobguiAdminister extends frontControllerApplication
 			'voted'		=> 'TINYINT(4) DEFAULT 0',										// The flag for whether a voter has voted, defaulting to 0
 			'forename'	=> 'VARCHAR(255) collate utf8_unicode_ci',						// Forename (optional)
 			'surname'	=> 'VARCHAR(255) collate utf8_unicode_ci',						// Surname (optional)
-			'unit'		=> 'VARCHAR(255) collate utf8_unicode_ci',						// Organisational unit (optional), e.g. college
+			'unit'		=> 'VARCHAR(255) collate utf8_unicode_ci',						// Organisational unit (optional - may be NULL), e.g. college
+			'status'	=> 'VARCHAR(255) collate utf8_unicode_ci',						// Status (optional - may be NULL), e.g. undergraduate / graduate
 		);
 		if (!$this->createTable ($voterTable, $voterTableFields)) {
 			return false;
@@ -2128,7 +2146,7 @@ class bobguiAdminister extends frontControllerApplication
 		$query = "INSERT INTO `{$this->settings['database']}`.`{$voterTable}` (" . $fields . ') VALUES ' . implode (',', $votersSql) . ';';
 		
 		# Add the voters to the voters table by issuing the built query
-		if (false === $this->databaseConnection->execute ($query)) {	
+		if (false === $this->databaseConnection->execute ($query)) {
 			$this->errors[] = "There was a problem inserting the data into the {$voterTable} table." . "\n\n" . print_r ($this->databaseConnection->error (), true);
 			return false;
 		}
@@ -2201,7 +2219,7 @@ class bobguiAdminister extends frontControllerApplication
 		}
 		
 		# Wipe data present in any non-needed fields; this means for example that moving from paper to non-paper vote avoids the need for the RO to re-enter the (now username-only) list
-		$allPossibleFields = array ('username', 'forename', 'surname', 'unit');
+		$allPossibleFields = array ('username', 'forename', 'surname', 'unit', 'status');
 		$wipeFields = array_diff ($allPossibleFields, $requiredFields);
 		if ($wipeFields) {
 			$extraneousData = false;
@@ -2852,7 +2870,7 @@ class bobguiAdminister extends frontControllerApplication
 		foreach ($futureInstances as $instanceId => $settings) {
 			
 			# Get the voter lists for these instances
-			$query = "SELECT username,forename,surname,unit FROM `{$instanceId}_voter`;";	// Explicitly exclude the 'voted' field
+			$query = "SELECT username,forename,surname,unit,status FROM `{$instanceId}_voter`;";	// Explicitly exclude the 'voted' field
 			$voters = $this->databaseConnection->getData ($query);
 			
 			# If there are no voters (or the table does not exist, i.e. a failure case), skip this instance so that it does not get registered
