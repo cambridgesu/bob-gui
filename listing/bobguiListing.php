@@ -753,7 +753,7 @@ class bobguiListing extends frontControllerApplication
 		
 		# Compile the HTML
 		$html  = "\n<p>The following is a list of all the ballots that have been run via this system.<br />The opening month of each ballot is also shown.</p>";
-		$html .= "\n<p>A total of <strong>{$total} ballots</strong> have been run by <strong>" . count ($oldBallots) . " organisations</strong>.</p>";
+		$html .= "\n<p>A total of <strong>" . number_format ($total) . " ballots</strong> have been run by <strong>" . count ($oldBallots) . " organisations</strong>.</p>";
 		$html .= "\n<p>(A list of <a href=\"{$this->baseUrl}/closed.html\">recent ballots only (last {$this->settings['recentDays']} days only)</a> is also available.)</p>";
 		$html .= $this->ballotsToListing ($oldBallots, 'ballotStartMonthYear');
 		
